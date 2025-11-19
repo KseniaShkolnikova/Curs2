@@ -1,0 +1,813 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load tz %}
+
+{% block title_name %}
+FITZONE - Личный кабинет тренера
+{% endblock %}
+
+{% block content %}
+<div class="particles-container" id="particles"></div>
+
+<section class="hero-section" style="margin: 20px 40px 40px; min-height: auto; padding-top: 20px;">
+    <div class="hero-content">
+        <h1 class="hero-title">
+            ДОБРО ПОЖАЛОВАТЬ,<br>
+            {% if user.userprofile.full_name %}
+                {{ user.userprofile.full_name|upper }}
+            {% else %}
+                {{ user.username|upper }}
+            {% endif %}
+        </h1>
+        
+        <div class="trainer-dashboard">
+            <!-- Левая колонка -->
+            <div class="dashboard-column">
+             <!-- Блок сегодняшних тренировок -->
+<div class="dashboard-card today-trainings">
+    <div class="card-header">
+        <h2><i class="fas fa-calendar-day"></i> СЕГОДНЯШНИЕ ТРЕНИРОВКИ</h2>
+        <span class="date-badge">{{ today|date:"d M Y" }}</span>
+    </div>
+    
+    {% if today_trainings %}
+    <div class="trainings-list">
+        {% for training in today_trainings %}
+        <div class="training-item {% if training.is_group %}group-training{% else %}personal-training{% endif %}">
+            <div class="training-icon">
+                {% if training.is_group %}
+                    <i class="fas fa-users"></i>
+                {% else %}
+                    <i class="fas fa-user"></i>
+                {% endif %}
+            </div>
+            <div class="training-info">
+                <h3>{{ training.name }}</h3>
+                <div class="training-details">
+                    <span class="time">
+                        <i class="fas fa-clock"></i>
+                        {{ training.starttime|time:"H:i" }} - {{ training.endtime|time:"H:i" }}
+                    </span>
+                    {% if training.is_group %}
+                    <span class="clients-count">
+                        <i class="fas fa-user-check"></i>
+                        {{ training.current_clients }}/{{ training.maxclient }} записано
+                    </span>
+                    {% else %}
+                    <span class="client-name">
+                        <i class="fas fa-user"></i>
+                        {{ training.client_name|default:"Клиент" }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="training-status">
+                {% if training.is_upcoming %}
+                <span class="status-badge upcoming">СКОРО</span>
+                {% elif training.is_ongoing %}
+                <span class="status-badge ongoing">ИДЕТ</span>
+                {% else %}
+                <span class="status-badge completed">ЗАВЕРШЕНА</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-trainings">
+        <i class="fas fa-calendar-times"></i>
+        <h3>Сегодня тренировок нет</h3>
+        <p>Вы можете отдохнуть или запланировать новые занятия</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Блок предстоящих тренировок -->
+{% if upcoming_trainings %}
+<div class="dashboard-card upcoming-trainings">
+    <div class="card-header">
+        <h2><i class="fas fa-calendar-week"></i> БЛИЖАЙШИЕ ТРЕНИРОВКИ</h2>
+    </div>
+    <div class="upcoming-list">
+        {% for training in upcoming_trainings %}
+        <div class="upcoming-item">
+            <div class="upcoming-date">
+                <span class="day">{{ training.starttime|date:"d" }}</span>
+                <span class="month">{{ training.starttime|date:"M" }}</span>
+            </div>
+            <div class="upcoming-info">
+                <h4>{{ training.name }}</h4>
+                <p>{{ training.starttime|date:"l" }}, {{ training.starttime|time:"H:i" }}</p>
+                {% if training.is_group %}
+                <span class="type-badge group">Групповое</span>
+                {% else %}
+                <span class="type-badge personal">Персональное</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+            </div>
+
+            <!-- Правая колонка -->
+            <div class="dashboard-column">
+                <!-- Блок быстрых действий -->
+                <div class="dashboard-card quick-actions">
+                    <div class="card-header">
+                        <h2><i class="fas fa-bolt"></i> БЫСТРЫЕ ДЕЙСТВИЯ</h2>
+                    </div>
+                    <div class="actions-grid">
+                        <a href="{% url 'trainerservice:trainer_classes' %}" class="action-card">
+                            <div class="action-icon">
+                                <i class="fas fa-plus-circle"></i>
+                            </div>
+                            <h3>Создать занятие</h3>
+                            <p>Добавьте новое групповое занятие</p>
+                        </a>
+                        
+                        
+                        
+                        <a href="{% url 'trainerservice:my_clients' %}" class="action-card">
+                            <div class="action-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h3>Мои клиенты</h3>
+                            <p>Управление клиентами</p>
+                        </a>
+                        
+                        <a href="{% url 'profile' %}" class="action-card">
+                            <div class="action-icon">
+                                <i class="fas fa-user-cog"></i>
+                            </div>
+                            <h3>Профиль</h3>
+                            <p>Настройки профиля</p>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Блок статистики -->
+             <!-- Блок статистики -->
+<div class="dashboard-card statistics statistics-with-margin">    <div class="card-header">
+        <h2><i class="fas fa-chart-line"></i> СТАТИСТИКА ЗА НЕДЕЛЮ</h2>
+    </div>
+    <div class="stats-grid">
+        <div class="stat-item">
+            <div class="stat-value">{{ weekly_stats.total_trainings|default:"0" }}</div>
+            <div class="stat-label">Тренировок</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">{{ weekly_stats.group_classes|default:"0" }}</div>
+            <div class="stat-label">Групповых</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">{{ weekly_stats.personal_trainings|default:"0" }}</div>
+            <div class="stat-label">Персональных</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">{{ weekly_stats.total_clients|default:"0" }}</div>
+            <div class="stat-label">Клиентов</div>
+        </div>
+    </div>
+</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .statistics-with-margin {
+    margin-bottom: 200px; /* или любое другое значение */
+}
+ .trainer-dashboard {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 25px;
+    margin-top: 30px;
+    align-items: start;
+}
+
+.dashboard-column {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.dashboard-card {
+    background: var(--light-card);
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: var(--shadow-medium);
+    border: 1px solid var(--light-border);
+    transition: all 0.3s ease;
+    height: fit-content;
+    min-height: auto;
+    overflow: visible;
+}
+
+.dark-theme .dashboard-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.dashboard-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.15);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid rgba(139, 92, 246, 0.1);
+}
+
+.card-header h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.dark-theme .card-header h2 {
+    color: var(--dark-text);
+}
+
+.card-header h2 i {
+    color: var(--neon-purple);
+    font-size: 1.1rem;
+}
+
+.date-badge {
+    background: var(--accent-gradient);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+/* Стили для списка тренировок */
+.trainings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.training-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px;
+    background: var(--light-bg);
+    border-radius: 15px;
+    border-left: 4px solid var(--neon-purple);
+    transition: all 0.3s ease;
+}
+
+.dark-theme .training-item {
+    background: var(--dark-bg);
+}
+
+.training-item:hover {
+    transform: translateX(3px);
+    box-shadow: var(--shadow-sm);
+}
+
+.training-item.group-training {
+    border-left-color: var(--neon-blue);
+}
+
+.training-item.personal-training {
+    border-left-color: var(--neon-purple);
+}
+
+.training-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--neon-purple);
+    flex-shrink: 0;
+}
+
+.group-training .training-icon {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--neon-blue);
+}
+
+.training-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.training-info h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dark-theme .training-info h3 {
+    color: var(--dark-text);
+}
+
+.training-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.training-details span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-gray);
+    font-size: 0.85rem;
+}
+
+.dark-theme .training-details span {
+    color: var(--dark-text-light);
+}
+
+.training-details i {
+    color: var(--neon-purple);
+    width: 12px;
+    text-align: center;
+}
+
+.training-status {
+    flex-shrink: 0;
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.status-badge.upcoming {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--neon-blue);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.status-badge.ongoing {
+    background: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.status-badge.completed {
+    background: rgba(100, 116, 139, 0.1);
+    color: #64748b;
+    border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+/* Стили для отсутствия тренировок */
+.no-trainings {
+    text-align: center;
+    padding: 30px 20px;
+    color: var(--text-gray);
+}
+
+.no-trainings i {
+    font-size: 2.5rem;
+    color: var(--neon-purple);
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.no-trainings h3 {
+    font-size: 1.1rem;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+}
+
+.dark-theme .no-trainings h3 {
+    color: var(--dark-text);
+}
+
+.no-trainings p {
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Стили для быстрых действий */
+.actions-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+.action-card {
+    background: var(--light-bg);
+    border-radius: 12px;
+    padding: 20px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.dark-theme .action-card {
+    background: var(--dark-bg);
+}
+
+.action-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--neon-purple);
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.15);
+    text-decoration: none;
+}
+
+.action-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: var(--accent-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.action-content {
+    flex: 1;
+}
+
+.action-card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 5px;
+}
+
+.dark-theme .action-card h3 {
+    color: var(--dark-text);
+}
+
+.action-card p {
+    color: var(--text-gray);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.dark-theme .action-card p {
+    color: var(--dark-text-light);
+}
+
+/* Стили для статистики - ИСПРАВЛЕННЫЕ */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    min-height: auto;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 18px 12px;
+    background: var(--light-bg);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.dark-theme .stat-item {
+    background: var(--dark-bg);
+}
+
+.stat-item:hover {
+    transform: scale(1.03);
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 900;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+    margin-bottom: 6px;
+    min-height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-label {
+    color: var(--text-gray);
+    font-weight: 600;
+    font-size: 0.8rem;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.dark-theme .stat-label {
+    color: var(--dark-text-light);
+}
+
+/* Стили для предстоящих тренировок */
+.upcoming-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.upcoming-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    background: var(--light-bg);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.dark-theme .upcoming-item {
+    background: var(--dark-bg);
+}
+
+.upcoming-item:hover {
+    transform: translateX(3px);
+}
+
+.upcoming-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 45px;
+    flex-shrink: 0;
+}
+
+.upcoming-date .day {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: var(--neon-purple);
+    line-height: 1;
+}
+
+.upcoming-date .month {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-gray);
+    text-transform: uppercase;
+}
+
+.dark-theme .upcoming-date .month {
+    color: var(--dark-text-light);
+}
+
+.upcoming-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.upcoming-info h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dark-theme .upcoming-info h4 {
+    color: var(--dark-text);
+}
+
+.upcoming-info p {
+    color: var(--text-gray);
+    font-size: 0.8rem;
+    margin-bottom: 6px;
+}
+
+.dark-theme .upcoming-info p {
+    color: var(--dark-text-light);
+}
+
+.type-badge {
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.type-badge.group {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--neon-blue);
+}
+
+.type-badge.personal {
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--neon-purple);
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+    .trainer-dashboard {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .dashboard-column {
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        margin: 20px 20px 20px;
+        padding-top: 60px; /* Добавлен отступ для приветствия */
+    }
+    
+    .dashboard-card {
+        padding: 20px;
+    }
+    
+    .trainer-dashboard {
+        gap: 15px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+    
+    .training-item {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+        gap: 10px;
+    }
+    
+    .training-status {
+        align-self: flex-end;
+    }
+    
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .date-badge {
+        align-self: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .stat-value {
+        font-size: 1.7rem;
+    }
+    
+    .action-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+    }
+    
+    .action-content {
+        text-align: center;
+    }
+    
+    .training-details {
+        flex-direction: column;
+        gap: 3px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    
+    .stat-item {
+        min-height: 70px;
+        padding: 15px 8px;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        min-height: 2rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block skripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Применяем тему
+    applyTheme();
+    
+    // Создаем частицы для фона
+    const particlesContainer = document.getElementById('particles');
+    const particleCount = 8;
+    
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        const size = Math.random() * 60 + 30;
+        const left = Math.random() * 100;
+        const top = Math.random() * 100;
+        const delay = Math.random() * 15;
+        
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        particle.style.left = `${left}%`;
+        particle.style.top = `${top}%`;
+        particle.style.animationDelay = `${delay}s`;
+        
+        particlesContainer.appendChild(particle);
+    }
+    
+    // Анимация появления карточек
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -30px 0px'
+    };
+    
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    document.querySelectorAll('.dashboard-card').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.5s ease';
+        observer.observe(card);
+    });
+    
+    // Функция применения темы
+    function applyTheme() {
+        {% if user.is_authenticated %}
+            try {
+                {% if user.userprofile.theme %}
+                    document.body.classList.add('dark-theme');
+                {% else %}
+                    document.body.classList.remove('dark-theme');
+                {% endif %}
+            } catch (error) {
+                const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (systemPrefersDark) {
+                    document.body.classList.add('dark-theme');
+                } else {
+                    document.body.classList.remove('dark-theme');
+                }
+            }
+        {% else %}
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (systemPrefersDark) {
+                document.body.classList.add('dark-theme');
+            } else {
+                document.body.classList.remove('dark-theme');
+            }
+        {% endif %}
+    }
+});
+</script>
+{% endblock %}

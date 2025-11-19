@@ -1,0 +1,2080 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title_name %}
+FITZONE - Управление абонементами
+{% endblock %}
+
+{% block content %}
+<div class="particles-container" id="particles"></div>
+
+<!-- Manager Subscriptions Hero -->
+<section class="admin-hero">
+    <div class="admin-hero-container">
+        <div class="admin-hero-content">
+            <div class="admin-hero-badge">
+                <i class="fas fa-id-card"></i>
+                Управление абонементами
+            </div>
+            
+            <div class="admin-hero-main">
+                <h1 class="admin-hero-title">АБОНЕМЕНТЫ</h1>
+                <p class="admin-hero-description">Создавайте и управляйте тарифными планами для ваших клиентов</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content Container -->
+<div class="admin-main-container">
+    <!-- Beautiful Filters Section -->
+    <section class="admin-filters">
+        <div class="admin-filters-glass">
+            <div class="admin-filters-header">
+                <h3 class="admin-filters-title">
+                    <i class="fas fa-sliders-h"></i>
+                    ФИЛЬТРЫ И ПОИСК
+                </h3>
+                <div class="admin-filters-count">
+                    <span class="admin-count-bubble" id="admin-results-count">{{ subscriptions|length }}</span>
+                </div>
+            </div>
+            
+            <div class="admin-filters-content">
+                <div class="admin-search-glass">
+                    <div class="admin-search-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <input type="text" id="admin-search-input" placeholder="Найти абонемент..." class="admin-search-input">
+                    <div class="admin-search-glow"></div>
+                </div>
+                
+                <div class="admin-sort-glass">
+                    <div class="admin-sort-icon">
+                        <i class="fas fa-sort-amount-down"></i>
+                    </div>
+                    <select id="admin-sort-select" class="admin-sort-select">
+                        <option value="price_asc">Сначала дешевые</option>
+                        <option value="price_desc">Сначала дорогие</option>
+                        <option value="duration_asc">Короткий срок</option>
+                        <option value="duration_desc">Длинный срок</option>
+                    </select>
+                   
+                </div>
+            </div>
+            
+            <div class="admin-filters-stats">
+                <div class="admin-stat-item">
+                    <span class="admin-stat-number" id="admin-active-count">{{ subscriptions|length }}</span>
+                    <span class="admin-stat-label">доступно</span>
+                </div>
+                <div class="admin-stat-divider"></div>
+                <div class="admin-stat-item">
+                    <span class="admin-stat-number">{{ subscriptions|length }}</span>
+                    <span class="admin-stat-label">всего</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Manager Controls -->
+    <section class="admin-controls">
+        <div class="admin-controls-glass">
+            <div class="admin-controls-header">
+                <h3 class="admin-controls-title">
+                    <i class="fas fa-chart-bar"></i>
+                    СТАТИСТИКА И УПРАВЛЕНИЕ
+                </h3>
+                <button class="admin-create-btn" onclick="adminOpenCreateModal()">
+                    <i class="fas fa-plus"></i>
+                    СОЗДАТЬ АБОНЕМЕНТ
+                </button>
+            </div>
+            
+            <div class="admin-stats-grid">
+                <div class="admin-stat-card">
+                    <div class="admin-stat-icon">
+                        <i class="fas fa-id-card-alt"></i>
+                    </div>
+                    <div class="admin-stat-content">
+                        <span class="admin-stat-number">{{ subscriptions|length }}</span>
+                        <span class="admin-stat-label">Всего абонементов</span>
+                    </div>
+                </div>
+                
+                <div class="admin-stat-card">
+                    <div class="admin-stat-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="admin-stat-content">
+                        <span class="admin-stat-number">{{ total_revenue|default:0 }}</span>
+                        <span class="admin-stat-label">Общий доход</span>
+                    </div>
+                </div>
+                
+                <div class="admin-stat-card">
+                    <div class="admin-stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="admin-stat-content">
+                        <span class="admin-stat-number">{{ active_subscriptions_count|default:0 }}</span>
+                        <span class="admin-stat-label">Активных подписок</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Full Width Slider Section -->
+    <section class="subscription-slider-section">
+        <div class="subscription-slider-container">
+            <div class="slider-navigation">
+                <button class="nav-arrow nav-prev">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="nav-arrow nav-next">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            
+            <div class="subscription-cards-wrapper" id="subscription-cards-slider">
+                {% if subscriptions %}
+                    {% for subscription in subscriptions %}
+                    <div class="subscription-plan-card" data-name="{{ subscription.name|lower }}" data-description="{{ subscription.description|lower }}" data-price="{{ subscription.price }}" data-duration="{{ subscription.durationdays }}">
+                        <!-- Card Header -->
+                        <div class="plan-card-header">
+                            <div class="plan-card-icon">
+                                {% if subscription.gym_access and subscription.pool_access and subscription.spa_access %}
+                                <i class="fas fa-crown"></i>
+                                {% elif subscription.gym_access and subscription.pool_access %}
+                                <i class="fas fa-fire"></i>
+                                {% else %}
+                                <i class="fas fa-star"></i>
+                                {% endif %}
+                            </div>
+                            <h3 class="plan-card-title">{{ subscription.name }}</h3>
+                        </div>
+                        
+                        <!-- Price -->
+                        <div class="plan-card-price">
+                            <div class="price-main">
+                                <span class="price-amount">{{ subscription.price|floatformat:0 }}</span>
+                                <span class="price-currency">₽</span>
+                            </div>
+                            <div class="price-note">единоразовый платеж</div>
+                        </div>
+
+                        <!-- Duration -->
+                        <div class="plan-card-duration">
+                            <i class="fas fa-calendar"></i>
+                            <span>{{ subscription.durationdays }} дней</span>
+                        </div>
+
+                        <!-- Services -->
+                        <div class="plan-card-services">
+                            <div class="services-title">Что включено:</div>
+                            <div class="services-list">
+                                {% if subscription.gym_access %}
+                                <div class="service-item">
+                                    <i class="fas fa-dumbbell"></i>
+                                    <span>Тренажерный зал</span>
+                                </div>
+                                {% endif %}
+                                
+                                
+                                
+                                {% if subscription.pool_access %}
+                                <div class="service-item">
+                                    <i class="fas fa-swimming-pool"></i>
+                                    <span>Бассейн</span>
+                                </div>
+                                {% endif %}
+                                
+                                {% if subscription.spa_access %}
+                                <div class="service-item">
+                                    <i class="fas fa-spa"></i>
+                                    <span>СПА зона</span>
+                                </div>
+                                {% endif %}
+                                
+                                
+                                
+                                {% if subscription.locker_room %}
+                                <div class="service-item">
+                                    <i class="fas fa-door-open"></i>
+                                    <span>Раздевалка</span>
+                                </div>
+                                {% endif %}
+                                
+                                {% if subscription.towel_service %}
+                                <div class="service-item">
+                                    <i class="fas fa-tshirt"></i>
+                                    <span>Полотенце</span>
+                                </div>
+                                {% endif %}
+                                
+                               
+                                
+                                {% if subscription.nutrition_consultation %}
+                                <div class="service-item">
+                                    <i class="fas fa-apple-alt"></i>
+                                    <span>Консультация по питанию</span>
+                                </div>
+                                {% endif %}
+                                
+                                
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="plan-card-actions">
+                            <button class="action-btn edit-btn" onclick="adminOpenEditModal({{ subscription.id }})">
+                                <i class="fas fa-edit"></i>
+                                Редактировать
+                            </button>
+                            <button class="action-btn delete-btn" onclick="adminOpenDeleteModal({{ subscription.id }}, '{{ subscription.name }}')">
+                                <i class="fas fa-trash"></i>
+                                Удалить
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-subscriptions-found">
+                        <i class="fas fa-search"></i>
+                        <h3>Абонементы не найдены</h3>
+                        <p>Создайте первый абонемент, чтобы начать продажи</p>
+                        <button class="create-first-btn" onclick="adminOpenCreateModal()">
+                            <i class="fas fa-plus"></i>
+                            СОЗДАТЬ ПЕРВЫЙ АБОНЕМЕНТ
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="slider-indicators" id="slider-indicators">
+                <!-- Indicators will be generated by JavaScript -->
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Create Subscription Modal -->
+<div class="modal-overlay" id="createSubscriptionModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-icon">
+                <i class="fas fa-plus"></i>
+            </div>
+            <h2>СОЗДАНИЕ АБОНЕМЕНТА</h2>
+            <button class="modal-close-btn" onclick="adminCloseCreateModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <form method="POST" action="{% url 'menegerservice:create_subscription' %}" class="modal-form">
+            {% csrf_token %}
+            
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label class="form-label">
+                        <i class="fas fa-heading"></i>
+                        Название абонемента *
+                    </label>
+                    <input type="text" name="name" required placeholder="Например: Стандарт, Премиум, Базовый" class="form-input">
+                </div>
+                
+                <div class="form-group full-width">
+                    <label class="form-label">
+                        <i class="fas fa-align-left"></i>
+                        Описание абонемента
+                    </label>
+                    <textarea name="description" placeholder="Опишите преимущества абонемента, для кого он подходит..." rows="3" class="form-textarea"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-wallet"></i>
+                        Стоимость (₽) *
+                    </label>
+                    <input type="number" name="price" min="0" step="100" value="1000" required class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-calendar-day"></i>
+                        Длительность (дней) *
+                    </label>
+                    <input type="number" name="durationdays" min="1" max="365" value="30" required class="form-input">
+                </div>
+            </div>
+
+            <!-- Services Section -->
+            <div class="services-form-section">
+                <h3 class="services-form-title">
+                    <i class="fas fa-list-check"></i>
+                    ВКЛЮЧЕННЫЕ УСЛУГИ
+                </h3>
+                
+                <div class="services-form-grid">
+                    <div class="service-checkbox">
+                        <input type="checkbox" id="gym_access" name="gym_access" class="checkbox-input">
+                        <label for="gym_access" class="checkbox-label">
+                            <i class="fas fa-dumbbell"></i>
+                            Тренажерный зал
+                        </label>
+                    </div>
+                    
+                   
+                    
+                    <div class="service-checkbox">
+                        <input type="checkbox" id="pool_access" name="pool_access" class="checkbox-input">
+                        <label for="pool_access" class="checkbox-label">
+                            <i class="fas fa-swimming-pool"></i>
+                            Бассейн
+                        </label>
+                    </div>
+                    
+                    <div class="service-checkbox">
+                        <input type="checkbox" id="spa_access" name="spa_access" class="checkbox-input">
+                        <label for="spa_access" class="checkbox-label">
+                            <i class="fas fa-spa"></i>
+                            СПА зона
+                        </label>
+                    </div>
+                    
+                    
+                    
+                    <div class="service-checkbox">
+                        <input type="checkbox" id="locker_room" name="locker_room" class="checkbox-input">
+                        <label for="locker_room" class="checkbox-label">
+                            <i class="fas fa-door-open"></i>
+                            Раздевалка
+                        </label>
+                    </div>
+                    
+                    <div class="service-checkbox">
+                        <input type="checkbox" id="towel_service" name="towel_service" class="checkbox-input">
+                        <label for="towel_service" class="checkbox-label">
+                            <i class="fas fa-tshirt"></i>
+                            Полотенце
+                        </label>
+                    </div>
+                    
+                    
+                    
+                    <div class="service-checkbox">
+                        <input type="checkbox" id="nutrition_consultation" name="nutrition_consultation" class="checkbox-input">
+                        <label for="nutrition_consultation" class="checkbox-label">
+                            <i class="fas fa-apple-alt"></i>
+                            Консультация по питанию
+                        </label>
+                    </div>
+                </div>
+                
+                
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="adminCloseCreateModal()">
+                    <i class="fas fa-times"></i>
+                    Отмена
+                </button>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-plus"></i>
+                    СОЗДАТЬ АБОНЕМЕНТ
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Subscription Modal -->
+<div class="modal-overlay" id="editSubscriptionModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-icon">
+                <i class="fas fa-edit"></i>
+            </div>
+            <h2>РЕДАКТИРОВАНИЕ АБОНЕМЕНТА</h2>
+            <button class="modal-close-btn" onclick="adminCloseEditModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <form method="POST" id="editSubscriptionForm" class="modal-form">
+            {% csrf_token %}
+            <input type="hidden" name="subscription_id" id="edit-subscription-id">
+            
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label class="form-label">
+                        <i class="fas fa-heading"></i>
+                        Название абонемента *
+                    </label>
+                    <input type="text" name="name" id="edit-name" required placeholder="Например: Стандарт, Премиум, Базовый" class="form-input">
+                </div>
+                
+                <div class="form-group full-width">
+                    <label class="form-label">
+                        <i class="fas fa-align-left"></i>
+                        Описание абонемента
+                    </label>
+                    <textarea name="description" id="edit-description" placeholder="Опишите преимущества абонемента, для кого он подходит..." rows="3" class="form-textarea"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-wallet"></i>
+                        Стоимость (₽) *
+                    </label>
+                    <input type="number" name="price" id="edit-price" min="0" step="100" required class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-calendar-day"></i>
+                        Длительность (дней) *
+                    </label>
+                    <input type="number" name="durationdays" id="edit-durationdays" min="1" max="365" required class="form-input">
+                </div>
+            </div>
+
+            <!-- Services Section -->
+            <div class="services-form-section">
+                <h3 class="services-form-title">
+                    <i class="fas fa-list-check"></i>
+                    ВКЛЮЧЕННЫЕ УСЛУГИ
+                </h3>
+                
+                <div class="services-form-grid">
+                    <div class="service-checkbox">
+                        <input type="checkbox" id="edit-gym_access" name="gym_access" class="checkbox-input">
+                        <label for="edit-gym_access" class="checkbox-label">
+                            <i class="fas fa-dumbbell"></i>
+                            Тренажерный зал
+                        </label>
+                    </div>
+                    
+                    
+                    
+                    <div class="service-checkbox">
+                        <input type="checkbox" id="edit-pool_access" name="pool_access" class="checkbox-input">
+                        <label for="edit-pool_access" class="checkbox-label">
+                            <i class="fas fa-swimming-pool"></i>
+                            Бассейн
+                        </label>
+                    </div>
+                    
+                    <div class="service-checkbox">
+                        <input type="checkbox" id="edit-spa_access" name="spa_access" class="checkbox-input">
+                        <label for="edit-spa_access" class="checkbox-label">
+                            <i class="fas fa-spa"></i>
+                            СПА зона
+                        </label>
+                    </div>
+                    
+                  
+                    
+                    <div class="service-checkbox">
+                        <input type="checkbox" id="edit-locker_room" name="locker_room" class="checkbox-input">
+                        <label for="edit-locker_room" class="checkbox-label">
+                            <i class="fas fa-door-open"></i>
+                            Раздевалка
+                        </label>
+                    </div>
+                    
+                    <div class="service-checkbox">
+                        <input type="checkbox" id="edit-towel_service" name="towel_service" class="checkbox-input">
+                        <label for="edit-towel_service" class="checkbox-label">
+                            <i class="fas fa-tshirt"></i>
+                            Полотенце
+                        </label>
+                    </div>
+                    
+                 
+                    
+                    <div class="service-checkbox">
+                        <input type="checkbox" id="edit-nutrition_consultation" name="nutrition_consultation" class="checkbox-input">
+                        <label for="edit-nutrition_consultation" class="checkbox-label">
+                            <i class="fas fa-apple-alt"></i>
+                            Консультация по питанию
+                        </label>
+                    </div>
+                </div>
+                
+                
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="adminCloseEditModal()">
+                    <i class="fas fa-times"></i>
+                    Отмена
+                </button>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i>
+                    СОХРАНИТЬ ИЗМЕНЕНИЯ
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Subscription Modal -->
+<div class="modal-overlay" id="deleteSubscriptionModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-icon" style="background: rgba(220, 38, 38, 0.1); color: #dc2626;">
+                <i class="fas fa-trash-alt"></i>
+            </div>
+            <h2>УДАЛЕНИЕ АБОНЕМЕНТА</h2>
+            <button class="modal-close-btn" onclick="adminCloseDeleteModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <div id="delete-subscription-text">
+                <!-- Content will be filled by JavaScript -->
+            </div>
+            
+            <form method="POST" id="delete-subscription-form" action="{% url 'menegerservice:delete_subscription' %}" style="display: none;">
+                {% csrf_token %}
+                <input type="hidden" name="subscription_id" id="delete-subscription-id">
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="adminCloseDeleteModal()">
+                        <i class="fas fa-times"></i>
+                        Отмена
+                    </button>
+                    <button type="submit" class="btn-danger" style="background: #dc2626; color: white;">
+                        <i class="fas fa-trash"></i>
+                        УДАЛИТЬ
+                    </button>
+                </div>
+            </form>
+            
+            <div id="delete-warning-message" style="display: none; text-align: center; padding: 20px;">
+                <button type="button" class="btn-secondary" onclick="adminCloseDeleteModal()">
+                    <i class="fas fa-times"></i>
+                    Понятно
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .btn-danger {
+    background: #dc2626 !important;
+    color: white !important;
+}
+
+.btn-danger:hover {
+    background: #b91c1c !important;
+    transform: translateY(-2px);
+}
+
+.delete-warning {
+    text-align: center;
+    padding: 20px;
+}
+
+.delete-confirm {
+    text-align: center;
+    padding: 20px;
+}
+/* ===== MODERN CARD STYLES ===== */
+.subscription-slider-section {
+    margin: 50px 0;
+    position: relative;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+}
+
+.subscription-slider-container {
+    position: relative;
+    overflow: hidden;
+    padding: 0 80px;
+    max-width: 100%;
+}
+
+.slider-navigation {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: space-between;
+    z-index: 100;
+    pointer-events: none;
+    padding: 0 20px;
+}
+
+.nav-arrow {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    background: var(--light-card);
+    color: var(--text-dark);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    pointer-events: all;
+    font-size: 1.1rem;
+}
+
+.dark-theme .nav-arrow {
+    background: var(--dark-card);
+    color: var(--dark-text);
+}
+
+.nav-arrow:hover {
+    background: var(--neon-purple);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 6px 25px rgba(139, 92, 246, 0.4);
+}
+
+.nav-arrow:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.subscription-cards-wrapper {
+    display: flex;
+    gap: 25px;
+    transition: transform 0.5s ease;
+    padding: 20px 0;
+    width: max-content;
+}
+
+/* MODERN CARD DESIGN */
+.subscription-plan-card {
+    flex: 0 0 400px;
+    min-width: 400px;
+    max-width: 400px;
+    background: linear-gradient(135deg, var(--light-card) 0%, #ffffff 100%);
+    border-radius: 24px;
+    padding: 30px;
+    border: 1px solid rgba(139, 92, 246, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+.subscription-plan-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--neon-purple), #6366f1);
+    border-radius: 24px 24px 0 0;
+}
+
+.dark-theme .subscription-plan-card {
+    background: linear-gradient(135deg, var(--dark-card) 0%, #1a1a1a 100%);
+    border-color: rgba(139, 92, 246, 0.2);
+}
+
+.subscription-plan-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+/* Slider Indicators */
+.slider-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.slider-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: none;
+    background: var(--light-border);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dark-theme .slider-indicator {
+    background: var(--dark-border);
+}
+
+.slider-indicator.active {
+    background: var(--neon-purple);
+    transform: scale(1.2);
+}
+
+/* Card Header */
+.plan-card-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.plan-card-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--neon-purple) 0%, #6366f1 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+
+.plan-card-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.dark-theme .plan-card-title {
+    color: var(--dark-text);
+}
+
+/* Price Section */
+.plan-card-price {
+    text-align: center;
+    margin-bottom: 25px;
+    padding: 20px;
+    background: rgba(139, 92, 246, 0.05);
+    border-radius: 16px;
+    border: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.price-main {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 8px;
+}
+
+.price-amount {
+    font-size: 2.8rem;
+    font-weight: 900;
+    color: var(--neon-purple);
+    text-shadow: 0 2px 4px rgba(139, 92, 246, 0.2);
+}
+
+.price-currency {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--neon-purple);
+}
+
+.price-note {
+    font-size: 0.9rem;
+    color: var(--text-gray);
+    font-weight: 600;
+}
+
+/* Duration */
+.plan-card-duration {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 15px;
+    background: var(--light-bg);
+    border-radius: 12px;
+    margin-bottom: 25px;
+    color: var(--text-dark);
+    font-weight: 700;
+    border: 1px solid var(--light-border);
+}
+
+.dark-theme .plan-card-duration {
+    background: var(--dark-bg);
+    color: var(--dark-text);
+    border-color: var(--dark-border);
+}
+
+.plan-card-duration i {
+    color: var(--neon-purple);
+}
+
+/* Services Section */
+.plan-card-services {
+    flex: 1;
+    margin-bottom: 25px;
+}
+
+
+/* Services Section */
+.plan-card-services {
+    flex: 1;
+    margin-bottom: 25px;
+}
+
+.services-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dark-theme .services-title {
+    color: var(--dark-text);
+}
+
+.services-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--light-border);
+    margin-left: 10px;
+}
+
+.dark-theme .services-title::after {
+    background: var(--dark-border);
+}
+
+.services-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.service-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    color: var(--text-gray);
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    padding-left: 8px;
+}
+
+.dark-theme .service-item {
+    color: var(--dark-text-light);
+}
+
+.service-item:hover {
+    background: rgba(139, 92, 246, 0.05);
+    transform: translateX(5px);
+}
+
+.service-item i {
+    color: var(--neon-purple);
+    width: 18px;
+    text-align: center;
+    font-size: 1rem;
+}
+
+.service-item.highlight {
+    color: var(--neon-purple);
+    font-weight: 700;
+    background: rgba(139, 92, 246, 0.1);
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 5px;
+}
+
+/* Action Buttons */
+.plan-card-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--light-border);
+}
+
+.dark-theme .plan-card-actions {
+    border-top-color: var(--dark-border);
+}
+
+.action-btn {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+}
+
+.edit-btn {
+    background: linear-gradient(135deg, var(--neon-purple) 0%, #6366f1 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.edit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+}
+
+.delete-btn {
+    background: var(--light-bg);
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.dark-theme .delete-btn {
+    background: var(--dark-bg);
+    color: #fecaca;
+    border-color: #7f1d1d;
+}
+
+.delete-btn:hover {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fecaca;
+    transform: translateY(-2px);
+}
+
+.dark-theme .delete-btn:hover {
+    background: #7f1d1d;
+    color: #fecaca;
+    border-color: #dc2626;
+}
+
+
+/* Slider Indicators */
+.slider-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.slider-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: none;
+    background: var(--light-border);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dark-theme .slider-indicator {
+    background: var(--dark-border);
+}
+
+.slider-indicator.active {
+    background: var(--neon-purple);
+    transform: scale(1.2);
+}
+
+/* No Results State */
+.no-subscriptions-found {
+    text-align: center;
+    padding: 60px 40px;
+    color: var(--text-dark);
+    width: 100%;
+    background: var(--light-card);
+    border-radius: 20px;
+    border: 2px dashed var(--light-border);
+}
+
+.dark-theme .no-subscriptions-found {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+    color: var(--dark-text);
+}
+
+.no-subscriptions-found i {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    color: var(--light-border);
+}
+
+.dark-theme .no-subscriptions-found i {
+    color: var(--dark-border);
+}
+
+.no-subscriptions-found h3 {
+    margin-bottom: 10px;
+    color: var(--text-dark);
+    font-weight: 800;
+}
+
+.dark-theme .no-subscriptions-found h3 {
+    color: var(--dark-text);
+}
+
+.no-subscriptions-found p {
+    color: var(--text-gray);
+    font-weight: 600;
+    margin-bottom: 25px;
+}
+
+.dark-theme .no-subscriptions-found p {
+    color: var(--dark-text-light);
+}
+
+.create-first-btn {
+    background: linear-gradient(135deg, var(--neon-purple) 0%, #6366f1 100%);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.create-first-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+}
+
+/* Rest of the styles remain with new naming... */
+.admin-main-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.admin-hero {
+    background: linear-gradient(135deg, var(--light-card) 0%, var(--light-bg) 100%);
+    padding: 60px 0 40px;
+    margin-bottom: 30px;
+}
+
+.dark-theme .admin-hero {
+    background: linear-gradient(135deg, var(--dark-card) 0%, var(--dark-bg) 100%);
+}
+
+.admin-hero-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.admin-hero-content {
+    text-align: center;
+}
+
+.admin-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--neon-purple);
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.admin-hero-title {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.dark-theme .admin-hero-title {
+    color: var(--dark-text);
+}
+
+.admin-hero-description {
+    font-size: 1.2rem;
+    color: var(--text-gray);
+    margin: 0;
+}
+
+.dark-theme .admin-hero-description {
+    color: var(--dark-text-light);
+}
+
+/* Filters Section */
+.admin-filters {
+    margin-bottom: 30px;
+}
+
+.admin-filters-glass {
+    background: var(--light-card);
+    border-radius: 20px;
+    padding: 25px;
+    border: 1px solid var(--light-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.dark-theme .admin-filters-glass {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.admin-filters-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.admin-filters-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.dark-theme .admin-filters-title {
+    color: var(--dark-text);
+}
+
+.admin-count-bubble {
+    background: var(--neon-purple);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.admin-filters-content {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.admin-search-glass, .admin-sort-glass {
+    flex: 1;
+    position: relative;
+}
+
+.admin-search-input, .admin-sort-select {
+    width: 100%;
+    padding: 12px 45px 12px 45px;
+    border: 1px solid var(--light-border);
+    border-radius: 12px;
+    background: var(--light-bg);
+    color: var(--text-dark);
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.dark-theme .admin-search-input,
+.dark-theme .admin-sort-select {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+    color: var(--dark-text);
+}
+
+.admin-search-input:focus, .admin-sort-select:focus {
+    outline: none;
+    border-color: var(--neon-purple);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.admin-search-icon, .admin-sort-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-gray);
+}
+
+.admin-select-arrow {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-gray);
+    pointer-events: none;
+}
+
+.admin-filters-stats {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.admin-stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.admin-stat-number {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.dark-theme .admin-stat-number {
+    color: var(--dark-text);
+}
+
+.admin-stat-label {
+    font-size: 0.85rem;
+    color: var(--text-gray);
+}
+
+.dark-theme .admin-stat-label {
+    color: var(--dark-text-light);
+}
+
+.admin-stat-divider {
+    width: 1px;
+    height: 30px;
+    background: var(--light-border);
+}
+
+.dark-theme .admin-stat-divider {
+    background: var(--dark-border);
+}
+
+/* Manager Controls */
+.admin-controls {
+    margin-bottom: 30px;
+}
+
+.admin-controls-glass {
+    background: var(--light-card);
+    border-radius: 20px;
+    padding: 25px;
+    border: 1px solid var(--light-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.dark-theme .admin-controls-glass {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.admin-controls-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.admin-controls-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.dark-theme .admin-controls-title {
+    color: var(--dark-text);
+}
+
+.admin-create-btn {
+    background: linear-gradient(135deg, var(--neon-purple) 0%, #6366f1 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.admin-create-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+}
+
+.admin-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.admin-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    background: var(--light-bg);
+    border-radius: 15px;
+    border: 1px solid var(--light-border);
+    transition: all 0.3s ease;
+}
+
+.dark-theme .admin-stat-card {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.admin-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.admin-stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: rgba(139, 92, 246, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--neon-purple);
+    font-size: 1.3rem;
+}
+
+.admin-stat-content {
+    flex: 1;
+}
+
+.admin-stat-number {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+.dark-theme .admin-stat-number {
+    color: var(--dark-text);
+}
+
+.admin-stat-label {
+    color: var(--text-gray);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.dark-theme .admin-stat-label {
+    color: var(--dark-text-light);
+}
+
+/* Modal Styles */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: var(--light-card);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 1px solid var(--light-border);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .modal-content {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 25px;
+    border-bottom: 1px solid var(--light-border);
+}
+
+.dark-theme .modal-header {
+    border-bottom-color: var(--dark-border);
+}
+
+.modal-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: rgba(139, 92, 246, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--neon-purple);
+    font-size: 1.3rem;
+}
+
+.modal-header h2 {
+    flex: 1;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.dark-theme .modal-header h2 {
+    color: var(--dark-text);
+}
+
+.modal-close-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: none;
+    background: var(--light-bg);
+    color: var(--text-gray);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.dark-theme .modal-close-btn {
+    background: var(--dark-bg);
+    color: var(--dark-text-light);
+}
+
+.modal-close-btn:hover {
+    background: var(--neon-purple);
+    color: white;
+}
+
+.modal-form {
+    padding: 25px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+}
+
+.dark-theme .form-label {
+    color: var(--dark-text);
+}
+
+.form-input, .form-textarea {
+    padding: 12px 16px;
+    border: 1px solid var(--light-border);
+    border-radius: 10px;
+    background: var(--light-bg);
+    color: var(--text-dark);
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.dark-theme .form-input,
+.dark-theme .form-textarea {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+    color: var(--dark-text);
+}
+
+.form-input:focus, .form-textarea:focus {
+    outline: none;
+    border-color: var(--neon-purple);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Services Form Section */
+.services-form-section {
+    margin: 20px 0;
+    padding: 20px;
+    background: var(--light-bg);
+    border-radius: 12px;
+    border: 1px solid var(--light-border);
+}
+
+.dark-theme .services-form-section {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.services-form-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dark-theme .services-form-title {
+    color: var(--dark-text);
+}
+
+.services-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.service-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.checkbox-input {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 2px solid var(--light-border);
+    background: var(--light-bg);
+    cursor: pointer;
+}
+
+.dark-theme .checkbox-input {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.checkbox-input:checked {
+    background: var(--neon-purple);
+    border-color: var(--neon-purple);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.dark-theme .checkbox-label {
+    color: var(--dark-text);
+}
+
+.additional-services {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--light-border);
+}
+
+.dark-theme .additional-services {
+    border-top-color: var(--dark-border);
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid var(--light-border);
+}
+
+.dark-theme .modal-actions {
+    border-top-color: var(--dark-border);
+}
+
+.btn-primary, .btn-secondary {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--neon-purple) 0%, #6366f1 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+}
+
+.btn-secondary {
+    background: var(--light-bg);
+    color: var(--text-gray);
+    border: 1px solid var(--light-border);
+}
+
+.dark-theme .btn-secondary {
+    background: var(--dark-bg);
+    color: var(--dark-text-light);
+    border-color: var(--dark-border);
+}
+
+.btn-secondary:hover {
+    background: var(--light-border);
+}
+
+.dark-theme .btn-secondary:hover {
+    background: var(--dark-border);
+}
+
+</style>
+
+<script>
+// Modal Management
+function adminOpenCreateModal() {
+    document.getElementById('createSubscriptionModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function adminCloseCreateModal() {
+    document.getElementById('createSubscriptionModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+function adminOpenEditModal(subscriptionId) {
+    console.log('Opening edit modal for subscription:', subscriptionId);
+    
+    const modal = document.getElementById('editSubscriptionModal');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    
+    // ИСПРАВЛЕННЫЙ URL
+    fetch(`{% url 'menegerservice:subscription_detail_json' 0 %}`.replace('0', subscriptionId))
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                const subscription = data.subscription;
+                
+                document.getElementById('edit-subscription-id').value = subscription.id;
+                document.getElementById('edit-name').value = subscription.name;
+                document.getElementById('edit-description').value = subscription.description || '';
+                document.getElementById('edit-price').value = subscription.price;
+                document.getElementById('edit-durationdays').value = subscription.durationdays;
+                
+                // Чекбоксы услуг
+                document.getElementById('edit-gym_access').checked = subscription.gym_access;
+                document.getElementById('edit-pool_access').checked = subscription.pool_access;
+                document.getElementById('edit-spa_access').checked = subscription.spa_access;
+                document.getElementById('edit-locker_room').checked = subscription.locker_room;
+                document.getElementById('edit-towel_service').checked = subscription.towel_service;
+                document.getElementById('edit-nutrition_consultation').checked = subscription.nutrition_consultation;
+
+                
+                console.log('Form populated successfully');
+            } else {
+                alert('Ошибка загрузки данных: ' + data.error);
+                adminCloseEditModal();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ошибка загрузки данных: ' + error.message);
+            adminCloseEditModal();
+        });
+}
+
+function adminCloseEditModal() {
+    document.getElementById('editSubscriptionModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+function adminOpenDeleteModal(subscriptionId, subscriptionName) {
+    console.log('Opening delete modal for subscription:', subscriptionId);
+    
+    // ИСПРАВЛЕННЫЙ URL
+    fetch(`{% url 'menegerservice:subscription_stats' 0 %}`.replace('0', subscriptionId))
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                const modal = document.getElementById('deleteSubscriptionModal');
+                const deleteText = document.getElementById('delete-subscription-text');
+                const deleteForm = document.getElementById('delete-subscription-form');
+                const warningMessage = document.getElementById('delete-warning-message');
+                
+                document.getElementById('delete-subscription-id').value = subscriptionId;
+                
+                if (data.type_active_subscriptions > 0) {
+                    deleteText.innerHTML = `
+                        <div class="delete-warning">
+                            <i class="fas fa-exclamation-triangle" style="color: #dc2626; font-size: 3rem; margin-bottom: 20px;"></i>
+                            <h3 style="color: #dc2626; margin-bottom: 15px;">Невозможно удалить абонемент</h3>
+                            <p>У абонемента "${subscriptionName}" есть <strong>${data.type_active_subscriptions} активных подписок</strong>.</p>
+                            <p>Удаление возможно только когда все подписки будут завершены.</p>
+                        </div>
+                    `;
+                    deleteForm.style.display = 'none';
+                    warningMessage.style.display = 'block';
+                } else {
+                    deleteText.innerHTML = `
+                        <div class="delete-confirm">
+                            <i class="fas fa-trash-alt" style="color: #dc2626; font-size: 3rem; margin-bottom: 20px;"></i>
+                            <h3 style="margin-bottom: 10px;">Подтверждение удаления</h3>
+                            <p>Вы уверены, что хотите удалить абонемент <strong>"${subscriptionName}"</strong>?</p>
+                            <p style="color: #6b7280; font-size: 0.9rem;">Это действие нельзя отменить.</p>
+                        </div>
+                    `;
+                    deleteForm.style.display = 'block';
+                    warningMessage.style.display = 'none';
+                }
+                
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            } else {
+                alert('Ошибка проверки подписок: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ошибка проверки подписок: ' + error.message);
+        });
+}
+
+function adminCloseDeleteModal() {
+    document.getElementById('deleteSubscriptionModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Form Submission Handlers
+// Form Submission Handlers
+function handleEditFormSubmit(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    const subscriptionId = document.getElementById('edit-subscription-id').value;
+    
+    console.log('Submitting edit form for subscription:', subscriptionId);
+    
+    // ИСПРАВЛЕННЫЙ URL
+    fetch(`{% url 'menegerservice:edit_subscription' 0 %}`.replace('0', subscriptionId), {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Ошибка сохранения: ' + (data.error || 'Неизвестная ошибка'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Ошибка сохранения: ' + error.message);
+    });
+}
+
+function handleDeleteFormSubmit(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    // URL уже правильный в форме action
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Ошибка удаления: ' + data.error);
+            adminCloseDeleteModal();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Ошибка удаления: ' + error.message);
+        adminCloseDeleteModal();
+    });
+}
+
+// Slider Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const slider = document.getElementById('subscription-cards-slider');
+    const cards = document.querySelectorAll('.subscription-plan-card');
+    const indicatorsContainer = document.getElementById('slider-indicators');
+    const prevBtn = document.querySelector('.nav-prev');
+    const nextBtn = document.querySelector('.nav-next');
+    const searchInput = document.getElementById('admin-search-input');
+    const sortSelect = document.getElementById('admin-sort-select');
+    const resultsCount = document.getElementById('admin-results-count');
+    const activeCount = document.getElementById('admin-active-count');
+    
+    let currentSlide = 0;
+    let cardsPerView = calculateCardsPerView();
+    const cardWidth = 300 + 30;
+    let filteredCards = Array.from(cards);
+
+    function calculateCardsPerView() {
+        const containerWidth = window.innerWidth - 160;
+        return Math.max(1, Math.floor(containerWidth / 330));
+    }
+
+    function filterCards() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        
+        filteredCards = Array.from(cards).filter(card => {
+            if (!searchTerm) return true;
+            
+            const name = card.dataset.name;
+            const description = card.dataset.description;
+            
+            return name.includes(searchTerm) || description.includes(searchTerm);
+        });
+        
+        updateResultsCount();
+        sortCards();
+        updateSlider();
+    }
+
+    function sortCards() {
+        const sortValue = sortSelect.value;
+        
+        filteredCards.sort((a, b) => {
+            switch(sortValue) {
+                case 'price_asc':
+                    return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+                case 'price_desc':
+                    return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+                case 'duration_asc':
+                    return parseInt(a.dataset.duration) - parseInt(b.dataset.duration);
+                case 'duration_desc':
+                    return parseInt(b.dataset.duration) - parseInt(a.dataset.duration);
+                default:
+                    return 0;
+            }
+        });
+        
+        updateDisplay();
+    }
+
+    function updateDisplay() {
+        cards.forEach(card => {
+            card.style.display = 'none';
+        });
+        
+        filteredCards.forEach((card, index) => {
+            card.style.display = 'flex';
+            card.style.order = index;
+        });
+        
+        updateResultsCount();
+        updateSlider();
+    }
+
+    function updateResultsCount() {
+        const count = filteredCards.length;
+        resultsCount.textContent = count;
+        activeCount.textContent = count;
+    }
+
+    function updateSlider() {
+        const visibleCards = filteredCards.filter(card => card.style.display !== 'none');
+        if (visibleCards.length === 0) return;
+        
+        const translateX = currentSlide * cardWidth * cardsPerView;
+        slider.style.transform = `translateX(-${translateX}px)`;
+        
+        updateIndicators();
+        
+        const maxSlides = Math.ceil(visibleCards.length / cardsPerView) - 1;
+        
+        if (prevBtn) {
+            prevBtn.disabled = currentSlide === 0;
+            prevBtn.style.opacity = currentSlide === 0 ? '0.5' : '1';
+        }
+        
+        if (nextBtn) {
+            nextBtn.disabled = currentSlide >= maxSlides;
+            nextBtn.style.opacity = currentSlide >= maxSlides ? '0.5' : '1';
+        }
+    }
+    
+    function updateIndicators() {
+        const visibleCards = filteredCards.filter(card => card.style.display !== 'none');
+        const indicatorCount = Math.ceil(visibleCards.length / cardsPerView);
+        
+        indicatorsContainer.innerHTML = '';
+        
+        for (let i = 0; i < indicatorCount; i++) {
+            const indicator = document.createElement('button');
+            indicator.className = `slider-indicator ${i === currentSlide ? 'active' : ''}`;
+            indicator.dataset.slide = i;
+            indicator.addEventListener('click', () => {
+                currentSlide = i;
+                updateSlider();
+            });
+            indicatorsContainer.appendChild(indicator);
+        }
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            const visibleCards = filteredCards.filter(card => card.style.display !== 'none');
+            const maxSlides = Math.ceil(visibleCards.length / cardsPerView) - 1;
+            if (currentSlide < maxSlides) {
+                currentSlide++;
+                updateSlider();
+            }
+        });
+    }
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlider();
+            }
+        });
+    }
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            currentSlide = 0;
+            filterCards();
+        });
+    }
+    
+    if (sortSelect) {
+        sortSelect.addEventListener('change', () => {
+            currentSlide = 0;
+            sortCards();
+        });
+    }
+
+    let autoSlide = setInterval(() => {
+        const visibleCards = filteredCards.filter(card => card.style.display !== 'none');
+        const maxSlides = Math.ceil(visibleCards.length / cardsPerView) - 1;
+        if (currentSlide < maxSlides) {
+            currentSlide++;
+        } else {
+            currentSlide = 0;
+        }
+        updateSlider();
+    }, 5000);
+    
+    if (slider) {
+        slider.addEventListener('mouseenter', () => clearInterval(autoSlide));
+        slider.addEventListener('mouseleave', () => {
+            autoSlide = setInterval(() => {
+                const visibleCards = filteredCards.filter(card => card.style.display !== 'none');
+                const maxSlides = Math.ceil(visibleCards.length / cardsPerView) - 1;
+                if (currentSlide < maxSlides) {
+                    currentSlide++;
+                } else {
+                    currentSlide = 0;
+                }
+                updateSlider();
+            }, 5000);
+        });
+    }
+
+    window.addEventListener('resize', () => {
+        cardsPerView = calculateCardsPerView();
+        currentSlide = 0;
+        updateSlider();
+    });
+    
+    updateResultsCount();
+    updateSlider();
+    
+    const editForm = document.getElementById('editSubscriptionForm');
+    if (editForm) {
+        editForm.addEventListener('submit', handleEditFormSubmit);
+    }
+    
+    const deleteForm = document.getElementById('delete-subscription-form');
+    if (deleteForm) {
+        deleteForm.addEventListener('submit', handleDeleteFormSubmit);
+    }
+});
+</script>
+{% endblock %}

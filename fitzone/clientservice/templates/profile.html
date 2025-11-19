@@ -1,0 +1,2604 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load subscription_tags %}
+{% load custom_filters %}
+
+{% block title_name %}
+FITZONE - Профиль
+{% endblock %}
+
+{% block content %}
+<!-- Particles Background -->
+<div class="particles-container" id="particles"></div>
+
+<div class="container">
+    <!-- Hero Section -->
+    <section class="profile-hero">
+        <h1>МОЙ ПРОФИЛЬ</h1>
+        <p>Управляйте вашей личной информацией и настройками</p>
+    </section>
+
+    <!-- Profile Content -->
+    <div class="profile-content">
+        <!-- Левая колонка - карточка профиля -->
+        <div class="profile-column-left">
+            <div class="profile-card">
+                <div class="avatar-container">
+                    <div class="avatar-preview" id="avatarPreview">
+                        {% if user.userprofile.avatar %}
+                            <img src="{{ user.userprofile.avatar.url }}" alt="Аватар" id="avatarImage">
+                        {% else %}
+                            <span>Нет аватара</span>
+                        {% endif %}
+                    </div>
+                    <button type="button" class="avatar-upload" onclick="document.getElementById('id_avatar').click()">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                </div>
+                
+                <h2 class="user-name" id="userName">
+                    {% if user.userprofile.full_name %}
+                        {{ user.userprofile.full_name }}
+                    {% else %}
+                        {{ user.username }}
+                    {% endif %}
+                </h2>
+                <p class="user-email">{{ user.email }}</p>
+                
+                {% if not is_trainer and not user.groups.all.0.name == 'Администратор' and not user.groups.all.0.name == 'Менеджер по продажам' %}
+                <div class="user-stats">
+                    <div class="stat-item">
+                        <span class="stat-value">{{ total_subscriptions_count }}</span>
+                        <span class="stat-label">Абонементов</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">{{ active_subscriptions_count }}</span>
+                        <span class="stat-label">Активных</span>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- В security-section -->
+                <div class="security-section">
+                    <h4>Безопасность</h4>
+                    <a href="{% url 'password_reset' %}" class="security-button">
+                        <i class="fas fa-key"></i>
+                        Сменить пароль
+                    </a>
+                    
+                    <!-- Кнопка деактивации аккаунта -->
+                    <button type="button" class="deactivate-account-btn" id="deactivateAccountBtn">
+                        <i class="fas fa-user-slash"></i>
+                        Деактивировать аккаунт
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Правая колонка - форма и остальное -->
+        <div class="profile-column-right">
+            <!-- Profile Form -->
+            <div class="profile-form-section">
+                <h2 class="section-title">ЛИЧНАЯ ИНФОРМАЦИЯ</h2>
+                
+                <!-- Messages -->
+                {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                        <div class="{% if message.tags == 'success' %}success-message{% elif message.tags == 'error' %}error-message{% else %}info-message{% endif %}">
+                            {{ message }}
+                            <button type="button" class="close-message" onclick="this.parentElement.style.display='none'">×</button>
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data" id="profileForm">
+                    {% csrf_token %}
+                    
+                    <input type="file" name="avatar" id="id_avatar" style="display: none;" accept="image/*">
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="{{ form.firstname.id_for_label }}" class="form-label">Имя</label>
+                            {{ form.firstname }}
+                            {% if form.firstname.errors %}
+                                <div class="field-errors">
+                                    {% for error in form.firstname.errors %}
+                                        <span class="error-text">{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.lastname.id_for_label }}" class="form-label">Фамилия</label>
+                            {{ form.lastname }}
+                            {% if form.lastname.errors %}
+                                <div class="field-errors">
+                                    {% for error in form.lastname.errors %}
+                                        <span class="error-text">{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.middlename.id_for_label }}" class="form-label">Отчество</label>
+                            {{ form.middlename }}
+                            {% if form.middlename.errors %}
+                                <div class="field-errors">
+                                    {% for error in form.middlename.errors %}
+                                        <span class="error-text">{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.gender.id_for_label }}" class="form-label">Пол</label>
+                            {{ form.gender }}
+                            {% if form.gender.errors %}
+                                <div class="field-errors">
+                                    {% for error in form.gender.errors %}
+                                        <span class="error-text">{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Theme Settings -->
+                    <div class="theme-section">
+                        <div class="theme-info">
+                            <h4>Темная тема</h4>
+                            <p>Включите для комфортного использования в темное время суток</p>
+                        </div>
+                        <label class="theme-switch-container">
+                            {{ form.theme }}
+                            <span class="theme-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="{% url 'home' %}" class="cancel-button">ОТМЕНА</a>
+                        <button type="submit" class="save-button">СОХРАНИТЬ ИЗМЕНЕНИЯ</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Активные тренировки - ТОЛЬКО ДЛЯ КЛИЕНТОВ -->
+            {% if not is_trainer and not user.groups.all.0.name == 'Администратор' and not user.groups.all.0.name == 'Менеджер по продажам' %}
+            <div class="profile-section">
+                <h3><i class="fas fa-dumbbell"></i>АКТИВНЫЕ ТРЕНИРОВКИ</h3>
+                
+                {% if active_trainings %}
+                <div class="trainings-list">
+                    {% for training in active_trainings %}
+                    <div class="training-item">
+                        <div class="training-info">
+                            <h4>{{ training.class_id.name }}</h4>
+                            <p class="training-time">
+                                <i class="far fa-clock"></i>
+                                {{ training.class_id.starttime|date:"d.m.Y H:i" }} - {{ training.class_id.endtime|date:"H:i" }}
+                            </p>
+                            <p class="training-trainer">
+                                <i class="fas fa-user-tie"></i>
+                                Тренер: {{ training.class_id.trainer.userprofile.full_name }}
+                            </p>
+                            {% if training.amount > 1 %}
+                            <p class="training-amount">
+                                <i class="fas fa-ticket-alt"></i>
+                                Осталось тренировок в пакете: {{ training.amount }}
+                            </p>
+                            {% endif %}
+                        </div>
+                        <div class="training-actions">
+                            <form method="POST" action="{% url 'cancel_training' training.class_id.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-danger" 
+                                        onclick="return confirm('Вы уверены, что хотите отменить тренировку?')">
+                                    <i class="fas fa-times"></i>
+                                    Отменить
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="no-trainings">
+                    <div class="no-trainings-icon">
+                        <i class="fas fa-dumbbell"></i>
+                    </div>
+                    <p>Запишитесь на свою первую тренировку</p>
+                    <a href="{% url 'classes' %}" class="membership-button">
+                        <i class="fas fa-search"></i>
+                        Найти тренировки
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+         <!-- Абонементы - ТОЛЬКО ДЛЯ КЛИЕНТОВ -->
+{% if not is_trainer and not user.groups.all.0.name == 'Администратор' and not user.groups.all.0.name == 'Менеджер по продажам' %}
+<div class="subscriptions-section">
+    <h2 class="section-title"><i class="fas fa-id-card"></i>МОИ АБОНЕМЕНТЫ</h2>
+    
+    {% if user_subscriptions %}
+        <div class="subscriptions-container">
+            {% for subscription in user_subscriptions %}
+            <div class="subscription-card {{ subscription|subscription_status_class }}">
+                <!-- Header -->
+                <div class="subscription-header">
+                    <h3 class="subscription-title">{{ subscription.subscriptiontype.name }}</h3>
+                    <div class="status-badge {% if subscription.is_active %}active-status{% else %}inactive-status{% endif %}">
+                        {{ subscription|subscription_status_text }}
+                    </div>
+                </div>
+
+                <!-- Price -->
+                <div class="price-section">
+                    <div class="price-wrapper">
+                        <span class="price-amount">{{ subscription.subscriptiontype.price|floatformat:0 }}</span>
+                        <span class="currency">₽</span>
+                    </div>
+                    <div class="duration">{% duration_display subscription.subscriptiontype.durationdays %}</div>
+                </div>
+
+                <!-- Dates -->
+                <div class="dates-container">
+                    <div class="date-row">
+                        <span class="date-label">Начало</span>
+                        <span class="date-value">{{ subscription.startdate|date:"d.m.Y" }}</span>
+                    </div>
+                    <div class="date-row">
+                        <span class="date-label">Окончание</span>
+                        <span class="date-value">
+                            {% with end_date=subscription.startdate|add_days:subscription.subscriptiontype.durationdays %}
+                                {{ end_date|date:"d.m.Y" }}
+                            {% endwith %}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Progress -->
+                {% if subscription.is_active %}
+                <div class="subscription-progress">
+                    <div class="progress-info">
+                        <span>Прогресс</span>
+                        <span>{{ subscription|subscription_days_used }}/{{ subscription.subscriptiontype.durationdays }} дней</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ subscription|subscription_progress_percentage }}%"></div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Warning -->
+                {% if subscription|is_expiring_soon %}
+                <div class="warning-banner">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Истекает через {{ subscription|days_remaining }} д.</span>
+                </div>
+                {% endif %}
+
+                <!-- Services -->
+                <div class="services-section">
+                    <div class="services-title">Включено:</div>
+                    <div class="services-grid">
+                        {% for service in subscription.subscriptiontype.get_included_services|slice:":4" %}
+                        <div class="service-item">
+                            <i class="fas fa-check"></i>
+                            <span>{{ service }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="actions-container">
+                    {% if subscription.is_active %}
+                        {% if subscription|should_show_renewal %}
+                        <a href="{% url 'subscription_payment' subscription.subscriptiontype.id %}" class="action-btn primary">
+                            <i class="fas fa-sync-alt"></i>
+                            Продлить
+                        </a>
+                        {% endif %}
+                        
+                        {% if subscription|can_cancel_subscription %}
+                        <form method="POST" action="{% url 'cancel_subscription' subscription.id %}" style="display: contents;">
+                            {% csrf_token %}
+                            <button type="submit" class="action-btn secondary" 
+                                    onclick="return confirm('Вы уверены, что хотите отменить этот абонемент?')">
+                                <i class="fas fa-times"></i>
+                                Отменить
+                            </button>
+                        </form>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'subscription_payment' subscription.subscriptiontype.id %}" class="action-btn primary">
+                            <i class="fas fa-sync-alt"></i>
+                            Продлить
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-id-card"></i>
+            </div>
+            <h3>У вас пока нет абонементов</h3>
+            <p>Приобретите свой первый абонемент, чтобы начать тренировки</p>
+            <a href="{% url 'subscription' %}" class="cta-button">
+                <i class="fas fa-search"></i>
+                Выбрать абонемент
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно подтверждения деактивации аккаунта -->
+<div id="deactivateAccountModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Деактивация аккаунта</h3>
+            <button type="button" class="close-modal" onclick="closeDeactivateModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="warning-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <p><strong>Внимание! Это действие необратимо.</strong></p>
+            <p>При деактивации аккаунта:</p>
+            <ul>
+                <li>Ваш профиль будет отключен</li>
+                <li>Вы больше не сможете входить в систему</li>
+                <li>Активные абонементы будут приостановлены</li>
+                <li>Записи на будущие тренировки будут отменены</li>
+            </ul>
+            
+            <div class="confirmation-input">
+                <label for="confirmPassword">Для подтверждения введите ваш текущий пароль:</label>
+                <input type="password" id="confirmPassword" placeholder="Ваш пароль" class="form-input-field">
+                <div class="error-message" id="passwordError" style="display: none;"></div>
+            </div>
+            
+            <div class="confirmation-checkbox">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="confirmDeactivate">
+                    <span class="checkmark"></span>
+                    Я понимаю последствия деактивации аккаунта и подтверждаю свое решение
+                </label>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn-secondary" onclick="closeDeactivateModal()">Отмена</button>
+            <button type="button" class="btn-danger" id="confirmDeactivateBtn" disabled>
+                <i class="fas fa-user-slash"></i>
+                Деактивировать аккаунт
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block skripts %}
+<script>
+// Функции для деактивации аккаунта
+function openDeactivateModal() {
+    console.log('Opening modal...');
+    const modal = document.getElementById('deactivateAccountModal');
+    if (!modal) {
+        console.error('Modal element not found!');
+        return;
+    }
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    
+    // Сброс формы
+    const passwordInput = document.getElementById('confirmPassword');
+    const checkbox = document.getElementById('confirmDeactivate');
+    const confirmBtn = document.getElementById('confirmDeactivateBtn');
+    
+    if (passwordInput) passwordInput.value = '';
+    if (checkbox) checkbox.checked = false;
+    if (confirmBtn) confirmBtn.disabled = true;
+    
+    const passwordError = document.getElementById('passwordError');
+    if (passwordError) passwordError.style.display = 'none';
+    
+    console.log('Modal opened successfully');
+}
+
+function closeDeactivateModal() {
+    const modal = document.getElementById('deactivateAccountModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Основной код после загрузки DOM
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing deactivation functionality...');
+    
+    const deactivateAccountBtn = document.getElementById('deactivateAccountBtn');
+    const confirmDeactivateBtn = document.getElementById('confirmDeactivateBtn');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+    const confirmDeactivateCheckbox = document.getElementById('confirmDeactivate');
+    
+    console.log('Elements found:', {
+        deactivateAccountBtn: !!deactivateAccountBtn,
+        confirmDeactivateBtn: !!confirmDeactivateBtn,
+        confirmPasswordInput: !!confirmPasswordInput,
+        confirmDeactivateCheckbox: !!confirmDeactivateCheckbox
+    });
+    
+    // Обработчик открытия модального окна
+    if (deactivateAccountBtn) {
+        deactivateAccountBtn.addEventListener('click', openDeactivateModal);
+        console.log('Deactivate button event listener added');
+    } else {
+        console.error('Deactivate account button not found!');
+    }
+    
+    // Проверка условий для активации кнопки деактивации
+    function checkDeactivateConditions() {
+        console.log('Checking conditions...');
+        const password = confirmPasswordInput ? confirmPasswordInput.value.trim() : '';
+        const isChecked = confirmDeactivateCheckbox ? confirmDeactivateCheckbox.checked : false;
+        const passwordError = document.getElementById('passwordError');
+        
+        let isValid = true;
+        
+        // Проверка пароля
+        if (password.length === 0) {
+            if (passwordError) {
+                passwordError.textContent = 'Введите ваш пароль';
+                passwordError.style.display = 'block';
+            }
+            isValid = false;
+        } else if (passwordError) {
+            passwordError.style.display = 'none';
+        }
+        
+        // Проверка чекбокса
+        if (!isChecked) {
+            isValid = false;
+        }
+        
+        if (confirmDeactivateBtn) {
+            confirmDeactivateBtn.disabled = !isValid;
+            console.log('Confirm button disabled:', !isValid);
+        }
+    }
+    
+    // Добавляем обработчики событий
+    if (confirmPasswordInput) {
+        confirmPasswordInput.addEventListener('input', checkDeactivateConditions);
+        console.log('Password input event listener added');
+    }
+    
+    if (confirmDeactivateCheckbox) {
+        confirmDeactivateCheckbox.addEventListener('change', checkDeactivateConditions);
+        console.log('Checkbox event listener added');
+    }
+    
+    // Обработчик подтверждения деактивации
+    if (confirmDeactivateBtn) {
+        confirmDeactivateBtn.addEventListener('click', function() {
+            console.log('Confirm deactivation clicked');
+            deactivateUserAccount();
+        });
+        console.log('Confirm button event listener added');
+    }
+    
+    // Закрытие модального окна при клике вне его
+    window.addEventListener('click', function(event) {
+        const modal = document.getElementById('deactivateAccountModal');
+        if (event.target === modal) {
+            closeDeactivateModal();
+        }
+    });
+    
+    // Закрытие модального окна при нажатии Escape
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeDeactivateModal();
+        }
+    });
+    
+    console.log('Deactivation functionality initialized successfully');
+});
+
+// Функция деактивации аккаунта
+async function deactivateUserAccount() {
+    console.log('Starting account deactivation...');
+    const confirmBtn = document.getElementById('confirmDeactivateBtn');
+    const passwordInput = document.getElementById('confirmPassword');
+    
+    if (!confirmBtn || !passwordInput) {
+        console.error('Required elements not found for deactivation');
+        return;
+    }
+    
+    const password = passwordInput.value;
+    
+    try {
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Деактивация...';
+        confirmBtn.disabled = true;
+        
+        console.log('Sending deactivation request...');
+        const response = await fetch('{% url "deactivate_account" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                password: password
+            })
+        });
+        
+        const result = await response.json();
+        console.log('Deactivation response:', result);
+        
+        if (result.success) {
+            showNotification(result.message, 'success');
+            setTimeout(() => {
+                window.location.href = '{% url "home" %}';
+            }, 2000);
+        } else {
+            showNotification(result.message, 'error');
+            confirmBtn.innerHTML = '<i class="fas fa-user-slash"></i> Деактивировать аккаунт';
+            confirmBtn.disabled = false;
+            
+            // Показываем ошибку пароля
+            if (result.error_type === 'password') {
+                const passwordError = document.getElementById('passwordError');
+                if (passwordError) {
+                    passwordError.textContent = result.message;
+                    passwordError.style.display = 'block';
+                }
+            }
+        }
+        
+    } catch (error) {
+        console.error('Ошибка при деактивации аккаунта:', error);
+        showNotification('Произошла ошибка при деактивации аккаунта', 'error');
+        if (confirmBtn) {
+            confirmBtn.innerHTML = '<i class="fas fa-user-slash"></i> Деактивировать аккаунт';
+            confirmBtn.disabled = false;
+        }
+    }
+}
+
+// Вспомогательные функции
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `alert-notification ${type}`;
+    notification.innerHTML = `
+        <div class="alert-content">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 500);
+    }, 5000);
+}
+
+// Отладочная проверка элементов
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== DEBUG: Checking for deactivation elements ===');
+    const elements = [
+        'deactivateAccountBtn',
+        'deactivateAccountModal', 
+        'confirmPassword',
+        'confirmDeactivate',
+        'confirmDeactivateBtn',
+        'passwordError'
+    ];
+    
+    elements.forEach(id => {
+        const element = document.getElementById(id);
+        console.log(`Element ${id}:`, element ? 'FOUND' : 'NOT FOUND');
+    });
+});
+// Добавьте в существующий script блок
+// Оптимизации для мобильных устройств
+document.addEventListener('DOMContentLoaded', function() {
+    // Оптимизация загрузки изображений для мобильных
+    const images = document.querySelectorAll('img');
+    images.forEach(img => {
+        if (window.innerWidth <= 768) {
+            img.loading = 'lazy';
+        }
+    });
+
+    // Улучшение отзывчивости кнопок на мобильных
+    const buttons = document.querySelectorAll('.btn-modern, .security-button, .deactivate-account-btn, .action-btn, .cancel-button, .save-button');
+    buttons.forEach(btn => {
+        btn.addEventListener('touchstart', function() {
+            this.style.transform = 'scale(0.95)';
+        });
+        
+        btn.addEventListener('touchend', function() {
+            this.style.transform = '';
+        });
+    });
+
+    // Предотвращение масштабирования при фокусе на инпуты
+    const inputs = document.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            if (window.innerWidth <= 768) {
+                setTimeout(() => {
+                    this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            }
+        });
+    });
+
+    // Адаптация высоты модального окна для landscape режима
+    function adaptModalHeight() {
+        const modalBody = document.querySelector('.modal-body');
+        if (modalBody && window.innerWidth <= 768) {
+            if (window.innerHeight < 500) { // Landscape mode
+                modalBody.style.maxHeight = '40vh';
+            } else {
+                modalBody.style.maxHeight = '60vh';
+            }
+        }
+    }
+
+    // Оптимизация для landscape режима
+    function handleOrientationChange() {
+        if (window.innerWidth <= 768 && window.innerHeight < 500) {
+            document.body.classList.add('landscape-mode');
+        } else {
+            document.body.classList.remove('landscape-mode');
+        }
+        adaptModalHeight();
+    }
+
+    window.addEventListener('resize', handleOrientationChange);
+    window.addEventListener('orientationchange', handleOrientationChange);
+    handleOrientationChange(); // Initial check
+
+    // Улучшение производительности при скролле
+    let scrollTimeout;
+    window.addEventListener('scroll', function() {
+        if (scrollTimeout) {
+            clearTimeout(scrollTimeout);
+        }
+        
+        scrollTimeout = setTimeout(function() {
+            document.body.classList.add('scroll-stopped');
+            setTimeout(() => document.body.classList.remove('scroll-stopped'), 100);
+        }, 150);
+    });
+
+    // Оптимизация анимаций для мобильных
+    if (window.innerWidth <= 768) {
+        const style = document.createElement('style');
+        style.textContent = `
+            * {
+                animation-duration: 0.3s !important;
+                transition-duration: 0.3s !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+});
+
+// Добавьте эти CSS для оптимизации производительности
+const mobileOptimizationStyles = `
+@media (max-width: 768px) {
+    .scroll-stopped * {
+        animation-play-state: paused !important;
+        transition: none !important;
+    }
+    
+    .landscape-mode .profile-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .landscape-mode .subscriptions-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .landscape-mode .training-item {
+        flex-direction: row;
+    }
+}
+
+/* Улучшение рендеринга на мобильных */
+@media (max-width: 768px) {
+    * {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    
+    input, textarea, select {
+        -webkit-user-select: text;
+        user-select: text;
+    }
+}
+`;
+
+// Добавляем стили в документ
+const styleSheet = document.createElement('style');
+styleSheet.textContent = mobileOptimizationStyles;
+document.head.appendChild(styleSheet);
+// Остальной код для аватара, темы и т.д.
+document.addEventListener('DOMContentLoaded', function() {
+    // Avatar upload functionality
+    const avatarInput = document.getElementById('id_avatar');
+    const avatarPreview = document.getElementById('avatarPreview');
+
+    if (avatarInput) {
+        avatarInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                if (!validTypes.includes(file.type)) {
+                    alert('Пожалуйста, выберите файл изображения (JPEG, PNG, GIF, WebP)');
+                    avatarInput.value = '';
+                    return;
+                }
+                
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Размер файла не должен превышать 5MB');
+                    avatarInput.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    avatarPreview.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.alt = 'Предпросмотр аватара';
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'cover';
+                    img.style.borderRadius = '50%';
+                    avatarPreview.appendChild(img);
+                };
+                
+                reader.onerror = function() {
+                    alert('Ошибка при чтении файла');
+                    avatarInput.value = '';
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Theme switch functionality
+    const themeSwitch = document.querySelector('input[name="theme"]');
+    if (themeSwitch) {
+        const currentTheme = {% if user.userprofile.theme %}true{% else %}false{% endif %};
+        themeSwitch.checked = currentTheme;
+        
+        themeSwitch.addEventListener('change', function() {
+            if (this.checked) {
+                document.body.classList.add('dark-theme');
+            } else {
+                document.body.classList.remove('dark-theme');
+            }
+            
+            showThemeSaveNotification();
+        });
+    }
+
+    function showThemeSaveNotification() {
+        const existingNotification = document.querySelector('.theme-save-notification');
+        if (existingNotification) {
+            existingNotification.remove();
+        }
+        
+        const notification = document.createElement('div');
+        notification.className = 'info-message theme-save-notification';
+        notification.innerHTML = `
+            Изменения темы применены временно. Для постоянного сохранения нажмите "СОХРАНИТЬ ИЗМЕНЕНИЯ".
+            <button type="button" class="close-message" onclick="this.parentElement.remove()">×</button>
+        `;
+        
+        const messagesContainer = document.querySelector('.messages-container');
+        if (messagesContainer) {
+            messagesContainer.appendChild(notification);
+        } else {
+            const form = document.getElementById('profileForm');
+            const newMessagesContainer = document.createElement('div');
+            newMessagesContainer.className = 'messages-container';
+            newMessagesContainer.appendChild(notification);
+            form.insertBefore(newMessagesContainer, form.firstChild);
+        }
+    }
+
+    // Real-time name update
+    const firstNameInput = document.getElementById('id_firstname');
+    const lastNameInput = document.getElementById('id_lastname');
+    const middleNameInput = document.getElementById('id_middlename');
+    const userNameElement = document.getElementById('userName');
+
+    function updateUserName() {
+        const firstName = firstNameInput?.value || '';
+        const lastName = lastNameInput?.value || '';
+        const middleName = middleNameInput?.value || '';
+        
+        const fullName = [lastName, firstName, middleName].filter(part => part).join(' ');
+        userNameElement.textContent = fullName || '{{ user.username }}';
+    }
+
+    if (firstNameInput) firstNameInput.addEventListener('input', updateUserName);
+    if (lastNameInput) lastNameInput.addEventListener('input', updateUserName);
+    if (middleNameInput) middleNameInput.addEventListener('input', updateUserName);
+    updateUserName();
+
+    // Auto-hide messages
+    const messages = document.querySelectorAll('.success-message, .error-message, .info-message');
+    messages.forEach(function(message) {
+        if (message.classList.contains('theme-save-notification')) return;
+        
+        setTimeout(function() {
+            if (message.parentElement) {
+                message.style.opacity = '0';
+                message.style.transition = 'opacity 0.5s ease';
+                setTimeout(function() {
+                    if (message.parentElement) {
+                        message.remove();
+                    }
+                }, 500);
+            }
+        }, 5000);
+    });
+    
+    document.querySelectorAll('.close-message').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const message = this.parentElement;
+            message.style.opacity = '0';
+            setTimeout(function() {
+                if (message.parentElement) {
+                    message.remove();
+                }
+            }, 500);
+        });
+    });
+
+    const profileForm = document.getElementById('profileForm');
+    if (profileForm) {
+        profileForm.addEventListener('submit', function() {
+            const currentTheme = {% if user.userprofile.theme %}true{% else %}false{% endif %};
+            if (currentTheme) {
+                document.body.classList.add('dark-theme');
+            } else {
+                document.body.classList.remove('dark-theme');
+            }
+        });
+    }
+
+    // Анимация появления элементов
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+
+    // Анимируем карточки тренировок и абонементов
+    document.querySelectorAll('.training-item, .subscription-card').forEach(item => {
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(20px)';
+        item.style.transition = 'all 0.5s ease';
+        observer.observe(item);
+    });
+});
+
+// Функции для работы с абонементами
+function showSubscriptionDetails(subscriptionId) {
+    alert('Детали абонемента #' + subscriptionId + '\nЗдесь будет подробная информация о вашем абонементе.');
+}
+document.addEventListener('keydown', function(e) {
+    
+    // Ctrl + B для изменения аватара
+    if (e.ctrlKey && e.key === 'b') {
+        e.preventDefault();
+        console.log('Ctrl+B pressed - opening avatar upload');
+        
+        const avatarInput = document.getElementById('id_avatar');
+        if (avatarInput) {
+            avatarInput.click();
+        } else {
+            console.log('Avatar input not found');
+        }
+    }
+    // Ctrl + B для изменения аватара
+    if (e.ctrlKey && e.key === 'и') {
+        e.preventDefault();
+        console.log('Ctrl+B pressed - opening avatar upload');
+        
+        const avatarInput = document.getElementById('id_avatar');
+        if (avatarInput) {
+            avatarInput.click();
+        } else {
+            console.log('Avatar input not found');
+        }
+    }
+    // Ctrl + S для сохранения изменений
+    if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        console.log('Ctrl+S pressed - saving changes');
+        
+        const saveButton = document.querySelector('.save-button');
+        if (saveButton) {
+            saveButton.click();
+        } else {
+            console.log('Save button not found');
+        }
+    }
+    // Ctrl + S для сохранения изменений
+    if (e.ctrlKey && e.key === 'ы') {
+        e.preventDefault();
+        console.log('Ctrl+S pressed - saving changes');
+        
+        const saveButton = document.querySelector('.save-button');
+        if (saveButton) {
+            saveButton.click();
+        } else {
+            console.log('Save button not found');
+        }
+    }
+});
+</script>
+
+<style>
+/* Стили для кнопки деактивации аккаунта */
+.deactivate-account-btn {
+    width: 100%;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+    font-size: 0.9rem;
+}
+
+.deactivate-account-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.3);
+}
+
+/* Стили для модального окна деактивации */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: var(--light-card);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--light-border);
+}
+
+.dark-theme .modal-content {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 30px 20px;
+    border-bottom: 1px solid var(--light-border);
+}
+
+.dark-theme .modal-header {
+    border-bottom-color: var(--dark-border);
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: var(--text-dark);
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.dark-theme .modal-header h3 {
+    color: var(--dark-text);
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-gray);
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.3s ease;
+    line-height: 1;
+}
+
+.close-modal:hover {
+    color: var(--neon-purple);
+}
+
+.modal-body {
+    padding: 30px;
+}
+
+.warning-icon {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.warning-icon i {
+    font-size: 3rem;
+    color: #dc2626;
+}
+
+.modal-body p {
+    margin-bottom: 15px;
+    line-height: 1.5;
+    color: var(--text-dark);
+}
+
+.dark-theme .modal-body p {
+    color: var(--dark-text);
+}
+
+.modal-body ul {
+    margin: 15px 0;
+    padding-left: 20px;
+    color: var(--text-dark);
+}
+
+.dark-theme .modal-body ul {
+    color: var(--dark-text);
+}
+
+.modal-body li {
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.confirmation-input {
+    margin: 25px 0;
+}
+
+.confirmation-input label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.dark-theme .confirmation-input label {
+    color: var(--dark-text);
+}
+
+.form-input-field {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--light-border);
+    border-radius: 8px;
+    background: var(--light-bg);
+    color: var(--text-dark);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.dark-theme .form-input-field {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+    color: var(--dark-text);
+}
+
+.form-input-field:focus {
+    outline: none;
+    border-color: var(--neon-purple);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.error-message {
+    color: #dc2626;
+    font-size: 0.9rem;
+    margin-top: 5px;
+    font-weight: 500;
+}
+
+.confirmation-checkbox {
+    margin: 20px 0;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    color: var(--text-dark);
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.dark-theme .checkbox-label {
+    color: var(--dark-text);
+}
+
+.checkbox-label input[type="checkbox"] {
+    display: none;
+}
+
+.checkmark {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--light-border);
+    border-radius: 4px;
+    position: relative;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+    margin-top: 2px;
+}
+
+.dark-theme .checkmark {
+    border-color: var(--dark-border);
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkmark {
+    background: var(--neon-purple);
+    border-color: var(--neon-purple);
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkmark::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    padding: 20px 30px;
+    border-top: 1px solid var(--light-border);
+}
+
+.dark-theme .modal-actions {
+    border-top-color: var(--dark-border);
+}
+
+.btn-secondary {
+    padding: 12px 25px;
+    background: var(--light-bg);
+    color: var(--text-dark);
+    border: 1px solid var(--light-border);
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.dark-theme .btn-secondary {
+    background: var(--dark-bg);
+    color: var(--dark-text);
+    border-color: var(--dark-border);
+}
+
+.btn-secondary:hover {
+    background: var(--light-border);
+}
+
+.dark-theme .btn-secondary:hover {
+    background: var(--dark-border);
+}
+
+.btn-danger {
+    padding: 12px 25px;
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-danger:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.3);
+}
+
+.btn-danger:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.btn-danger:disabled:hover {
+    box-shadow: none !important;
+}
+
+/* Анимация появления модального окна */
+.modal-content {
+    animation: modalAppear 0.3s ease-out;
+}
+
+@keyframes modalAppear {
+    from {
+        opacity: 0;
+        transform: translateY(-60px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Адаптивность для модального окна */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        max-width: none;
+    }
+    
+    .modal-header {
+        padding: 20px 25px 15px;
+    }
+    
+    .modal-body {
+        padding: 25px;
+    }
+    
+    .modal-actions {
+        padding: 15px 25px;
+        flex-direction: column;
+    }
+    
+    .btn-secondary,
+    .btn-danger {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-header h3 {
+        font-size: 1.3rem;
+    }
+    
+    .modal-body {
+        padding: 20px;
+    }
+    
+    .warning-icon i {
+        font-size: 2.5rem;
+    }
+    
+    .modal-actions {
+        gap: 10px;
+    }
+    
+    .btn-secondary,
+    .btn-danger {
+        padding: 10px 20px;
+    }
+}
+
+/* Обновленная структура профиля */
+.profile-content {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 40px;
+    margin-bottom: 80px;
+}
+
+.profile-column-right {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.security-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--light-border);
+}
+
+.dark-theme .security-section {
+    border-top-color: var(--dark-border);
+}
+
+.security-section h4 {
+    margin-bottom: 15px;
+    color: var(--text-dark);
+}
+
+.dark-theme .security-section h4 {
+    color: var(--dark-text);
+}
+
+.security-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    height: 35px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #892fffff);
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.security-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+    color: white;
+}
+
+/* Стили для секции активных тренировок */
+.profile-section {
+    background: var(--light-card);
+    border-radius: 20px;
+    padding: 30px;
+    border: 1px solid var(--light-border);
+    box-shadow: var(--shadow-medium);
+}
+
+.dark-theme .profile-section {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.profile-section h3 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dark-theme .profile-section h3 {
+    color: var(--dark-text);
+}
+
+.profile-section h3::before {
+    content: '';
+    width: 4px;
+    height: 20px;
+    background: var(--accent-gradient);
+    border-radius: 2px;
+}
+
+/* Стили для списка тренировок */
+.trainings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.training-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: var(--light-bg);
+    border-radius: 12px;
+    border: 1px solid var(--light-border);
+    transition: all 0.3s ease;
+}
+
+.dark-theme .training-item {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.training-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+    border-color: var(--neon-purple);
+}
+
+.training-info {
+    flex: 1;
+}
+
+.training-info h4 {
+    margin: 0 0 8px 0;
+    color: var(--text-dark);
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.dark-theme .training-info h4 {
+    color: var(--dark-text);
+}
+
+.training-time, 
+.training-trainer, 
+.training-amount {
+    margin: 4px 0;
+    color: var(--text-gray);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dark-theme .training-time,
+.dark-theme .training-trainer,
+.dark-theme .training-amount {
+    color: var(--dark-text-light);
+}
+
+.training-time i,
+.training-trainer i,
+.training-amount i {
+    color: var(--neon-purple);
+    width: 16px;
+    text-align: center;
+}
+
+.training-actions {
+    margin-left: 20px;
+}
+
+.training-actions form {
+    margin: 0;
+}
+
+/* Стили для отсутствия тренировок */
+.no-trainings {
+    text-align: center;
+    padding: 40px 30px;
+    color: var(--text-gray);
+}
+
+.dark-theme .no-trainings {
+    color: var(--dark-text-light);
+}
+
+.no-trainings-icon {
+    font-size: 2.5rem;
+    color: var(--neon-purple);
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.no-trainings p {
+    margin-bottom: 20px;
+    font-size: 1rem;
+}
+
+/* СТИЛИ ДЛЯ АБОНЕМЕНТОВ */
+.subscriptions-section {
+    background: var(--light-card);
+    border-radius: 20px;
+    padding: 30px;
+    border: 1px solid var(--light-border);
+    box-shadow: var(--shadow-medium);
+}
+
+.dark-theme .subscriptions-section {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dark-theme .section-title {
+    color: var(--dark-text);
+}
+
+.section-title::before {
+    content: '';
+    width: 4px;
+    height: 20px;
+    background: var(--accent-gradient);
+    border-radius: 2px;
+}
+
+.subscriptions-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 30px;
+}
+
+.subscription-card {
+    background: linear-gradient(145deg, var(--light-card) 0%, var(--light-bg) 100%);
+    border-radius: 24px;
+    padding: 30px;
+    border: 2px solid var(--light-border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+}
+
+.dark-theme .subscription-card {
+    background: linear-gradient(145deg, var(--dark-card) 0%, var(--dark-bg) 100%);
+    border-color: var(--dark-border);
+}
+
+.subscription-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: var(--accent-gradient);
+}
+
+.subscription-card.active_state_ui {
+    border-color: var(--neon-purple);
+    box-shadow: 0 15px 40px rgba(139, 92, 246, 0.15);
+}
+
+.subscription-card.inactive_state_ui {
+    opacity: 0.7;
+    filter: grayscale(0.2);
+}
+
+.subscription-card.expiring-soon {
+    border: 2px solid #f59e0b !important;
+    background: linear-gradient(145deg, #fff7ed, #fed7aa) !important;
+}
+
+.dark-theme .subscription-card.expiring-soon {
+    background: linear-gradient(145deg, #431407, #7c2d12) !important;
+    border-color: #ea580c !important;
+}
+
+.subscription-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 25px 60px rgba(139, 92, 246, 0.25);
+}
+
+.subscription-header {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.subscription-icon {
+    width: 70px;
+    height: 70px;
+    background: var(--accent-gradient);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.8rem;
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+    transition: all 0.3s ease;
+}
+
+.subscription-card:hover .subscription-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.subscription-title {
+    margin-left: 20px;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    line-height: 1.2;
+    flex: 1;
+}
+
+.dark-theme .subscription-title {
+    color: var(--dark-text);
+}
+
+.status-badge {
+    padding: 10px 16px;
+    border-radius: 25px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.status-badge.active-status {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.status-badge.inactive-status {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: white;
+}
+
+/* Прогресс-бар абонемента */
+.subscription-progress {
+    margin-bottom: 25px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.dark-theme .progress-bar {
+    background: #374151;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 0.8rem;
+    color: var(--text-gray);
+    text-align: center;
+}
+
+.dark-theme .progress-text {
+    color: var(--dark-text-light);
+}
+
+.price-section {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 25px;
+    background: rgba(139, 92, 246, 0.05);
+    border-radius: 20px;
+    border: 1px solid rgba(139, 92, 246, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.price-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent, rgba(139, 92, 246, 0.03), transparent);
+    animation: shimmer_effect 3s infinite;
+}
+/* СТИЛИ ДЛЯ АБОНЕМЕНТОВ - СОВРЕМЕННЫЙ КОМПАКТНЫЙ ДИЗАЙН */
+.subscriptions-section {
+    background: var(--light-card);
+    border-radius: 20px;
+    padding: 30px;
+    border: 1px solid var(--light-border);
+    box-shadow: var(--shadow-medium);
+}
+
+.dark-theme .subscriptions-section {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.subscriptions-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 25px;
+}
+
+.subscription-card {
+    background: var(--light-card);
+    border-radius: 20px;
+    padding: 25px;
+    border: 2px solid var(--light-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.dark-theme .subscription-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.subscription-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--accent-gradient);
+}
+
+.subscription-card.active_state_ui {
+    border-color: var(--neon-purple);
+    box-shadow: 0 8px 30px rgba(139, 92, 246, 0.15);
+}
+
+.subscription-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(139, 92, 246, 0.2);
+}
+
+/* Заголовок карточки */
+.subscription-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.subscription-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    line-height: 1.2;
+}
+
+.dark-theme .subscription-title {
+    color: var(--dark-text);
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.active-status {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.status-badge.inactive-status {
+    background: #6b7280;
+    color: white;
+}
+
+/* Цена и длительность */
+.price-section {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: rgba(139, 92, 246, 0.05);
+    border-radius: 15px;
+    border: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.price-wrapper {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.price-amount {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+}
+
+.currency {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-gray);
+}
+
+.dark-theme .currency {
+    color: var(--dark-text-light);
+}
+
+.duration {
+    color: var(--text-gray);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Даты */
+.dates-container {
+    margin-bottom: 20px;
+}
+
+.date-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--light-border);
+}
+
+.dark-theme .date-row {
+    border-bottom-color: var(--dark-border);
+}
+
+.date-row:last-child {
+    border-bottom: none;
+}
+
+.date-label {
+    color: var(--text-gray);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.dark-theme .date-label {
+    color: var(--dark-text-light);
+}
+
+.date-value {
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.dark-theme .date-value {
+    color: var(--dark-text);
+}
+
+/* Прогресс-бар */
+.subscription-progress {
+    margin-bottom: 20px;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.8rem;
+    color: var(--text-gray);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.dark-theme .progress-bar {
+    background: #374151;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+/* Услуги */
+.services-section {
+    margin-bottom: 20px;
+}
+
+.services-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-gray);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.service-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--text-gray);
+}
+
+.dark-theme .service-item {
+    color: var(--dark-text-light);
+}
+
+.service-item i {
+    color: var(--neon-purple);
+    font-size: 0.7rem;
+}
+
+/* Кнопки действий */
+.actions-container {
+    display: flex;
+    gap: 10px;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.action-btn.primary {
+    background: var(--accent-gradient);
+    color: white;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+
+.action-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+    color: white;
+}
+
+.action-btn.secondary {
+    background: transparent;
+    color: #ef4444;
+    border: 1px solid #ef4444;
+}
+
+.action-btn.secondary:hover {
+    background: #ef4444;
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Предупреждение об истечении */
+.warning-banner {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #92400e;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.dark-theme .warning-banner {
+    background: linear-gradient(135deg, #451a03, #9a3412);
+    border-color: #ea580c;
+    color: #fdba74;
+}
+
+.warning-banner i {
+    font-size: 0.9rem;
+}
+
+/* Состояние когда нет абонементов */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-gray);
+}
+
+.dark-theme .empty-state {
+    color: var(--dark-text-light);
+}
+
+.empty-icon {
+    font-size: 3rem;
+    color: var(--neon-purple);
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    color: var(--text-dark);
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+}
+
+.dark-theme .empty-state h3 {
+    color: var(--dark-text);
+}
+
+.empty-state p {
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+}
+
+.cta-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: var(--accent-gradient);
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+    color: white;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .subscriptions-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .subscription-card {
+        padding: 20px;
+    }
+    
+    .services-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .actions-container {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .subscriptions-section {
+        padding: 20px;
+    }
+    
+    .price-amount {
+        font-size: 2rem;
+    }
+    
+    .currency {
+        font-size: 1.2rem;
+    }
+    
+    .date-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}
+
+@keyframes shimmer_effect {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.price-wrapper {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.price-amount {
+    font-size: 3.5rem;
+    font-weight: 900;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+    text-shadow: 0 4px 8px rgba(139, 92, 246, 0.2);
+}
+
+.currency {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-gray);
+}
+
+.dark-theme .currency {
+    color: var(--dark-text-light);
+}
+
+.duration {
+    color: var(--text-gray);
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.dark-theme .duration {
+    color: var(--dark-text-light);
+}
+
+.dates-container {
+    margin-bottom: 25px;
+}
+
+.dates-row {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.date-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 20px;
+    background: var(--light-bg);
+    border-radius: 15px;
+    border: 1px solid var(--light-border);
+    transition: all 0.3s ease;
+}
+
+.dark-theme .date-item {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.date-item:hover {
+    transform: translateX(8px);
+    border-color: var(--neon-purple);
+    box-shadow: 0 5px 15px rgba(139, 92, 246, 0.1);
+}
+
+.date-item i {
+    color: var(--neon-purple);
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+}
+
+.date-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.date-label {
+    color: var(--text-gray);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.dark-theme .date-label {
+    color: var(--dark-text-light);
+}
+
+.date-value {
+    color: var(--text-dark);
+    font-size: 1rem;
+    font-weight: 700;
+    margin-top: 4px;
+}
+
+.dark-theme .date-value {
+    color: var(--dark-text);
+}
+
+/* Стили для предупреждений об истечении срока */
+.warning-banner {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border: 1px solid #f59e0b;
+    border-radius: 10px;
+    padding: 12px 15px;
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #92400e;
+    font-weight: 600;
+    animation: pulse-warning 2s infinite;
+}
+
+.dark-theme .warning-banner {
+    background: linear-gradient(135deg, #451a03, #9a3412);
+    border-color: #ea580c;
+    color: #fdba74;
+}
+
+.warning-banner i {
+    color: #d97706;
+    font-size: 1.1rem;
+}
+
+.dark-theme .warning-banner i {
+    color: #f97316;
+}
+
+@keyframes pulse-warning {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+.services-section {
+    margin-bottom: 25px;
+}
+
+.services-title {
+    color: var(--text-dark);
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dark-theme .services-title {
+    color: var(--dark-text);
+}
+
+.services-title::before {
+    content: '';
+    width: 4px;
+    height: 18px;
+    background: var(--accent-gradient);
+    border-radius: 2px;
+}
+
+.services-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.service-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    color: var(--text-gray);
+    font-size: 0.95rem;
+    border-bottom: 1px solid var(--light-border);
+    transition: all 0.3s ease;
+}
+
+.dark-theme .service-item {
+    color: var(--dark-text-light);
+    border-bottom-color: var(--dark-border);
+}
+
+.service-item:last-child {
+    border-bottom: none;
+}
+
+.service-item:hover {
+    color: var(--text-dark);
+    transform: translateX(8px);
+}
+
+.dark-theme .service-item:hover {
+    color: var(--dark-text);
+}
+
+.service-item i {
+    color: var(--neon-purple);
+    font-size: 0.9rem;
+    width: 18px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.service-item:hover i {
+    transform: scale(1.3);
+}
+
+.service-item.more-items {
+    color: var(--neon-purple);
+    font-weight: 700;
+}
+
+.actions-container {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.action-btn {
+    width: 100%;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 1rem;
+    text-decoration: none;
+}
+
+.action-btn.primary {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+}
+
+.action-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(16, 185, 129, 0.4);
+    color: white;
+}
+
+.action-btn.secondary {
+    background: transparent;
+    color: #ef4444;
+    border: 2px solid #ef4444;
+    box-shadow: 0 5px 15px rgba(239, 68, 68, 0.2);
+}
+
+.action-btn.secondary:hover {
+    background: #ef4444;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 30px;
+    color: var(--text-gray);
+}
+
+.dark-theme .empty-state {
+    color: var(--dark-text-light);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: var(--neon-purple);
+    margin-bottom: 25px;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    color: var(--text-dark);
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+}
+
+.dark-theme .empty-state h3 {
+    color: var(--dark-text);
+}
+
+.empty-state p {
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.cta-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 32px;
+    background: var(--accent-gradient);
+    color: white;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+}
+
+.cta-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.4);
+    color: white;
+}
+/* Адаптивность */
+@media (max-width: 1200px) {
+    .subscriptions-container {
+        grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+        gap: 25px;
+    }
+}
+
+@media (max-width: 768px) {
+    .profile-content {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .subscriptions-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .subscription-card {
+        padding: 25px;
+    }
+    
+    .subscription-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .subscription-title {
+        margin-left: 0;
+    }
+    
+    .status-badge {
+        align-self: flex-start;
+    }
+    
+    .price-amount {
+        font-size: 3rem;
+    }
+    
+    .training-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .training-actions {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    .btn-danger {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .subscriptions-section {
+        padding: 20px;
+    }
+    
+    .subscription-card {
+        padding: 20px;
+    }
+    
+    .subscription-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+    
+    .subscription-title {
+        font-size: 1.3rem;
+    }
+    
+    .price-amount {
+        font-size: 2.5rem;
+    }
+    
+    .date-item {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .date-value {
+        margin-top: 0;
+    }
+}
+</style>
+{% endblock %}

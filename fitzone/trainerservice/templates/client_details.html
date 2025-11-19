@@ -1,0 +1,821 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title_name %}
+FITZONE - {{ client.userprofile.full_name|default:client.username }}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <section class="page-hero-section">
+        <div class="page-hero-container">
+            <div class="page-hero-content">
+                <div class="page-hero-badge">
+                    <div class="page-badge-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <span class="page-badge-text">Профиль клиента</span>
+                </div>
+                
+                <div class="page-hero-main">
+                    <h1 class="page-hero-title">
+                        {% if client.userprofile %}
+                            {{ client.userprofile.full_name|default:client.username }}
+                        {% else %}
+                            {{ client.username }}
+                        {% endif %}
+                    </h1>
+                    <p class="page-hero-desc">Детальная информация и история тренировок</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Client Content -->
+    <section class="client-profile-block">
+        <!-- Profile Card -->
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    {% if client.userprofile and client.userprofile.avatar %}
+                        <img src="{{ client.userprofile.avatar.url }}" alt="{{ client.userprofile.full_name|default:client.username }}" class="avatar-img">
+                    {% else %}
+                        <div class="avatar-default">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="profile-info">
+                    <h2 class="profile-name">
+                        {% if client.userprofile %}
+                            {{ client.userprofile.full_name|default:client.username }}
+                        {% else %}
+                            {{ client.username }}
+                        {% endif %}
+                    </h2>
+                    
+                    <div class="profile-meta">
+                        <div class="meta-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>{{ client.email }}</span>
+                        </div>
+                        {% if client.userprofile and client.userprofile.gender %}
+                        <div class="meta-item">
+                            <i class="fas fa-venus-mars"></i>
+                            <span>{{ client.userprofile.get_gender_display }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="meta-item">
+                            <i class="fas fa-calendar-plus"></i>
+                            <span>Зарегистрирован: {{ registration_date|date:"d.m.Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">{{ total_training_plans }}</div>
+                    <div class="stat-label">Всего планов</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ active_training_plans }}</div>
+                    <div class="stat-label">Активных</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ total_classes }}</div>
+                    <div class="stat-label">Занятий</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ active_subscriptions.count }}</div>
+                    <div class="stat-label">Абонементов</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Training Plans Section -->
+        <div class="section-card">
+            <div class="section-header">
+                <h3 class="section-title">Тренировочные планы</h3>
+                <a href="{% url 'trainerservice:create_training_plan' client.id %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i>
+                    Новый план
+                </a>
+            </div>
+            
+            {% if training_plans %}
+            <div class="plans-grid">
+                {% for plan in training_plans %}
+                <div class="plan-card {% if not plan.is_active %}plan-inactive{% endif %}">
+                    <div class="plan-header">
+                        <h4 class="plan-name">{{ plan.name }}</h4>
+                        <span class="plan-status {% if plan.is_active %}status-active{% else %}status-inactive{% endif %}">
+                            {% if plan.is_active %}Активен{% else %}Неактивен{% endif %}
+                        </span>
+                    </div>
+                    <p class="plan-description">{{ plan.description|truncatewords:20 }}</p>
+                    <div class="plan-actions">
+                        <a href="{% url 'trainerservice:training_plan_edit_form' plan.id %}" class="btn-icon" title="Редактировать">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form action="{% url 'trainerservice:delete_training_plan' plan.id %}" method="post" class="inline-form" onsubmit="return confirm('Удалить план \"{{ plan.name }}\"?')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-icon btn-danger" title="Удалить">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-dumbbell"></i>
+                <h4>Нет тренировочных планов</h4>
+                <p>Создайте первый план тренировок для клиента</p>
+                <a href="{% url 'trainerservice:create_training_plan' client.id %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Создать план
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Group Classes Section -->
+        <div class="section-card">
+            <div class="section-header">
+                <h3 class="section-title">Занятия</h3>
+            </div>
+            
+            {% if group_classes %}
+            <div class="classes-list">
+                {% for class_client in group_classes %}
+                <div class="class-item">
+                    <div class="class-info">
+                        <h4 class="class-name">{{ class_client.class_id.name }}</h4>
+                        <p class="class-time">{{ class_client.class_id.starttime|date:"d.m.Y H:i" }}</p>
+                    </div>
+                    <div class="class-meta">
+<span class="class-price">{{ class_client.class_id.price }} руб.</span>                        <span class="status-badge status-active">Посещено</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-users"></i>
+                <h4>Нет групповых занятий</h4>
+                <p>Клиент еще не записывался на ваши занятия</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Active Subscriptions -->
+        {% if active_subscriptions %}
+        <div class="section-card">
+            <div class="section-header">
+                <h3 class="section-title">Активные абонементы</h3>
+            </div>
+            
+            <div class="subscriptions-list">
+                {% for subscription in active_subscriptions %}
+                <div class="subscription-item">
+                    <h4 class="subscription-name">{{ subscription.subscriptiontype.name }}</h4>
+                    <div class="subscription-details">
+                        <span class="detail">Начало: {{ subscription.startdate|date:"d.m.Y" }}</span>
+                        <span class="detail">Стоимость: {{ subscription.subscriptiontype.price }} руб.</span>
+                        <span class="detail">Длительность: {{ subscription.subscriptiontype.durationdays }} дней</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </section>
+</div>
+
+<style>
+/* Page Hero Section */
+.page-hero-section {
+    padding: 80px 0 60px;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+    margin-bottom: 40px;
+}
+
+.page-hero-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 40px;
+}
+
+.page-hero-content {
+    text-align: center;
+}
+
+.page-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 12px 20px;
+    border-radius: 50px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    margin-bottom: 30px;
+}
+
+.dark-theme .page-hero-badge {
+    background: rgba(30, 41, 59, 0.95);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.page-badge-icon {
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.page-badge-icon i {
+    color: white;
+    font-size: 0.8rem;
+}
+
+.page-badge-text {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.page-hero-main {
+    color: var(--text-primary);
+}
+
+.page-hero-title {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 15px;
+    line-height: 1.1;
+}
+
+.page-hero-desc {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin: 0;
+    opacity: 0.8;
+}
+/* ФОРСИРУЕМ обычное поведение блока */
+.client-profile-block {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    width: auto !important;
+    z-index: auto !important;
+    
+}
+
+.profile-card {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    width: auto !important;
+    z-index: auto !important;
+        margin-bottom: 32px;
+
+}
+
+/* Убираем отступ у основного контента */
+.client-content-section {
+    max-width: 1200px;
+    margin: 0 auto 60px;
+    padding: 0 40px;
+}
+
+.profile-header {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.profile-avatar {
+    flex-shrink: 0;
+}
+
+.avatar-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 20px;
+    object-fit: cover;
+    border: 3px solid transparent;
+    background: linear-gradient(135deg, #8b5cf6, #6366f1) padding-box,
+                linear-gradient(135deg, #8b5cf6, #6366f1) border-box;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+}
+
+.avatar-default {
+    width: 100px;
+    height: 100px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2.2rem;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+}
+
+.profile-info {
+    flex: 1;
+}
+
+.profile-name {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    line-height: 1.2;
+}
+
+.profile-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.meta-item i {
+    color: #8b5cf6;
+    width: 16px;
+    font-size: 1rem;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding-top: 32px;
+    border-top: 1px solid var(--light-border);
+}
+
+.dark-theme .stats-grid {
+    border-top-color: var(--dark-border);
+}
+
+.stat-item {
+    text-align: center;
+    padding: 24px;
+    background: var(--light-bg);
+    border-radius: 16px;
+    border: 1px solid var(--light-border);
+    transition: all 0.3s ease;
+}
+
+.dark-theme .stat-item {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.stat-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(139, 92, 246, 0.15);
+}
+
+.stat-value {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #8b5cf6;
+    margin-bottom: 8px;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+/* Section Cards */
+.section-card {
+    background: var(--light-card);
+    border-radius: 20px;
+    padding: 32px;
+    margin-bottom: 24px;
+    border: 1px solid var(--light-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.dark-theme .section-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+/* Buttons */
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+}
+
+.btn-sm {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+}
+
+.btn-icon {
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    background: var(--light-bg);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dark-theme .btn-icon {
+    background: var(--dark-bg);
+    color: var(--dark-text-light);
+}
+
+.btn-icon:hover {
+    background: #8b5cf6;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-danger:hover {
+    background: #ef4444;
+    color: white;
+}
+
+/* Plans Grid */
+.plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.plan-card {
+    background: var(--light-bg);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid var(--light-border);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.dark-theme .plan-card {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.plan-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(139, 92, 246, 0.15);
+}
+
+.plan-card.plan-inactive {
+    opacity: 0.7;
+}
+
+.plan-card.plan-inactive::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #6b7280;
+}
+
+.plan-card:not(.plan-inactive)::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+}
+
+.plan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.plan-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    flex: 1;
+    line-height: 1.3;
+}
+
+.plan-status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-active {
+    background: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.status-inactive {
+    background: rgba(107, 114, 128, 0.1);
+    color: #6b7280;
+    border: 1px solid rgba(107, 114, 128, 0.2);
+}
+
+.plan-description {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.5;
+    font-size: 0.95rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.plan-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.inline-form {
+    display: inline;
+}
+
+/* Lists */
+.classes-list, .subscriptions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.class-item, .subscription-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: var(--light-bg);
+    border-radius: 12px;
+    border: 1px solid var(--light-border);
+    transition: all 0.3s ease;
+}
+
+.dark-theme .class-item,
+.dark-theme .subscription-item {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.class-item:hover, .subscription-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.class-info {
+    flex: 1;
+}
+
+.class-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.class-time {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.class-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.class-price {
+    font-weight: 700;
+    color: #8b5cf6;
+    font-size: 1rem;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.subscription-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.subscription-details {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.detail {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.detail::before {
+    content: '•';
+    color: #8b5cf6;
+    font-weight: bold;
+}
+
+/* Empty States */
+.empty-state {
+    text-align: center;
+    padding: 60px 40px;
+    color: var(--text-secondary);
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+    color: #8b5cf6;
+}
+
+.empty-state h4 {
+    font-size: 1.3rem;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.empty-state p {
+    margin-bottom: 24px;
+    font-size: 1rem;
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .page-hero-section {
+        padding: 60px 0 40px;
+    }
+    
+    .page-hero-container,
+    .client-content-section {
+        padding: 0 20px;
+    }
+    
+    .page-hero-title {
+        font-size: 2.2rem;
+    }
+    
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+    
+    .profile-name {
+        font-size: 1.7rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+    
+    .plans-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .class-item, .subscription-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .class-meta {
+        align-self: stretch;
+        justify-content: space-between;
+    }
+    
+    .subscription-details {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .section-card {
+        padding: 24px;
+    }
+    
+    .profile-card {
+        padding: 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .page-hero-title {
+        font-size: 1.8rem;
+    }
+    
+    .profile-name {
+        font-size: 1.5rem;
+    }
+    
+    .empty-state {
+        padding: 40px 20px;
+    }
+}
+</style>
+{% endblock %}

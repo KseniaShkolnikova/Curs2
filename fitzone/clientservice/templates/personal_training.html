@@ -1,0 +1,450 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title_name %}
+FITZONE - Персональные тренировки
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <section class="pt-hero">
+        <div class="pt-hero-container">
+            <div class="pt-hero-content">
+                <div class="pt-hero-badge">
+                    <div class="pt-badge-icon">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <span class="pt-badge-text">Персональные тренировки</span>
+                </div>
+                
+                <div class="pt-hero-main">
+                    <h1 class="pt-hero-title">ПЕРСОНАЛЬНЫЕ ТРЕНЕРЫ</h1>
+                    <p class="pt-hero-desc">Выберите профессионального тренера для достижения ваших фитнес-целей</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Coaches Grid -->
+    <section class="pt-section">
+        <div class="pt-header">
+            <h2 class="pt-title">НАШИ ТРЕНЕРЫ</h2>
+            <p class="pt-subtitle">Профессионалы с многолетним опытом работы</p>
+        </div>
+
+        {% if trainers %}
+        <div class="pt-grid">
+            {% for trainer in trainers %}
+            <div class="pt-card">
+                <div class="pt-image">
+                    <div class="pt-avatar">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    
+                </div>
+                
+                <div class="pt-info">
+                    <h3 class="pt-name">{{ trainer.full_name }}</h3>
+                    <p class="pt-bio">{{ trainer.bio }}</p>
+                    
+                    <div class="pt-specs">
+                        {% for spec in trainer.specializations %}
+                        <span class="pt-spec">{{ spec }}</span>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="pt-features">
+                        <div class="pt-feature">
+                            <i class="fas fa-clock"></i>
+                            <span>1500 руб/час</span>
+                        </div>
+                        
+                    </div>
+                    
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'book_personal_training' trainer.id %}" class="pt-btn">
+                        <span>Выбрать время</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                    {% else %}
+                    <a href="{% url 'login' %}?next={{ request.path }}" class="pt-btn">
+                        <span>Войти для записи</span>
+                        <i class="fas fa-lock"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="pt-empty">
+            <i class="fas fa-user-slash"></i>
+            <h3>Тренеры не найдены</h3>
+            <p>В системе пока нет зарегистрированных тренеров</p>
+        </div>
+        {% endif %}
+    </section>
+</div>
+
+<style>
+/* PT HERO SECTION - Matching your site colors */
+.pt-hero {
+    background: var(--light-bg);
+    padding: 120px 0 80px;
+    text-align: center;
+    margin-bottom: 60px;
+    margin-top: 80px;
+}
+
+.dark-theme .pt-hero {
+    background: var(--dark-bg);
+}
+
+.pt-hero-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.pt-hero-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
+
+.pt-hero-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.pt-badge-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--accent-gradient);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pt-badge-icon i {
+    color: white;
+    font-size: 1.3rem;
+}
+
+.pt-badge-text {
+    color: var(--neon-purple);
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.dark-theme .pt-badge-text {
+    color: var(--neon-purple-light);
+}
+
+.pt-hero-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    max-width: 800px;
+}
+
+.pt-hero-title {
+    font-size: 3.2rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin: 0;
+    line-height: 1.1;
+}
+
+.dark-theme .pt-hero-title {
+    color: var(--dark-text);
+}
+
+.pt-hero-desc {
+    font-size: 1.2rem;
+    color: var(--text-gray);
+    margin: 0;
+    line-height: 1.6;
+    font-weight: 500;
+    max-width: 600px;
+}
+
+.dark-theme .pt-hero-desc {
+    color: var(--dark-text-light);
+}
+
+/* PT SECTION - Matching your site colors */
+.pt-section {
+    padding: 60px 0;
+}
+
+.pt-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.pt-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 15px;
+}
+
+.dark-theme .pt-title {
+    color: var(--dark-text);
+}
+
+.pt-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-gray);
+    font-weight: 500;
+}
+
+.dark-theme .pt-subtitle {
+    color: var(--dark-text-light);
+}
+
+.pt-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    margin-bottom: 60px;
+}
+
+/* PT CARD - Matching your site colors */
+.pt-card {
+    background: var(--light-card);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--light-border);
+    box-shadow: var(--shadow-medium);
+    transition: all 0.3s ease;
+}
+
+.dark-theme .pt-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.pt-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-large);
+}
+
+.pt-image {
+    position: relative;
+    height: 250px;
+    overflow: hidden;
+    background: var(--accent-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pt-avatar {
+    font-size: 4rem;
+    color: white;
+    opacity: 0.9;
+}
+
+.pt-overlay {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+}
+
+.pt-rating {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 8px 12px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.dark-theme .pt-rating {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--dark-text);
+}
+
+.pt-rating i {
+    color: #ffc107;
+}
+
+.pt-info {
+    padding: 25px;
+}
+
+.pt-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+}
+
+.dark-theme .pt-name {
+    color: var(--dark-text);
+}
+
+.pt-bio {
+    color: var(--text-gray);
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.dark-theme .pt-bio {
+    color: var(--dark-text-light);
+}
+
+.pt-specs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.pt-spec {
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--neon-purple);
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.dark-theme .pt-spec {
+    background: rgba(139, 92, 246, 0.2);
+    color: var(--neon-purple-light);
+}
+
+.pt-features {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.pt-feature {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-gray);
+    font-size: 0.9rem;
+}
+
+.dark-theme .pt-feature {
+    color: var(--dark-text-light);
+}
+
+.pt-feature i {
+    color: var(--neon-purple);
+    width: 16px;
+}
+
+.pt-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 15px;
+    background: var(--accent-gradient);
+    color: white;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.pt-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+}
+
+/* PT EMPTY */
+.pt-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-gray);
+}
+
+.pt-empty i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
+    color: var(--neon-purple);
+}
+
+.pt-empty h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: var(--text-dark);
+}
+
+.dark-theme .pt-empty h3 {
+    color: var(--dark-text);
+}
+
+.pt-empty p {
+    color: var(--text-gray);
+}
+
+.dark-theme .pt-empty p {
+    color: var(--dark-text-light);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .pt-hero {
+        padding: 100px 0 60px;
+        margin-top: 60px;
+    }
+    
+    .pt-hero-title {
+        font-size: 2.2rem;
+    }
+    
+    .pt-hero-desc {
+        font-size: 1rem;
+        padding: 0 20px;
+    }
+    
+    .pt-title {
+        font-size: 2rem;
+    }
+    
+    .pt-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .pt-info {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .pt-hero-title {
+        font-size: 1.8rem;
+    }
+    
+    .pt-title {
+        font-size: 1.6rem;
+    }
+    
+    .pt-info {
+        padding: 16px;
+    }
+}
+</style>
+{% endblock %}

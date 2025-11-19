@@ -1,0 +1,731 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title_name %}
+FITZONE - Финансовые отчеты
+{% endblock %}
+
+{% block content %}
+<div class="particles-container" id="particles"></div>
+
+<section class="hero-section" style="margin: 20px 40px 40px; min-height: auto; padding-top: 20px;">
+    <div class="hero-content">
+        <div class="reports-header">
+            <h1> ⠀</h1>
+            <h1 class="hero-title">
+                ФИНАНСОВЫЕ ОТЧЕТЫ
+            </h1>
+
+        </div>
+        
+        <div class="reports-container">
+            <!-- Форма фильтрации -->
+            <div class="filter-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-filter"></i> ФИЛЬТР ОТЧЕТА</h2>
+                </div>
+                
+                <form method="get" class="report-filter-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="{{ form.start_date.id_for_label }}">Дата начала *</label>
+                            {{ form.start_date }}
+                            {% if form.start_date.errors %}
+                            <div class="field-error">{{ form.start_date.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.end_date.id_for_label }}">Дата окончания *</label>
+                            {{ form.end_date }}
+                            {% if form.end_date.errors %}
+                            <div class="field-error">{{ form.end_date.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.report_type.id_for_label }}">Тип отчета</label>
+                            {{ form.report_type }}
+                            {% if form.report_type.errors %}
+                            <div class="field-error">{{ form.report_type.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-chart-bar"></i>
+                            Сформировать отчет
+                        </button>
+                        
+                        {% if report_data %}
+                        <div class="export-buttons">
+                            <a href="{% url 'menegerservice:export_reports_csv' %}?{{ export_params }}" 
+                               class="btn btn-secondary">
+                                <i class="fas fa-file-csv"></i>
+                                Экспорт в CSV
+                            </a>
+                            <a href="{% url 'menegerservice:export_reports_pdf' %}?{{ export_params }}" 
+                               class="btn btn-secondary">
+                                <i class="fas fa-file-pdf"></i>
+                                Экспорт в PDF
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if form.non_field_errors %}
+                    <div class="form-errors">
+                        <div class="error-alert">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            {% for error in form.non_field_errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- Результаты отчета -->
+            {% if report_data %}
+            <div class="report-results">
+                <!-- Сводная статистика -->
+                <div class="summary-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-chart-pie"></i> СВОДНАЯ СТАТИСТИКА</h2>
+                        <span class="date-badge">{{ summary.period }}</span>
+                    </div>
+                    
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <div class="summary-value">{{ summary.total_revenue }} ₽</div>
+                            <div class="summary-label">Общий доход</div>
+                        </div>
+                        
+                        <div class="summary-item">
+                            <div class="summary-value">{{ summary.total_sales }}</div>
+                            <div class="summary-label">Всего продаж</div>
+                        </div>
+                        
+                        <div class="summary-item">
+                            <div class="summary-value">{{ summary.avg_revenue }} ₽</div>
+                            <div class="summary-label">Средний чек</div>
+                        </div>
+                        
+                        {% if summary.subscription_sales %}
+                        <div class="summary-item">
+                            <div class="summary-value">{{ summary.subscription_sales }}</div>
+                            <div class="summary-label">Продаж абонементов</div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if summary.class_sales %}
+                        <div class="summary-item">
+                            <div class="summary-value">{{ summary.class_sales }}</div>
+                            <div class="summary-label">Продаж тренировок</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Детализация продаж -->
+                <div class="sales-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-list"></i> ДЕТАЛИЗАЦИЯ ПРОДАЖ</h2>
+                        <span class="total-items">{{ report_data|length }} записей</span>
+                    </div>
+                    
+                    {% if report_data %}
+                    <div class="sales-table-container">
+                        <table class="sales-table">
+                            <thead>
+                                <tr>
+                                    <th>Дата и время</th>
+                                    <th>Тип</th>
+                                    <th>Название</th>
+                                    <th>Клиент</th>
+                                    <th>Сумма</th>
+                                    <th>Длительность</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in report_data %}
+                                <tr>
+                                    <td>{{ item.date|date:"d.m.Y H:i" }}</td>
+                                    <td>
+                                        <span class="type-badge type-{{ item.type|lower }}">
+                                            {% if item.type == 'Абонемент' %}
+                                            <i class="fas fa-id-card"></i>
+                                            {% else %}
+                                            <i class="fas fa-dumbbell"></i>
+                                            {% endif %}
+                                            {{ item.type }}
+                                        </span>
+                                    </td>
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.client }}</td>
+                                    <td class="amount">{{ item.amount }} ₽</td>
+                                    <td>{{ item.duration|default:"-" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-chart-bar"></i>
+                        <h3>Нет данных за выбранный период</h3>
+                        <p>Попробуйте изменить параметры фильтрации</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- График доходов по дням -->
+                {% if report_data %}
+                <div class="chart-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-chart-line"></i> ДИНАМИКА ДОХОДОВ ПО ДНЯМ</h2>
+                        <span class="total-items">Период: {{ summary.period }}</span>
+                    </div>
+                    
+                    <div class="big-chart-wrapper">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <!-- Состояние по умолчанию -->
+            <div class="empty-report">
+                <div class="empty-state">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Выберите период для отчета</h3>
+                    <p>Укажите даты начала и окончания периода, а также тип отчета</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Подключаем Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+.reports-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 32px;
+}
+
+.filter-card {
+    background: var(--light-card);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid var(--light-border);
+}
+
+.dark-theme .filter-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.report-filter-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 14px;
+}
+
+.dark-theme .form-group label {
+    color: var(--dark-text);
+}
+
+.form-input, .form-select {
+    padding: 12px 16px;
+    border: 1px solid var(--light-border);
+    border-radius: 8px;
+    background: var(--light-bg);
+    color: var(--text-dark);
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.dark-theme .form-input,
+.dark-theme .form-select {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+    color: var(--dark-text);
+}
+
+.form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--neon-purple);
+    box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.1);
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.export-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.btn-primary {
+    background: var(--neon-purple);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--neon-purple-dark);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: var(--light-bg);
+    color: var(--text-dark);
+    border: 1px solid var(--light-border);
+}
+
+.dark-theme .btn-secondary {
+    background: var(--dark-bg);
+    color: var(--dark-text);
+    border-color: var(--dark-border);
+}
+
+.btn-secondary:hover {
+    border-color: var(--neon-purple);
+    transform: translateY(-1px);
+}
+
+/* Результаты отчета */
+.report-results {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.summary-card, .sales-card, .chart-card {
+    background: var(--light-card);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid var(--light-border);
+}
+
+.dark-theme .summary-card,
+.dark-theme .sales-card,
+.dark-theme .chart-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.summary-item {
+    background: var(--light-bg);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--light-border);
+    text-align: center;
+}
+
+.dark-theme .summary-item {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.summary-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--neon-purple);
+    margin-bottom: 4px;
+}
+
+.summary-label {
+    color: var(--text-gray);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.dark-theme .summary-label {
+    color: var(--dark-text-light);
+}
+
+/* Таблица продаж */
+.sales-table-container {
+    overflow-x: auto;
+    margin-top: 16px;
+}
+
+.sales-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.sales-table th {
+    background: var(--light-bg);
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 13px;
+    border-bottom: 1px solid var(--light-border);
+}
+
+.dark-theme .sales-table th {
+    background: var(--dark-bg);
+    color: var(--dark-text);
+    border-bottom-color: var(--dark-border);
+}
+
+.sales-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--light-border);
+    color: var(--text-dark);
+    font-size: 14px;
+}
+
+.dark-theme .sales-table td {
+    color: var(--dark-text);
+    border-bottom-color: var(--dark-border);
+}
+
+.sales-table tr:hover {
+    background: var(--light-bg);
+}
+
+.dark-theme .sales-table tr:hover {
+    background: var(--dark-bg);
+}
+
+.type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.type-абонемент {
+    background: rgba(138, 43, 226, 0.1);
+    color: var(--neon-purple);
+}
+
+.type-тренировка {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+}
+
+.amount {
+    font-weight: 600;
+    color: var(--neon-purple);
+}
+
+.total-items {
+    background: var(--light-bg);
+    color: var(--text-gray);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.dark-theme .total-items {
+    background: var(--dark-bg);
+    color: var(--dark-text-light);
+}
+
+/* ИСПРАВЛЕННЫЙ СТИЛЬ ДЛЯ ГРАФИКА - БЕЗ ОБРЕЗАНИЯ */
+.big-chart-wrapper {
+    width: 100%;
+    height: 600px;
+    margin-top: 20px;
+    position: relative;
+    background: var(--light-bg);
+    border-radius: 12px;
+    border: 1px solid var(--light-border);
+    padding: 20px;
+    box-sizing: border-box;
+    overflow: visible; /* Добавляем это свойство */
+    margin-bottom:100px;
+}
+
+.dark-theme .big-chart-wrapper {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.big-chart-wrapper canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+    max-width: 100%; /* Добавляем ограничение по ширине */
+}
+
+/* Состояния пустоты */
+.empty-report {
+    background: var(--light-card);
+    border-radius: 16px;
+    padding: 60px 40px;
+    border: 1px solid var(--light-border);
+    text-align: center;
+}
+
+.dark-theme .empty-report {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+/* Ошибки */
+.form-errors {
+    margin-top: 16px;
+}
+
+.error-alert {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 8px;
+    color: #dc2626;
+    font-size: 14px;
+}
+
+.field-error {
+    color: #dc2626;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+    .form-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .export-buttons {
+        justify-content: center;
+    }
+    
+    .big-chart-wrapper {
+        height: 500px;
+        padding: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        margin: 20px 20px 20px;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .export-buttons {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .sales-table {
+        font-size: 12px;
+    }
+    
+    .sales-table th,
+    .sales-table td {
+        padding: 8px 12px;
+    }
+    
+    .big-chart-wrapper {
+        height: 400px;
+        padding: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .filter-card,
+    .summary-card,
+    .sales-card,
+    .chart-card {
+        padding: 16px;
+    }
+    
+    .summary-value {
+        font-size: 20px;
+    }
+    
+    .big-chart-wrapper {
+        height: 350px;
+        padding: 10px;
+    }
+}
+</style>
+
+{% if report_data %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    
+    const labels = {{ daily_revenue_labels|safe }};
+    const revenueData = {{ daily_revenue_values|safe }};
+    
+    const isDarkTheme = document.body.classList.contains('dark-theme');
+    const gridColor = isDarkTheme ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+    const textColor = isDarkTheme ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
+    
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Доход за день (₽)',
+                data: revenueData,
+                borderColor: 'rgba(138, 43, 226, 1)',
+                backgroundColor: 'rgba(138, 43, 226, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: 'rgba(138, 43, 226, 1)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+                padding: {
+                    left: 10,
+                    right: 10,
+                    top: 10,
+                    bottom: 10
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        color: textColor,
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        },
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: isDarkTheme ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.95)',
+                    titleColor: textColor,
+                    bodyColor: textColor,
+                    borderColor: 'rgba(138, 43, 226, 0.8)',
+                    borderWidth: 2,
+                    cornerRadius: 8,
+                    padding: 12,
+                    callbacks: {
+                        label: function(context) {
+                            return `Доход: ${context.parsed.y.toLocaleString('ru-RU')} ₽`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: gridColor,
+                        lineWidth: 1
+                    },
+                    ticks: {
+                        color: textColor,
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: gridColor,
+                        lineWidth: 1
+                    },
+                    ticks: {
+                        color: textColor,
+                        font: {
+                            size: 12
+                        },
+                        callback: function(value) {
+                            return value.toLocaleString('ru-RU') + ' ₽';
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

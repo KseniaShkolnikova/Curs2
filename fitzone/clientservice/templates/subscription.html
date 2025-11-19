@@ -1,0 +1,442 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load subscription_tags %}
+
+{% block title_name %}
+FITZONE - Абонементы
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/subscription.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <section class="membership-hero">
+        <h1>АБОНЕМЕНТЫ</h1>
+        <p>Выберите подходящий абонемент для достижения ваших фитнес-целей</p>
+    </section>
+
+    <!-- Beautiful Filters Section -->
+    <section class="beautiful-filters">
+        <div class="filters-glass">
+            <div class="filters-header">
+                <h3 class="filters-title">
+                    <i class="fas fa-sliders-h"></i>
+                    ФИЛЬТРЫ И ПОИСК
+                </h3>
+                <div class="filters-count">
+                    <span class="count-bubble" id="results-count">{{ subscriptions|length }}</span>
+                </div>
+            </div>
+            
+            <div class="filters-content">
+                <div class="search-glass">
+                    <div class="search-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <input type="text" id="search-input" placeholder="Найти абонемент..." class="search-input">
+                    <div class="search-glow"></div>
+                </div>
+                
+                <div class="sort-glass">
+                    <div class="sort-icon">
+                        <i class="fas fa-sort-amount-down"></i>
+                    </div>
+                    <select id="sort-select" class="sort-select">
+                        <option value="price_asc">Сначала дешевые</option>
+                        <option value="price_desc">Сначала дорогие</option>
+                        <option value="duration_asc">Короткий срок</option>
+                        <option value="duration_desc">Длинный срок</option>
+                    </select>
+                    <div class="select-arrow">
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="filters-stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="active-count">{{ subscriptions|length }}</span>
+                    <span class="stat-label">доступно</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-number">{{ subscriptions|length }}</span>
+                    <span class="stat-label">всего</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Membership Section -->
+    <section>
+        <h2 class="section-title">ДОСТУПНЫЕ АБОНЕМЕНТЫ</h2>
+    </section>
+</div>
+
+<!-- Full Width Slider Section -->
+<section class="fullwidth-slider-section">
+    <div class="fullwidth-slider-container">
+        <div class="slider-nav">
+            <button class="slider-btn prev-btn">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="slider-btn next-btn">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+        
+        <div class="fullwidth-membership-slider" id="subscriptions-slider">
+            {% if subscriptions %}
+                {% for subscription in subscriptions %}
+                <div class="subscription-card" data-name="{{ subscription.name|lower }}" data-description="{{ subscription.description|lower }}" data-price="{{ subscription.price }}" data-duration="{{ subscription.durationdays }}">
+                    <!-- Card Header -->
+                    <div class="card-header">
+                        <div class="card-icon">
+                            {% if subscription.gym_access and subscription.pool_access and subscription.spa_access %}
+                            <i class="fas fa-crown"></i>
+                            {% elif subscription.gym_access and subscription.pool_access %}
+                            <i class="fas fa-fire"></i>
+                            {% else %}
+                            <i class="fas fa-star"></i>
+                            {% endif %}
+                        </div>
+                        <h3 class="card-title">{{ subscription.name }}</h3>
+                    </div>
+                    
+                    <!-- Price -->
+                    <div class="card-price">
+                        <div class="price-main">
+                            <span class="price">{{ subscription.price|floatformat:0 }}</span>
+                            <span class="currency">₽</span>
+                        </div>
+                        <div class="price-note">единоразовый платеж</div>
+                    </div>
+
+                    <!-- Duration -->
+                    <div class="card-duration">
+                        <i class="fas fa-calendar"></i>
+                        <span>{% duration_display subscription.durationdays %}</span>
+                    </div>
+
+                    <!-- Services -->
+                    <div class="card-services">
+                        <div class="services-title">Что включено:</div>
+                        <div class="services-list">
+                            {% if subscription.gym_access %}
+                            <div class="service-item">
+                                <i class="fas fa-dumbbell"></i>
+                                <span>Тренажерный зал</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if subscription.group_classes %}
+                            <div class="service-item">
+                                <i class="fas fa-users"></i>
+                                <span>Групповые занятия</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if subscription.pool_access %}
+                            <div class="service-item">
+                                <i class="fas fa-swimming-pool"></i>
+                                <span>Бассейн</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if subscription.spa_access %}
+                            <div class="service-item">
+                                <i class="fas fa-spa"></i>
+                                <span>СПА зона</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if subscription.personal_training %}
+                            <div class="service-item">
+                                <i class="fas fa-user-tie"></i>
+                                <span>Персональные тренировки</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if subscription.locker_room %}
+                            <div class="service-item">
+                                <i class="fas fa-door-open"></i>
+                                <span>Раздевалка</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if subscription.towel_service %}
+                            <div class="service-item">
+                                <i class="fas fa-tshirt"></i>
+                                <span>Полотенце</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if subscription.fitness_consultation %}
+                            <div class="service-item">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span>Фитнес-консультация</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if subscription.nutrition_consultation %}
+                            <div class="service-item">
+                                <i class="fas fa-apple-alt"></i>
+                                <span>Консультация по питанию</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if subscription.guest_visits > 0 %}
+                            <div class="service-item highlight">
+                                <i class="fas fa-user-friends"></i>
+                                <span>{{ subscription.guest_visits }} гостевых визитов</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if subscription.freeze_days > 0 %}
+                            <div class="service-item highlight">
+                                <i class="fas fa-snowflake"></i>
+                                <span>{{ subscription.freeze_days }} дней заморозки</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- CTA Button -->
+                    <a href="{% url 'detail_subscription' subscription.id %}" class="card-button">
+                        <span>Выбрать абонемент</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-results">
+                    <i class="fas fa-search"></i>
+                    <h3>Абонементы не найдены</h3>
+                    <p>Попробуйте изменить параметры поиска</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="slider-dots" id="slider-dots">
+            {% for subscription in subscriptions %}
+            <button class="dot {% if forloop.first %}active{% endif %}" data-slide="{{ forloop.counter0 }}"></button>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block skripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // DOM Elements
+        const slider = document.querySelector('.fullwidth-membership-slider');
+        const cards = document.querySelectorAll('.subscription-card');
+        const dotsContainer = document.getElementById('slider-dots');
+        const prevBtn = document.querySelector('.prev-btn');
+        const nextBtn = document.querySelector('.next-btn');
+        const searchInput = document.getElementById('search-input');
+        const sortSelect = document.getElementById('sort-select');
+        const resultsCount = document.getElementById('results-count');
+        const activeCount = document.getElementById('active-count');
+        
+        let currentSlide = 0;
+        let cardsPerView = calculateCardsPerView();
+        let filteredCards = Array.from(cards);
+
+        // Filter and Sort Functions
+        function filterCards() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            
+            filteredCards = Array.from(cards).filter(card => {
+                if (!searchTerm) return true;
+                
+                const name = card.dataset.name;
+                const description = card.dataset.description;
+                
+                return name.includes(searchTerm) || description.includes(searchTerm);
+            });
+            
+            updateResultsCount();
+            sortCards();
+            updateSlider();
+        }
+
+        function sortCards() {
+            const sortValue = sortSelect.value;
+            
+            filteredCards.sort((a, b) => {
+                switch(sortValue) {
+                    case 'price_asc':
+                        return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+                    case 'price_desc':
+                        return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+                    case 'duration_asc':
+                        return parseInt(a.dataset.duration) - parseInt(b.dataset.duration);
+                    case 'duration_desc':
+                        return parseInt(b.dataset.duration) - parseInt(a.dataset.duration);
+                    default:
+                        return 0;
+                }
+            });
+            
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            cards.forEach(card => {
+                card.style.display = 'none';
+            });
+            
+            filteredCards.forEach((card, index) => {
+                card.style.display = 'flex';
+                card.style.order = index;
+            });
+            
+            updateResultsCount();
+            updateSlider();
+        }
+
+        function updateResultsCount() {
+            const count = filteredCards.length;
+            resultsCount.textContent = count;
+            activeCount.textContent = count;
+        }
+
+        // Slider Functions
+        function calculateCardsPerView() {
+            const width = window.innerWidth;
+            if (width >= 1400) return 4;
+            if (width >= 1024) return 3;
+            if (width >= 768) return 2;
+            return 1;
+        }
+        
+        function updateSlider() {
+            const visibleCards = filteredCards.filter(card => card.style.display !== 'none');
+            const cardWidth = visibleCards[0]?.offsetWidth + 30;
+            const translateX = currentSlide * cardWidth * cardsPerView;
+            slider.style.transform = `translateX(-${translateX}px)`;
+            
+            updateDots();
+            
+            const maxSlides = Math.ceil(visibleCards.length / cardsPerView) - 1;
+            prevBtn.style.opacity = currentSlide === 0 ? '0.5' : '1';
+            nextBtn.style.opacity = currentSlide >= maxSlides ? '0.5' : '1';
+        }
+        
+        function updateDots() {
+            const visibleCards = filteredCards.filter(card => card.style.display !== 'none');
+            const dotCount = Math.ceil(visibleCards.length / cardsPerView);
+            
+            dotsContainer.innerHTML = '';
+            
+            for (let i = 0; i < dotCount; i++) {
+                const dot = document.createElement('button');
+                dot.className = `dot ${i === currentSlide ? 'active' : ''}`;
+                dot.dataset.slide = i;
+                dot.addEventListener('click', () => {
+                    currentSlide = i;
+                    updateSlider();
+                });
+                dotsContainer.appendChild(dot);
+            }
+        }
+        
+        // Event Listeners
+        nextBtn.addEventListener('click', () => {
+            const visibleCards = filteredCards.filter(card => card.style.display !== 'none');
+            const maxSlides = Math.ceil(visibleCards.length / cardsPerView) - 1;
+            if (currentSlide < maxSlides) {
+                currentSlide++;
+                updateSlider();
+            }
+        });
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlider();
+            }
+        });
+        
+        searchInput.addEventListener('input', () => {
+            currentSlide = 0;
+            filterCards();
+        });
+        
+        sortSelect.addEventListener('change', () => {
+            currentSlide = 0;
+            sortCards();
+        });
+
+        // Auto slide
+        let autoSlide = setInterval(() => {
+            const visibleCards = filteredCards.filter(card => card.style.display !== 'none');
+            const maxSlides = Math.ceil(visibleCards.length / cardsPerView) - 1;
+            if (currentSlide < maxSlides) {
+                currentSlide++;
+            } else {
+                currentSlide = 0;
+            }
+            updateSlider();
+        }, 5000);
+        
+        slider.addEventListener('mouseenter', () => clearInterval(autoSlide));
+        slider.addEventListener('mouseleave', () => {
+            autoSlide = setInterval(() => {
+                const visibleCards = filteredCards.filter(card => card.style.display !== 'none');
+                const maxSlides = Math.ceil(visibleCards.length / cardsPerView) - 1;
+                if (currentSlide < maxSlides) {
+                    currentSlide++;
+                } else {
+                    currentSlide = 0;
+                }
+                updateSlider();
+            }, 5000);
+        });
+        
+        window.addEventListener('resize', () => {
+            cardsPerView = calculateCardsPerView();
+            currentSlide = 0;
+            updateSlider();
+        });
+        
+        // Initialize
+        updateResultsCount();
+        updateSlider();
+    });
+</script>
+<style>
+/* Для светлой темы */
+.subscription-card .card-button {
+    text-decoration: none !important;
+    color: white !important;
+}
+
+.subscription-card .card-button:hover {
+    text-decoration: none !important;
+    color: white !important;
+}
+
+/* Если у вас есть класс для светлой темы на body */
+body.light-theme .subscription-card .card-button,
+body.light-theme .subscription-card .card-button:hover {
+    color: white !important;
+}
+
+/* Или если светлая тема по умолчанию */
+.subscription-card .card-button span,
+.subscription-card .card-button i {
+    color: white !important;
+}
+
+.subscription-card .card-button:hover span,
+.subscription-card .card-button:hover i {
+    color: white !important;
+}
+</style>
+{% endblock %}

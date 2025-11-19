@@ -1,0 +1,1163 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title_name %}
+FITZONE - Логи действий
+{% endblock %}
+
+{% block content %}
+<div class="particles-container" id="particles"></div>
+
+<section class="hero-section" style="margin: 60px 40px 40px; min-height: auto; padding-top: 20px;">
+    <div class="hero-content">
+        <h1> ⠀⠀</h1>
+        <h1 class="hero-title">
+            ЛОГИ ДЕЙСТВИЙ ПОЛЬЗОВАТЕЛЕЙ
+        </h1>
+
+        <!-- Фильтры и поиск -->
+        <div class="admin-logs-filters-card">
+            <div class="admin-logs-card-header">
+                <h2><i class="fas fa-filter"></i> ФИЛЬТРЫ И ПОИСК</h2>
+                <span class="admin-logs-total-badge">Всего записей: {{ total_logs }}</span>
+            </div>
+            
+            <form method="get" class="admin-logs-filters-form">
+                <div class="admin-logs-filters-grid">
+                    <!-- Поиск по действию -->
+                    <div class="admin-logs-filter-group">
+                        <label>Поиск по названию:</label>
+                        <input type="text" name="search" value="{{ request.GET.search }}" 
+                               placeholder="Введите название действия..." class="admin-logs-form-control">
+                    </div>
+
+                    <!-- Фильтр по роли -->
+                    <div class="admin-logs-filter-group">
+                        <label>Роль пользователя:</label>
+                        <select name="role" class="admin-logs-form-control">
+                            <option value="">Все роли</option>
+                            {% for role in roles %}
+                            <option value="{{ role.name }}" {% if request.GET.role == role.name %}selected{% endif %}>
+                                {{ role.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Фильтр по пользователю -->
+                    <div class="admin-logs-filter-group">
+                        <label>Пользователь:</label>
+                        <select name="user" class="admin-logs-form-control">
+                            <option value="">Все пользователи</option>
+                            {% for user in users %}
+                            <option value="{{ user.id }}" {% if request.GET.user == user.id|stringformat:"i" %}selected{% endif %}>
+                                {{ user.userprofile.full_name|default:user.username }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Фильтр по типу действия -->
+                    <div class="admin-logs-filter-group">
+                        <label>Тип действия:</label>
+                        <select name="action_type" class="admin-logs-form-control">
+                            <option value="">Все типы</option>
+                            {% for type_code, type_name in action_types %}
+                            <option value="{{ type_code }}" {% if request.GET.action_type == type_code %}selected{% endif %}>
+                                {{ type_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="admin-logs-filter-actions">
+                    <button type="submit" class="admin-logs-btn admin-logs-btn-primary">
+                        <i class="fas fa-search"></i> Применить фильтры
+                    </button>
+                    <a href="{% url 'adminservice:action_logs' %}" class="admin-logs-btn admin-logs-btn-secondary">
+                        <i class="fas fa-times"></i> Сбросить
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Таблица логов -->
+        <div class="admin-logs-dashboard-card">
+            <div class="admin-logs-card-header">
+                <h2><i class="fas fa-list-alt"></i> ЖУРНАЛ ДЕЙСТВИЙ</h2>
+                <div class="admin-logs-sort-controls">
+                    <span>Сортировка:</span>
+                    <select onchange="location = this.value;" class="admin-logs-sort-select">
+                        <option value="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort=-actiondate" 
+                                {% if request.GET.sort == '-actiondate' or not request.GET.sort %}selected{% endif %}>
+                            Сначала новые
+                        </option>
+                        <option value="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort=actiondate" 
+                                {% if request.GET.sort == 'actiondate' %}selected{% endif %}>
+                            Сначала старые
+                        </option>
+                        <option value="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort=user_full_name" 
+                                {% if request.GET.sort == 'user_full_name' %}selected{% endif %}>
+                            По пользователю (А-Я)
+                        </option>
+                        <option value="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort=-user_full_name" 
+                                {% if request.GET.sort == '-user_full_name' %}selected{% endif %}>
+                            По пользователю (Я-А)
+                        </option>
+                        <option value="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort=action_type" 
+                                {% if request.GET.sort == 'action_type' %}selected{% endif %}>
+                            По типу действия
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            {% if logs %}
+            <div class="admin-logs-table-container">
+                <table class="admin-logs-data-table">
+                    <thead>
+                        <tr>
+                            <th>Дата и время</th>
+                            <th>Пользователь</th>
+                            <th>Действие</th>
+                            <th>Тип действия</th>
+                            <th>Объект</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr class="admin-logs-row">
+                            <td class="admin-logs-date">
+                                <div class="admin-logs-date-time">
+                                    <div class="admin-logs-date-text">{{ log.actiondate|date:"d.m.Y" }}</div>
+                                    <div class="admin-logs-time-text">{{ log.actiondate|date:"H:i:s" }}</div>
+                                </div>
+                            </td>
+                            <td class="admin-logs-user">
+                                {% if log.user_full_name %}
+                                    <div class="admin-logs-user-info">
+                                        <div class="admin-logs-user-name">{{ log.user_full_name }}</div>
+                                        {% if log.user %}
+                                        <div class="admin-logs-user-email">{{ log.user.email }}</div>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <span class="admin-logs-no-user">Система</span>
+                                {% endif %}
+                            </td>
+                            <td class="admin-logs-action">
+                                <div class="admin-logs-action-text">{{ log.action }}</div>
+                            </td>
+                            <td class="admin-logs-type">
+                                <span class="admin-logs-action-badge admin-logs-action-{{ log.action_type|lower }}">
+                                    {{ log.get_action_type_display }}
+                                </span>
+                            </td>
+                            <td class="admin-logs-object">
+                                {% if log.model_name %}
+                                    <div class="admin-logs-object-info">
+                                        <span class="admin-logs-model-name">{{ log.model_name }}</span>
+                                        {% if log.object_id %}
+                                        <span class="admin-logs-object-id">#{{ log.object_id }}</span>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <span class="admin-logs-no-object">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Пагинация -->
+            {% if logs.has_other_pages %}
+            <div class="admin-logs-pagination">
+                <div class="admin-logs-pagination-info">
+                    Показано {{ logs.start_index }} - {{ logs.end_index }} из {{ total_logs }} записей
+                </div>
+                <div class="admin-logs-pagination-controls">
+                    {% if logs.has_previous %}
+                        <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page=1" class="admin-logs-pagination-btn admin-logs-pagination-first">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page={{ logs.previous_page_number }}" class="admin-logs-pagination-btn admin-logs-pagination-prev">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    {% endif %}
+
+                    {% for num in logs.paginator.page_range %}
+                        {% if logs.number == num %}
+                            <span class="admin-logs-pagination-btn admin-logs-pagination-active">{{ num }}</span>
+                        {% elif num > logs.number|add:'-3' and num < logs.number|add:'3' %}
+                            <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page={{ num }}" class="admin-logs-pagination-btn">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if logs.has_next %}
+                        <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page={{ logs.next_page_number }}" class="admin-logs-pagination-btn admin-logs-pagination-next">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page={{ logs.paginator.num_pages }}" class="admin-logs-pagination-btn admin-logs-pagination-last">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Круговая диаграмма статистики логов -->
+            <div class="admin-logs-dashboard-card">
+                <div class="admin-logs-card-header">
+                    <h2><i class="fas fa-chart-pie"></i> СТАТИСТИКА ЛОГОВ ПО ТИПАМ</h2>
+                    <div class="admin-logs-chart-controls">
+                        <form method="get" id="chartPeriodForm" class="admin-logs-period-form">
+                            <div class="period-controls">
+                                <span>Период:</span>
+                                <select name="chart_period" class="admin-logs-form-control">
+                                    <option value="7" {% if request.GET.chart_period == '7' %}selected{% endif %}>7 дней</option>
+                                    <option value="30" {% if not request.GET.chart_period or request.GET.chart_period == '30' %}selected{% endif %}>30 дней</option>
+                                    <option value="90" {% if request.GET.chart_period == '90' %}selected{% endif %}>90 дней</option>
+                                    <option value="365" {% if request.GET.chart_period == '365' %}selected{% endif %}>Год</option>
+                                    <option value="all" {% if request.GET.chart_period == 'all' %}selected{% endif %}>Все время</option>
+                                </select>
+                                <button type="submit" class="admin-logs-btn admin-logs-btn-primary">
+                                    <i class="fas fa-chart-pie"></i> Построить
+                                </button>
+                            </div>
+                            
+                            <!-- Сохраняем другие параметры фильтрации -->
+                            {% if request.GET.search %}
+                                <input type="hidden" name="search" value="{{ request.GET.search }}">
+                            {% endif %}
+                            {% if request.GET.role %}
+                                <input type="hidden" name="role" value="{{ request.GET.role }}">
+                            {% endif %}
+                            {% if request.GET.user %}
+                                <input type="hidden" name="user" value="{{ request.GET.user }}">
+                            {% endif %}
+                            {% if request.GET.action_type %}
+                                <input type="hidden" name="action_type" value="{{ request.GET.action_type }}">
+                            {% endif %}
+                            {% if request.GET.sort %}
+                                <input type="hidden" name="sort" value="{{ request.GET.sort }}">
+                            {% endif %}
+                            {% if request.GET.page %}
+                                <input type="hidden" name="page" value="{{ request.GET.page }}">
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="admin-logs-chart-container">
+                    <div class="admin-logs-chart-wrapper">
+                        <canvas id="logsChart" width="400" height="400"></canvas>
+                    </div>
+                    <div class="admin-logs-chart-legend" id="chartLegend"></div>
+                </div>
+                
+                <div class="admin-logs-chart-stats">
+                    <div class="admin-logs-chart-stat">
+                        <span class="admin-logs-stat-value" id="totalLogsCount">0</span>
+                        <span class="admin-logs-stat-label">Всего записей</span>
+                    </div>
+                    <div class="admin-logs-chart-stat">
+                        <span class="admin-logs-stat-value" id="mostCommonType">—</span>
+                        <span class="admin-logs-stat-label">Самый частый тип</span>
+                    </div>
+                    <div class="admin-logs-chart-stat">
+                        <span class="admin-logs-stat-value" id="leastCommonType">—</span>
+                        <span class="admin-logs-stat-label">Самый редкий тип</span>
+                    </div>
+                </div>
+            </div>
+
+            {% else %}
+            <div class="admin-logs-empty-state">
+                <i class="fas fa-clipboard-list"></i>
+                <h3>Записи не найдены</h3>
+                <p>Попробуйте изменить параметры фильтрации</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<style>
+<style>
+/* Стили для круговой диаграммы */
+.admin-logs-chart-container {
+    display: flex;
+    gap: 40px;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 0;
+    flex-wrap: wrap;
+}
+
+.admin-logs-chart-wrapper {
+    flex-shrink: 0;
+}
+
+.admin-logs-chart-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 200px;
+}
+
+.admin-logs-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: var(--light-bg);
+    border: 1px solid var(--light-border);
+    transition: all 0.3s ease;
+}
+
+.dark-theme .admin-logs-legend-item {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.admin-logs-legend-item:hover {
+    transform: translateX(4px);
+    border-color: var(--neon-purple);
+}
+
+.admin-logs-legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.admin-logs-legend-info {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-logs-legend-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.dark-theme .admin-logs-legend-name {
+    color: var(--dark-text);
+}
+
+.admin-logs-legend-count {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-gray);
+    background: var(--light-card);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.dark-theme .admin-logs-legend-count {
+    color: var(--dark-text-light);
+    background: var(--dark-card);
+}
+
+.admin-logs-chart-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.admin-logs-chart-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--light-border);
+}
+
+.dark-theme .admin-logs-chart-stats {
+    border-top-color: var(--dark-border);
+}
+
+.admin-logs-chart-stat {
+    text-align: center;
+    padding: 16px;
+    background: var(--light-bg);
+    border-radius: 8px;
+    border: 1px solid var(--light-border);
+}
+
+.dark-theme .admin-logs-chart-stat {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.admin-logs-stat-value {
+    display: block;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+}
+
+.dark-theme .admin-logs-stat-value {
+    color: var(--dark-text);
+}
+
+.admin-logs-stat-label {
+    font-size: 12px;
+    color: var(--text-gray);
+    font-weight: 500;
+}
+
+.dark-theme .admin-logs-stat-label {
+    color: var(--dark-text-light);
+}
+
+/* Цвета для типов действий в диаграмме */
+.admin-logs-chart-create { background-color: #2ecc71; }
+.admin-logs-chart-update { background-color: #3498db; }
+.admin-logs-chart-delete { background-color: #e74c3c; }
+.admin-logs-chart-login { background-color: #9b59b6; }
+.admin-logs-chart-logout { background-color: #95a5a6; }
+.admin-logs-chart-system { background-color: #f39c12; }
+.admin-logs-chart-other { background-color: #34495e; }
+.admin-logs-filters-card {
+    background: var(--light-card);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid var(--light-border);
+    margin-bottom: 24px;
+}
+
+.dark-theme .admin-logs-filters-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.admin-logs-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--light-border);
+}
+
+.dark-theme .admin-logs-card-header {
+    border-bottom-color: var(--dark-border);
+}
+
+.admin-logs-card-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.dark-theme .admin-logs-card-header h2 {
+    color: var(--dark-text);
+}
+
+.admin-logs-total-badge {
+    background: var(--neon-purple);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 12px;
+}
+
+.admin-logs-filters-form {
+    margin-top: 20px;
+}
+
+.admin-logs-filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.admin-logs-filter-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 14px;
+}
+
+.dark-theme .admin-logs-filter-group label {
+    color: var(--dark-text);
+}
+
+.admin-logs-form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--light-border);
+    border-radius: 8px;
+    background: var(--light-bg);
+    color: var(--text-dark);
+    font-size: 14px;
+}
+
+.dark-theme .admin-logs-form-control {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+    color: var(--dark-text);
+}
+
+.admin-logs-filter-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+/* Добавь эти стили в конец CSS блока */
+
+/* Отступы для страницы логов */
+.hero-section {
+    margin: 100px 40px 80px !important; /* Увеличил отступы сверху и снизу */
+    min-height: auto;
+    padding-top: 20px;
+}
+
+/* Дополнительный отступ для карточки с логами */
+.admin-logs-dashboard-card {
+    margin-bottom: 60px; /* Добавил отступ снизу */
+}
+
+/* Убедимся, что контент не обрезается */
+.admin-logs-table-container {
+    max-height: none !important;
+    overflow-x: auto;
+    margin-bottom: 24px;
+}
+
+/* Отступ для пагинации */
+.admin-logs-pagination {
+    margin-bottom: 20px;
+}
+
+/* Для мобильных устройств */
+@media (max-width: 768px) {
+    .hero-section {
+        margin: 80px 20px 60px !important;
+    }
+    
+    .admin-logs-dashboard-card {
+        margin-bottom: 40px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-section {
+        margin: 60px 15px 40px !important;
+    }
+}
+
+.admin-logs-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.admin-logs-btn-primary {
+    background: var(--neon-purple);
+    color: white;
+}
+
+.admin-logs-btn-secondary {
+    background: var(--light-bg);
+    color: var(--text-dark);
+    border: 1px solid var(--light-border);
+}
+
+.dark-theme .admin-logs-btn-secondary {
+    background: var(--dark-bg);
+    color: var(--dark-text);
+    border-color: var(--dark-border);
+}
+
+.admin-logs-sort-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+}
+
+.admin-logs-sort-select {
+    padding: 6px 12px;
+    border: 1px solid var(--light-border);
+    border-radius: 6px;
+    background: var(--light-bg);
+    color: var(--text-dark);
+}
+
+.dark-theme .admin-logs-sort-select {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+    color: var(--dark-text);
+}
+
+.admin-logs-dashboard-card {
+    background: var(--light-card);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid var(--light-border);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark-theme .admin-logs-dashboard-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.admin-logs-table-container {
+    overflow-x: auto;
+    margin-bottom: 24px;
+}
+
+.admin-logs-data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-logs-data-table th {
+    background: var(--light-bg);
+    padding: 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-dark);
+    border-bottom: 1px solid var(--light-border);
+    font-size: 14px;
+}
+
+.dark-theme .admin-logs-data-table th {
+    background: var(--dark-bg);
+    color: var(--dark-text);
+    border-bottom-color: var(--dark-border);
+}
+
+.admin-logs-data-table td {
+    padding: 16px;
+    border-bottom: 1px solid var(--light-border);
+    vertical-align: top;
+}
+
+.dark-theme .admin-logs-data-table td {
+    border-bottom-color: var(--dark-border);
+}
+
+.admin-logs-row:hover {
+    background: var(--light-bg);
+}
+
+.dark-theme .admin-logs-row:hover {
+    background: var(--dark-bg);
+}
+
+.admin-logs-date .admin-logs-date-time {
+    line-height: 1.2;
+}
+
+.admin-logs-date .admin-logs-date-text {
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 14px;
+}
+
+.admin-logs-date .admin-logs-time-text {
+    color: var(--text-gray);
+    font-size: 12px;
+}
+
+.dark-theme .admin-logs-date .admin-logs-date-text {
+    color: var(--dark-text);
+}
+
+.dark-theme .admin-logs-date .admin-logs-time-text {
+    color: var(--dark-text-light);
+}
+
+.admin-logs-user .admin-logs-user-info {
+    line-height: 1.2;
+}
+
+.admin-logs-user .admin-logs-user-name {
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 14px;
+}
+
+.admin-logs-user .admin-logs-user-email {
+    color: var(--text-gray);
+    font-size: 12px;
+}
+
+.dark-theme .admin-logs-user .admin-logs-user-name {
+    color: var(--dark-text);
+}
+
+.dark-theme .admin-logs-user .admin-logs-user-email {
+    color: var(--dark-text-light);
+}
+
+.admin-logs-no-user, .admin-logs-no-object {
+    color: var(--text-gray);
+    font-style: italic;
+}
+
+.admin-logs-action .admin-logs-action-text {
+    color: var(--text-dark);
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.dark-theme .admin-logs-action .admin-logs-action-text {
+    color: var(--dark-text);
+}
+
+.admin-logs-action-badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.admin-logs-action-create {
+    background: rgba(46, 204, 113, 0.1);
+    color: #2ecc71;
+}
+
+.admin-logs-action-update {
+    background: rgba(52, 152, 219, 0.1);
+    color: #3498db;
+}
+
+.admin-logs-action-delete {
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+}
+
+.admin-logs-action-login {
+    background: rgba(155, 89, 182, 0.1);
+    color: #9b59b6;
+}
+
+.admin-logs-action-logout {
+    background: rgba(149, 165, 166, 0.1);
+    color: #95a5a6;
+}
+
+.admin-logs-action-system {
+    background: rgba(243, 156, 18, 0.1);
+    color: #f39c12;
+}
+
+.admin-logs-object .admin-logs-object-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-logs-model-name {
+    color: var(--text-dark);
+    font-size: 14px;
+}
+
+.admin-logs-object-id {
+    color: var(--text-gray);
+    font-size: 12px;
+    background: var(--light-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.dark-theme .admin-logs-model-name {
+    color: var(--dark-text);
+}
+
+.dark-theme .admin-logs-object-id {
+    color: var(--dark-text-light);
+    background: var(--dark-bg);
+}
+
+/* Пагинация */
+.admin-logs-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--light-border);
+}
+
+.dark-theme .admin-logs-pagination {
+    border-top-color: var(--dark-border);
+}
+
+.admin-logs-pagination-info {
+    color: var(--text-gray);
+    font-size: 14px;
+}
+
+.admin-logs-pagination-controls {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.admin-logs-pagination-btn {
+    padding: 8px 12px;
+    border: 1px solid var(--light-border);
+    border-radius: 6px;
+    background: var(--light-bg);
+    color: var(--text-dark);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+}
+
+.dark-theme .admin-logs-pagination-btn {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+    color: var(--dark-text);
+}
+
+.admin-logs-pagination-btn:hover {
+    border-color: var(--neon-purple);
+    color: var(--neon-purple);
+}
+
+.admin-logs-pagination-active {
+    background: var(--neon-purple) !important;
+    color: white !important;
+    border-color: var(--neon-purple) !important;
+}
+
+.admin-logs-pagination-first,
+.admin-logs-pagination-prev,
+.admin-logs-pagination-next,
+.admin-logs-pagination-last {
+    font-size: 12px;
+}
+
+.admin-logs-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-gray);
+}
+
+.admin-logs-empty-state i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.admin-logs-empty-state h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.admin-logs-empty-state p {
+    font-size: 14px;
+    margin: 0;
+    opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+    .admin-logs-filters-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .admin-logs-filter-actions {
+        flex-direction: column;
+    }
+    
+    .admin-logs-data-table {
+        font-size: 12px;
+    }
+    
+    .admin-logs-data-table th,
+    .admin-logs-data-table td {
+        padding: 12px 8px;
+    }
+    
+    .admin-logs-pagination {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+    }
+    
+    .admin-logs-pagination-controls {
+        justify-content: center;
+    }
+}
+.admin-logs-period-form {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.period-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.period-controls span {
+    font-weight: 500;
+    color: var(--text-dark);
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.dark-theme .period-controls span {
+    color: var(--dark-text);
+}
+
+/* Делаем селект уже */
+.period-controls .admin-logs-form-control {
+    width: 120px;
+}
+
+/* Делаем кнопку компактной */
+.period-controls .admin-logs-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+</style>
+</style>
+{% endblock %}
+
+{% block skripts %}
+
+    <!-- Chart.js для диаграмм -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+    // Глобальные сочетания клавиш для страницы логов
+document.addEventListener('keydown', function(e) {
+    // Ctrl + Delete для сброса фильтров
+    if (e.ctrlKey && e.key === 'Delete') {
+        e.preventDefault();
+        console.log('Ctrl+Delete pressed - resetting filters');
+        
+        // Находим кнопку сброса
+        const resetButton = document.querySelector('a[href*="action-logs"]');
+        if (resetButton) {
+            // Добавляем визуальную обратную связь
+            resetButton.style.transform = 'scale(0.95)';
+            resetButton.style.boxShadow = '0 0 15px rgba(139, 92, 246, 0.5)';
+            setTimeout(() => {
+                resetButton.style.transform = '';
+                resetButton.style.boxShadow = '';
+            }, 500);
+            
+            // Переходим по ссылке сброса
+            setTimeout(() => {
+                window.location.href = resetButton.href;
+            }, 300);
+        } else {
+            console.log('Reset button not found');
+        }
+    }
+});
+    document.addEventListener('DOMContentLoaded', function() {
+        let logsChart = null;
+        
+        // Цвета для типов действий
+        const typeColors = {
+            'create': '#2ecc71',
+            'update': '#3498db', 
+            'delete': '#e74c3c',
+            'login': '#9b59b6',
+            'logout': '#95a5a6',
+            'system': '#f39c12',
+            'other': '#34495e'
+        };
+        
+        // Данные с сервера
+        const chartData = {{ chart_stats|safe }};
+        console.log('Данные для диаграммы с сервера:', chartData);
+        
+        // Функция обновления диаграммы
+        function updateChart(data) {
+            const ctx = document.getElementById('logsChart');
+            
+            if (!ctx) {
+                console.error('Canvas элемент не найден!');
+                return;
+            }
+            
+            const ctx2d = ctx.getContext('2d');
+            
+            // Удаляем старую диаграмму если есть
+            if (logsChart) {
+                logsChart.destroy();
+            }
+            
+            const labels = Object.keys(data.types);
+            const counts = Object.values(data.types);
+            const backgroundColors = labels.map(type => typeColors[type] || typeColors['other']);
+            
+            console.log('Данные для диаграммы:', { labels, counts, backgroundColors });
+            
+            // Если нет данных, показываем сообщение
+            if (labels.length === 0) {
+                ctx2d.clearRect(0, 0, ctx.width, ctx.height);
+                ctx2d.font = '16px Arial';
+                ctx2d.fillStyle = '#666';
+                ctx2d.textAlign = 'center';
+                ctx2d.fillText('Нет данных для отображения', ctx.width / 2, ctx.height / 2);
+                return;
+            }
+            
+            logsChart = new Chart(ctx2d, {
+                type: 'pie',
+                data: {
+                    labels: labels.map(type => {
+                        const typeNames = {
+                            'create': 'Создание',
+                            'update': 'Обновление', 
+                            'delete': 'Удаление',
+                            'system': 'Система',
+                            'other': 'Другие'
+                        };
+                        return typeNames[type] || type;
+                    }),
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Обновляем легенду
+            updateLegend(data.types);
+            // Обновляем статистику
+            updateStats(data);
+        }
+        
+        // Функция обновления легенды
+        function updateLegend(types) {
+            const legendContainer = document.getElementById('chartLegend');
+            if (!legendContainer) {
+                console.error('Контейнер легенды не найден!');
+                return;
+            }
+            
+            legendContainer.innerHTML = '';
+            
+            Object.entries(types).forEach(([type, count]) => {
+                const typeNames = {
+                    'create': 'Создание',
+                    'update': 'Обновление',
+                    'delete': 'Удаление',
+                    'system': 'Система',
+                    'other': 'Другие'
+                };
+                
+                const legendItem = document.createElement('div');
+                legendItem.className = 'admin-logs-legend-item';
+                legendItem.innerHTML = `
+                    <div class="admin-logs-legend-color admin-logs-chart-${type}" 
+                         style="background-color: ${typeColors[type] || typeColors['other']}"></div>
+                    <div class="admin-logs-legend-info">
+                        <span class="admin-logs-legend-name">${typeNames[type] || type}</span>
+                        <span class="admin-logs-legend-count">${count}</span>
+                    </div>
+                `;
+                legendContainer.appendChild(legendItem);
+            });
+        }
+        
+        // Функция обновления статистики
+        function updateStats(data) {
+            const totalLogsElement = document.getElementById('totalLogsCount');
+            const mostCommonElement = document.getElementById('mostCommonType');
+            const leastCommonElement = document.getElementById('leastCommonType');
+            
+            if (totalLogsElement) totalLogsElement.textContent = data.total;
+            
+            const types = data.types;
+            const entries = Object.entries(types);
+            
+            if (entries.length > 0) {
+                // Самый частый тип
+                const mostCommon = entries.reduce((a, b) => a[1] > b[1] ? a : b);
+                if (mostCommonElement) {
+                    mostCommonElement.textContent = 
+                        mostCommon[0] === 'create' ? 'Создание' :
+                        mostCommon[0] === 'update' ? 'Обновление' :
+                        mostCommon[0] === 'delete' ? 'Удаление' :
+                        mostCommon[0] === 'system' ? 'Система' : 'Другие';
+                }
+                
+                // Самый редкий тип  
+                const leastCommon = entries.reduce((a, b) => a[1] < b[1] ? a : b);
+                if (leastCommonElement) {
+                    leastCommonElement.textContent =
+                        leastCommon[0] === 'create' ? 'Создание' :
+                        leastCommon[0] === 'update' ? 'Обновление' :
+                        leastCommon[0] === 'delete' ? 'Удаление' :
+                        leastCommon[0] === 'system' ? 'Система' : 'Другие';
+                }
+            } else {
+                if (mostCommonElement) mostCommonElement.textContent = '—';
+                if (leastCommonElement) leastCommonElement.textContent = '—';
+            }
+        }
+        
+        // Загружаем данные при загрузке страницы
+        updateChart(chartData);
+    });
+    </script>
+{% endblock %}

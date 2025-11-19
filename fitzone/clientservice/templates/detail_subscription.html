@@ -1,0 +1,419 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load subscription_tags %}
+
+
+{% block title_name %}
+FITZONE - {{ subscription.name }}
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/subscription.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="subscription-detail-page">
+    <!-- Modern Hero Section -->
+<section class="modern-hero">
+    <div class="hero-container">
+        <div class="hero-content-wrapper">
+            <!-- Badge -->
+            <div class="modern-badge">
+                {% if subscription.gym_access and subscription.pool_access and subscription.spa_access %}
+                <div class="badge-icon">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <span class="badge-text">ПРЕМИУМ АБОНЕМЕНТ</span>
+                {% elif subscription.gym_access and subscription.pool_access %}
+                <div class="badge-icon">
+                    <i class="fas fa-fire"></i>
+                </div>
+                <span class="badge-text">СТАНДАРТ+</span>
+                {% else %}
+                <div class="badge-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <span class="badge-text">БАЗОВЫЙ</span>
+                {% endif %}
+            </div>
+
+            <!-- Main Content -->
+            <div class="hero-main-content">
+                <h1 class="modern-hero-title">{{ subscription.name }}</h1>
+                <p class="modern-hero-description">
+                    {{ subscription.description|default:"Идеальное решение для ваших фитнес-целей" }}
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="subscription-detail-grid">
+            <!-- Left Column - Details -->
+            <div class="detail-column">
+                <!-- Duration Card -->
+                <div class="detail-card">
+                    <div class="card-header">
+                        <i class="fas fa-calendar-alt"></i>
+                        <h3>Срок действия</h3>
+                    </div>
+                    <div class="duration-value">{% duration_display subscription.durationdays %}</div>
+                    <p class="duration-note">Абонемент начинает действовать с момента активации</p>
+                </div>
+
+                <!-- Services Card -->
+                <div class="detail-card">
+                    <div class="card-header">
+                        <i class="fas fa-list-check"></i>
+                        <h3>Что включено</h3>
+                    </div>
+                    <div class="services-grid">
+                        {% if subscription.gym_access %}
+                        <div class="service-feature">
+                            <div class="service-icon">
+                                <i class="fas fa-dumbbell"></i>
+                            </div>
+                            <div class="service-info">
+                                <h4>Тренажерный зал</h4>
+                                <p>Полный доступ ко всем тренажерам и оборудованию в любое время работы клуба</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if subscription.group_classes %}
+                        <div class="service-feature">
+                            <div class="service-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="service-info">
+                                <h4>Групповые занятия</h4>
+                                <p>Участие во всех групповых тренировках по расписанию</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if subscription.pool_access %}
+                        <div class="service-feature highlight">
+                            <div class="service-icon">
+                                <i class="fas fa-swimming-pool"></i>
+                            </div>
+                            <div class="service-info">
+                                <h4>Бассейн</h4>
+                                <p>Неограниченное посещение бассейна по расписанию</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if subscription.spa_access %}
+                        <div class="service-feature highlight">
+                            <div class="service-icon">
+                                <i class="fas fa-spa"></i>
+                            </div>
+                            <div class="service-info">
+                                <h4>СПА зона</h4>
+                                <p>Доступ в сауну, хамам и зону релаксации</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if subscription.personal_training %}
+                        <div class="service-feature">
+                            <div class="service-icon">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div class="service-info">
+                                <h4>Персональные тренировки</h4>
+                                <p>Индивидуальные занятия с профессиональным тренером</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if subscription.locker_room %}
+                        <div class="service-feature">
+                            <div class="service-icon">
+                                <i class="fas fa-door-open"></i>
+                            </div>
+                            <div class="service-info">
+                                <h4>Раздевалка</h4>
+                                <p>Доступ к комфортабельным раздевалкам с шкафчиками</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if subscription.towel_service %}
+                        <div class="service-feature">
+                            <div class="service-icon">
+                                <i class="fas fa-tshirt"></i>
+                            </div>
+                            <div class="service-info">
+                                <h4>Полотенце</h4>
+                                <p>Бесплатное полотенце для тренировок</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if subscription.fitness_consultation %}
+                        <div class="service-feature">
+                            <div class="service-icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <div class="service-info">
+                                <h4>Фитнес-консультация</h4>
+                                <p>Профессиональная консультация по программе тренировок</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if subscription.nutrition_consultation %}
+                        <div class="service-feature">
+                            <div class="service-icon">
+                                <i class="fas fa-apple-alt"></i>
+                            </div>
+                            <div class="service-info">
+                                <h4>Консультация по питанию</h4>
+                                <p>Индивидуальные рекомендации по правильному питанию</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if subscription.guest_visits > 0 %}
+                        <div class="service-feature highlight">
+                            <div class="service-icon">
+                                <i class="fas fa-user-friends"></i>
+                            </div>
+                            <div class="service-info">
+                                <h4>Гостевые визиты</h4>
+                                <p>{{ subscription.guest_visits }} бесплатных посещений для ваших друзей</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if subscription.freeze_days > 0 %}
+                        <div class="service-feature">
+                            <div class="service-icon">
+                                <i class="fas fa-snowflake"></i>
+                            </div>
+                            <div class="service-info">
+                                <h4>Заморозка</h4>
+                                <p>Возможность заморозить абонемент на {{ subscription.freeze_days }} дней</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Schedule Card -->
+                <div class="detail-card">
+                    <div class="card-header">
+                        <i class="fas fa-clock"></i>
+                        <h3>Режим работы</h3>
+                    </div>
+                    <div class="schedule-list">
+                        <div class="schedule-item">
+                            <span class="day">Понедельник - Пятница</span>
+                            <span class="time">06:00 - 23:00</span>
+                        </div>
+                        <div class="schedule-item">
+                            <span class="day">Суббота</span>
+                            <span class="time">08:00 - 22:00</span>
+                        </div>
+                        <div class="schedule-item">
+                            <span class="day">Воскресенье</span>
+                            <span class="time">08:00 - 21:00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - CTA -->
+            <div class="cta-column">
+                <!-- Purchase Card -->
+                <div class="purchase-card">
+                    <div class="purchase-header">
+                        <h3>Оформить абонемент</h3>
+                        <div class="price-display">
+                            <span class="price">{{ subscription.price|floatformat:0 }}</span>
+                            <span class="currency">₽</span>
+                        </div>
+                    </div>
+                    
+                    <div class="purchase-features">
+                        <div class="feature-item">
+                            <i class="fas fa-check"></i>
+                            <span>{% duration_display subscription.durationdays %}</span>
+                        </div>
+                        {% if subscription.gym_access %}
+                        <div class="feature-item">
+                            <i class="fas fa-check"></i>
+                            <span>Тренажерный зал</span>
+                        </div>
+                        {% endif %}
+                        {% if subscription.group_classes %}
+                        <div class="feature-item">
+                            <i class="fas fa-check"></i>
+                            <span>Групповые занятия</span>
+                        </div>
+                        {% endif %}
+                        {% if subscription.pool_access %}
+                        <div class="feature-item">
+                            <i class="fas fa-check"></i>
+                            <span>Бассейн</span>
+                        </div>
+                        {% endif %}
+                        {% if subscription.spa_access %}
+                        <div class="feature-item">
+                            <i class="fas fa-check"></i>
+                            <span>СПА зона</span>
+                        </div>
+                        {% endif %}
+                        {% if subscription.personal_training %}
+                        <div class="feature-item">
+                            <i class="fas fa-check"></i>
+                            <span>Персональные тренировки</span>
+                        </div>
+                        {% endif %}
+                        {% if subscription.guest_visits > 0 %}
+                        <div class="feature-item">
+                            <i class="fas fa-check"></i>
+                            <span>{{ subscription.guest_visits }} гостевых визитов</span>
+                        </div>
+                        {% endif %}
+                        {% if subscription.freeze_days > 0 %}
+                        <div class="feature-item">
+                            <i class="fas fa-check"></i>
+                            <span>{{ subscription.freeze_days }} дней заморозки</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if request.user.is_authenticated %}
+<!-- Правильная ссылка -->
+<a href="{% url 'subscription_payment' subscription.id %}" class="purchase-btn primary">
+    <i class="fas fa-credit-card"></i>
+    <span>Оформить онлайн</span>
+</a>
+{% else %}
+<a href="{% url 'login' %}" class="purchase-btn primary">
+    <i class="fas fa-sign-in-alt"></i>
+    <span>Войти для оформления</span>
+</a>
+{% endif %}
+                    
+                    <button class="purchase-btn secondary">
+                        <i class="fas fa-phone"></i>
+                        <span>Заказать звонок</span>
+                    </button>
+                    
+                    <div class="purchase-note">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Безопасная оплата и возврат</span>
+                    </div>
+                </div>
+
+                <!-- Info Card -->
+                <div class="info-card">
+                    <h4>Дополнительная информация</h4>
+                    <div class="info-list">
+                        <div class="info-item">
+                            <i class="fas fa-user-check"></i>
+                            <div class="info-content">
+                                <strong>Персональный менеджер</strong>
+                                <span>Помощь 24/7</span>
+                            </div>
+                        </div>
+                        {% if subscription.freeze_days > 0 %}
+                        <div class="info-item">
+                            <i class="fas fa-sync-alt"></i>
+                            <div class="info-content">
+                                <strong>Возможность заморозки</strong>
+                                <span>{{ subscription.freeze_days }} дней в году</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="info-item">
+                            <i class="fas fa-calendar-plus"></i>
+                            <div class="info-content">
+                                <strong>Продление</strong>
+                                <span>Автоматическое или ручное</span>
+                            </div>
+                        </div>
+                        {% if subscription.guest_visits > 0 %}
+                        <div class="info-item">
+                            <i class="fas fa-user-friends"></i>
+                            <div class="info-content">
+                                <strong>Гостевые визиты</strong>
+                                <span>{{ subscription.guest_visits }} посещений</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+               
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block skripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // FAQ Accordion
+        const faqQuestions = document.querySelectorAll('.faq-question');
+        
+        faqQuestions.forEach(question => {
+            question.addEventListener('click', function() {
+                const faqItem = this.parentElement;
+                const answer = this.nextElementSibling;
+                const icon = this.querySelector('i');
+                
+                // Close all other items
+                document.querySelectorAll('.faq-item').forEach(item => {
+                    if (item !== faqItem) {
+                        item.classList.remove('active');
+                        item.querySelector('.faq-answer').style.maxHeight = '0';
+                        item.querySelector('.faq-answer').style.padding = '0';
+                        item.querySelector('.faq-question i').style.transform = 'rotate(0deg)';
+                    }
+                });
+                
+                // Toggle current item
+                faqItem.classList.toggle('active');
+                
+                if (faqItem.classList.contains('active')) {
+                    answer.style.maxHeight = answer.scrollHeight + 'px';
+                    answer.style.padding = '15px 20px';
+                    icon.style.transform = 'rotate(180deg)';
+                } else {
+                    answer.style.maxHeight = '0';
+                    answer.style.padding = '0';
+                    icon.style.transform = 'rotate(0deg)';
+                }
+            });
+        });
+
+        // Purchase button handlers
+        const primaryPurchaseBtn = document.querySelector('.purchase-btn.primary');
+        const secondaryPurchaseBtn = document.querySelector('.purchase-btn.secondary');
+
+        if (primaryPurchaseBtn) {
+            primaryPurchaseBtn.addEventListener('click', function() {
+                // Add purchase logic here
+                console.log('Primary purchase button clicked');
+                // You can add redirect to payment page or show modal
+            });
+        }
+
+        if (secondaryPurchaseBtn) {
+            secondaryPurchaseBtn.addEventListener('click', function() {
+                // Add callback request logic here
+                console.log('Callback request button clicked');
+                // You can show callback request modal
+            });
+        }
+    });
+</script>
+{% endblock %}

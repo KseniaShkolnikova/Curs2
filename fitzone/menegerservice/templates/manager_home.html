@@ -1,0 +1,715 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load tz %}
+
+{% block title_name %}
+FITZONE - Панель управления менеджера
+{% endblock %}
+
+{% block content %}
+<div class="particles-container" id="particles"></div>
+
+<section class="hero-section" style="margin: 20px 40px 40px; min-height: auto; padding-top: 20px;">
+    <div class="hero-content">
+        <h1 class="hero-title">
+            ПАНЕЛЬ УПРАВЛЕНИЯ<br>
+            {% if user.userprofile.full_name %}
+                {{ user.userprofile.full_name|upper }}
+            {% else %}
+                {{ user.username|upper }}
+            {% endif %}
+        </h1>
+        
+        <div class="manager-dashboard">
+            <!-- Левая колонка -->
+            <div class="dashboard-column">
+                <!-- Блок финансовой статистики -->
+                <div class="dashboard-card financial-stats">
+                    <div class="card-header">
+                        <h2><i class="fas fa-chart-line"></i> ФИНАНСОВАЯ СТАТИСТИКА</h2>
+                        <span class="date-badge">{{ current_month|default:"Текущий месяц" }}</span>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-content">
+                                <div class="stat-value">{{ total_revenue|default:"0" }} ₽</div>
+                                <div class="stat-label">Общий доход</div>
+                            </div>
+                            <div class="stat-trend">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-content">
+                                <div class="stat-value">{{ subscription_revenue|default:"0" }} ₽</div>
+                                <div class="stat-label">От абонементов</div>
+                            </div>
+                            <div class="stat-trend">
+                                <i class="fas fa-id-card"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-content">
+                                <div class="stat-value">{{ classes_revenue|default:"0" }} ₽</div>
+                                <div class="stat-label">От тренировок</div>
+                            </div>
+                            <div class="stat-trend">
+                                <i class="fas fa-dumbbell"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-content">
+                                <div class="stat-value">{{ active_subscriptions_count|default:"0" }}</div>
+                                <div class="stat-label">Активных абонементов</div>
+                            </div>
+                            <div class="stat-trend">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Блок последних продаж -->
+                <div class="dashboard-card recent-sales">
+                    <div class="card-header">
+                        <h2><i class="fas fa-receipt"></i> ПОСЛЕДНИЕ ПРОДАЖИ</h2>
+                        <span class="date-badge">{{ current_month|default:"Текущий месяц" }}</span>
+                    </div>
+                    
+                    {% if recent_payments %}
+                    <div class="sales-list">
+                        {% for payment in recent_payments %}
+                        <div class="sale-item">
+                            <div class="sale-info">
+                                <div class="sale-header">
+                                    <h4>
+                                        {% if payment.subscription %}
+                                            {{ payment.subscription.subscriptiontype.name }}
+                                        {% else %}
+                                            {{ payment.classclient.class_id.name }}
+                                        {% endif %}
+                                    </h4>
+                                    <span class="sale-amount">+{{ payment.price }} ₽</span>
+                                </div>
+                                <div class="sale-details">
+                                    <span class="sale-client">
+                                        {% if payment.subscription %}
+                                            {{ payment.subscription.user.userprofile.full_name|default:payment.subscription.user.username }}
+                                        {% else %}
+                                            {{ payment.classclient.user.userprofile.full_name|default:payment.classclient.user.username }}
+                                        {% endif %}
+                                    </span>
+                                    <span class="sale-date">{{ payment.paymentdate|date:"d.m.Y H:i" }}</span>
+                                </div>
+                            </div>
+                            <div class="sale-type">
+                                {% if payment.subscription %}
+                                    <i class="fas fa-id-card"></i>
+                                {% else %}
+                                    <i class="fas fa-dumbbell"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-receipt"></i>
+                        <h3>Пока нет продаж в этом месяце</h3>
+                        <p>Здесь будут отображаться последние транзакции</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Правая колонка -->
+            <div class="dashboard-column">
+                <!-- Блок быстрых действий -->
+                <div class="dashboard-card quick-actions">
+                    <div class="card-header">
+                        <h2><i class="fas fa-bolt"></i> БЫСТРЫЕ ДЕЙСТВИЯ</h2>
+                    </div>
+                    <div class="actions-grid">
+                        <a href="{% url 'menegerservice:create_subscription' %}" class="action-card">
+                            <div class="action-icon">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <div class="action-content">
+                                <h3>Создать абонемент</h3>
+                                <p>Добавьте новый тип абонемента</p>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'menegerservice:reports' %}" class="action-card">
+                            <div class="action-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <div class="action-content">
+                                <h3>Отчеты</h3>
+                                <p>Финансовые отчеты и аналитика</p>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'menegerservice:subscriptions_list' %}" class="action-card">
+                            <div class="action-icon">
+                                <i class="fas fa-list"></i>
+                            </div>
+                            <div class="action-content">
+                                <h3>Все абонементы</h3>
+                                <p>Управление типами абонементов</p>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'profile' %}" class="action-card">
+                            <div class="action-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="action-content">
+                                <h3>Профиль</h3>
+                                <p>Настройки профиля</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Блок популярных абонементов -->
+                <div class="dashboard-card popular-subscriptions">
+                    <div class="card-header">
+                        <h2><i class="fas fa-star"></i> ПОПУЛЯРНЫЕ АБОНЕМЕНТЫ</h2>
+                        <span class="date-badge">{{ current_month|default:"Текущий месяц" }}</span>
+                    </div>
+                    
+                    {% if popular_subscriptions %}
+                    <div class="subscriptions-list">
+                        {% for subscription in popular_subscriptions %}
+                        <div class="subscription-item">
+                            <div class="subscription-info">
+                                <h4>{{ subscription.name }}</h4>
+                                <div class="subscription-meta">
+                                    <span class="subscription-price">{{ subscription.price }} ₽</span>
+                                    <span class="subscription-sales">{{ subscription.sales_count }} продаж</span>
+                                </div>
+                            </div>
+                            <div class="subscription-revenue">
+                                +{{ subscription.total_revenue }} ₽
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-chart-pie"></i>
+                        <h3>Нет продаж в этом месяце</h3>
+                        <p>Здесь будет статистика по абонементам</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.manager-dashboard {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 24px;
+    margin-top: 32px;
+        margin-bottom: 60px; /* Добавляем отступ снизу */
+
+    align-items: start;
+}
+
+.dashboard-column {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.dashboard-card {
+    background: var(--light-card);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid var(--light-border);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    height: fit-content;
+}
+
+.dark-theme .dashboard-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.dashboard-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--light-border);
+}
+
+.dark-theme .card-header {
+    border-bottom-color: var(--dark-border);
+}
+
+.card-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.dark-theme .card-header h2 {
+    color: var(--dark-text);
+}
+
+.card-header h2 i {
+    color: var(--text-gray);
+    font-size: 16px;
+}
+
+.date-badge {
+    background: var(--light-bg);
+    color: var(--text-gray);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 12px;
+    border: 1px solid var(--light-border);
+}
+
+.dark-theme .date-badge {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+/* Финансовая статистика */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: var(--light-bg);
+    border-radius: 12px;
+    border: 1px solid var(--light-border);
+    transition: all 0.3s ease;
+}
+
+.dark-theme .stat-item {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.stat-item:hover {
+    border-color: var(--neon-purple);
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-dark);
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.dark-theme .stat-value {
+    color: var(--dark-text);
+}
+
+.stat-label {
+    color: var(--text-gray);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.dark-theme .stat-label {
+    color: var(--dark-text-light);
+}
+
+.stat-trend {
+    color: var(--neon-purple);
+    font-size: 16px;
+}
+
+/* Список продаж */
+.sales-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sale-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--light-bg);
+    border-radius: 12px;
+    border: 1px solid var(--light-border);
+    transition: all 0.3s ease;
+}
+
+.dark-theme .sale-item {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.sale-item:hover {
+    border-color: var(--neon-purple);
+}
+
+.sale-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.sale-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+}
+
+.sale-header h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin: 0;
+    flex: 1;
+}
+
+.dark-theme .sale-header h4 {
+    color: var(--dark-text);
+}
+
+.sale-amount {
+    font-weight: 600;
+    color: var(--neon-purple);
+    font-size: 14px;
+    margin-left: 12px;
+}
+
+.sale-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.sale-client, .sale-date {
+    color: var(--text-gray);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.dark-theme .sale-client,
+.dark-theme .sale-date {
+    color: var(--dark-text-light);
+}
+
+.sale-type {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--light-card);
+    color: var(--neon-purple);
+    flex-shrink: 0;
+    font-size: 14px;
+}
+
+.dark-theme .sale-type {
+    background: var(--dark-card);
+}
+
+/* Быстрые действия */
+.actions-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.action-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--light-bg);
+    border-radius: 12px;
+    border: 1px solid var(--light-border);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.dark-theme .action-card {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.action-card:hover {
+    border-color: var(--neon-purple);
+    text-decoration: none;
+    transform: translateX(4px);
+}
+
+.action-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--light-card);
+    color: var(--neon-purple);
+    flex-shrink: 0;
+    font-size: 16px;
+}
+
+.dark-theme .action-icon {
+    background: var(--dark-card);
+}
+
+.action-content {
+    flex: 1;
+}
+
+.action-card h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+}
+
+.dark-theme .action-card h3 {
+    color: var(--dark-text);
+}
+
+.action-card p {
+    color: var(--text-gray);
+    font-size: 12px;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.dark-theme .action-card p {
+    color: var(--dark-text-light);
+}
+
+/* Популярные абонементы */
+.subscriptions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.subscription-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: var(--light-bg);
+    border-radius: 12px;
+    border: 1px solid var(--light-border);
+    transition: all 0.3s ease;
+}
+
+.dark-theme .subscription-item {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.subscription-item:hover {
+    border-color: var(--neon-purple);
+}
+
+.subscription-info h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 6px;
+}
+
+.dark-theme .subscription-info h4 {
+    color: var(--dark-text);
+}
+
+.subscription-meta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.subscription-price {
+    color: var(--neon-purple);
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.subscription-sales {
+    color: var(--text-gray);
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.dark-theme .subscription-sales {
+    color: var(--dark-text-light);
+}
+
+.subscription-revenue {
+    font-weight: 600;
+    color: var(--neon-purple);
+    font-size: 14px;
+}
+
+/* Состояние пустоты */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-gray);
+}
+
+.empty-state i {
+    font-size: 32px;
+    color: var(--text-gray);
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    font-size: 16px;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.dark-theme .empty-state h3 {
+    color: var(--dark-text);
+}
+
+.empty-state p {
+    font-size: 14px;
+    margin: 0;
+    opacity: 0.7;
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+    .manager-dashboard {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .dashboard-column {
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        margin: 20px 20px 20px;
+    }
+    
+    .dashboard-card {
+        padding: 20px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .sale-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    
+    .sale-amount {
+        margin-left: 0;
+    }
+    
+    .sale-details {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}
+
+@media (max-width: 480px) {
+    .manager-dashboard {
+        gap: 16px;
+    }
+    
+    .dashboard-card {
+        padding: 16px;
+    }
+    
+    .stat-value {
+        font-size: 20px;
+    }
+    
+    .action-card {
+        padding: 12px;
+    }
+    
+    .subscription-meta {
+        flex-direction: column;
+        gap: 4px;
+        align-items: flex-start;
+    }
+}
+</style>
+{% endblock %}
+
+{% block skripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация появления карточек
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -30px 0px'
+    };
+    
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    document.querySelectorAll('.dashboard-card').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.5s ease';
+        observer.observe(card);
+    });
+});
+</script>
+{% endblock %}

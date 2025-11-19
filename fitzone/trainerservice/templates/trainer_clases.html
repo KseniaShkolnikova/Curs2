@@ -1,0 +1,2017 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load tz %}
+
+{% block title_name %}
+FITZONE - Мои занятия
+{% endblock %}
+
+{% block content %}
+<div class="particles-container" id="particles"></div>
+
+<!-- Trainer Classes Hero -->
+<section class="fx-hero-section">
+    <div class="fx-hero-container">
+        <div class="fx-hero-content">
+            <div class="fx-hero-badge">
+                <div class="fx-badge-icon">
+                    <i class="fas fa-dumbbell"></i>
+                </div>
+                <span class="fx-badge-text">Управление занятиями</span>
+            </div>
+            
+            <div class="fx-hero-main">
+                <h1 class="fx-hero-title">МОИ ЗАНЯТИЯ</h1>
+                <p class="fx-hero-desc">Создавайте и управляйте расписанием ваших тренировок</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Trainer Controls -->
+<section class="fx-controls-section">
+    <div class="fx-controls-glass">
+        <div class="fx-controls-header">
+            <h3 class="fx-controls-title">
+                <i class="fas fa-chart-bar"></i>
+                СТАТИСТИКА И УПРАВЛЕНИЕ
+            </h3>
+            <button class="fx-create-btn" id="createClassBtn">
+                <i class="fas fa-plus"></i>
+                СОЗДАТЬ ТРЕНИРОВКУ
+            </button>
+        </div>
+        
+        <div class="fx-stats-grid">
+            <div class="fx-stat-card">
+                <div class="fx-stat-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="fx-stat-content">
+                    <span class="fx-stat-number">{{ total_classes }}</span>
+                    <span class="fx-stat-label">Всего занятий</span>
+                </div>
+            </div>
+            
+            <div class="fx-stat-card">
+                <div class="fx-stat-icon">
+                    <i class="fas fa-play-circle"></i>
+                </div>
+                <div class="fx-stat-content">
+                    <span class="fx-stat-number">{{ active_classes }}</span>
+                    <span class="fx-stat-label">Активных</span>
+                </div>
+            </div>
+            
+            <div class="fx-stat-card">
+                <div class="fx-stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="fx-stat-content">
+                    <span class="fx-stat-number">{{ total_clients }}</span>
+                    <span class="fx-stat-label">Всего клиентов</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Trainer Filters -->
+<section class="fx-filters-section">
+    <div class="fx-filters-glass">
+        <div class="fx-filters-header">
+            <h3 class="fx-filters-title">
+                <i class="fas fa-sliders-h"></i>
+                ФИЛЬТРЫ И ПОИСК
+            </h3>
+            <div class="fx-filters-count">
+                <span class="fx-count-bubble" id="results-count">{{ classes|length }}</span>
+            </div>
+        </div>
+        
+        <div class="fx-filters-content">
+            <div class="fx-search-glass">
+                <div class="fx-search-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <input type="text" id="fx-search-input" placeholder="Найти тренировку..." class="fx-search-input">
+            </div>
+            
+            <div class="fx-filter-group">
+                <div class="fx-filter-icon">
+                    <i class="fas fa-filter"></i>
+                </div>
+                <select id="fx-status-filter" class="fx-filter-select">
+                    <option value="all">Все статусы</option>
+                    <option value="active">Активные</option>
+                    <option value="upcoming">Предстоящие</option>
+                    <option value="completed">Завершенные</option>
+                </select>
+            </div>
+            
+            <div class="fx-filter-group">
+                <div class="fx-filter-icon">
+                    <i class="fas fa-tag"></i>
+                </div>
+                <select id="fx-type-filter" class="fx-filter-select">
+                    <option value="all">Все типы</option>
+                    <option value="group">Групповые</option>
+                    <option value="personal">Персональные</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Classes Grid -->
+<section class="fx-grid-section">
+    <div class="fx-container">
+        <h2 class="fx-section-title">ВАШИ ТРЕНИРОВКИ</h2>
+        
+        {% if classes %}
+        <div class="fx-cards-grid" id="fx-cards-grid">
+            {% for class in classes %}
+            <div class="fx-training-card" data-status="{{ class.status }}" data-type="{{ class.type }}" 
+                 data-name="{{ class.name|lower }}" data-description="{{ class.description|lower }}">
+                
+                <!-- Card Gradient Border -->
+                <div class="fx-card-gradient"></div>
+                
+                <!-- Card Header -->
+                <div class="fx-card-header">
+                    <div class="fx-header-main">
+                        <div class="fx-card-icon">
+                            {% if "йога" in class.name.lower %}
+                            <i class="fas fa-spa"></i>
+                            {% elif "силов" in class.name.lower %}
+                            <i class="fas fa-dumbbell"></i>
+                            {% elif "кардио" in class.name.lower %}
+                            <i class="fas fa-running"></i>
+                            {% elif "стретчинг" in class.name.lower %}
+                            <i class="fas fa-child"></i>
+                            {% elif "танц" in class.name.lower %}
+                            <i class="fas fa-music"></i>
+                            {% elif "бокс" in class.name.lower or "единоборств" in class.name.lower %}
+                            <i class="fas fa-fist-raised"></i>
+                            {% elif "плаван" in class.name.lower or "бассейн" in class.name.lower %}
+                            <i class="fas fa-swimmer"></i>
+                            {% elif "цигун" in class.name.lower or "тайцзи" in class.name.lower %}
+                            <i class="fas fa-leaf"></i>
+                            {% else %}
+                            <i class="fas fa-star"></i>
+                            {% endif %}
+                        </div>
+                        <div class="fx-title-section">
+                            <h3 class="fx-card-title">{{ class.name }}</h3>
+                            <div class="fx-card-meta">
+                                <span class="fx-type-badge {{ class.type }}">
+                                    {{ class.type_display }}
+                                </span>
+                                <span class="fx-time-badge">
+                                    <i class="far fa-clock"></i>
+                                    {{ class.duration }} мин
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Status Badge -->
+                    <div class="fx-status-badge {{ class.status }}">
+                        <i class="fas fa-circle"></i>
+                        {{ class.status_display }}
+                    </div>
+                </div>
+
+                <!-- Class Description -->
+                <div class="fx-card-description">
+                    <p>{{ class.description|default:"Описание не указано" }}</p>
+                </div>
+
+                <!-- Class Details -->
+                <div class="fx-card-details">
+                    <div class="fx-detail-grid">
+                        <div class="fx-detail-item">
+                            <div class="fx-detail-icon">
+                                <i class="far fa-calendar"></i>
+                            </div>
+                            <div class="fx-detail-content">
+                                <span class="fx-detail-label">Дата</span>
+                                <span class="fx-detail-value">{{ class.starttime|date:"d.m.Y" }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="fx-detail-item">
+                            <div class="fx-detail-icon">
+                                <i class="far fa-clock"></i>
+                            </div>
+                            <div class="fx-detail-content">
+                                <span class="fx-detail-label">Время</span>
+                                <span class="fx-detail-value">{{ class.starttime|date:"H:i" }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="fx-detail-item">
+                            <div class="fx-detail-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="fx-detail-content">
+                                <span class="fx-detail-label">Участники</span>
+                                <span class="fx-detail-value">{{ class.current_clients }}/{{ class.maxclient }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="fx-detail-item">
+                            <div class="fx-detail-icon">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <div class="fx-detail-content">
+                                <span class="fx-detail-label">Стоимость</span>
+                                <span class="fx-detail-value fx-price">{{ class.price }}₽</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Info -->
+                {% if class.time_until or class.time_since %}
+                <div class="fx-time-info">
+                    <div class="fx-time-icon">
+                        {% if class.is_upcoming %}
+                        <i class="fas fa-hourglass-start"></i>
+                        {% elif class.is_completed %}
+                        <i class="fas fa-flag-checkered"></i>
+                        {% endif %}
+                    </div>
+                    <span class="fx-time-text">
+                        {% if class.is_upcoming %}
+                        Начинается через {{ class.time_until }}
+                        {% elif class.is_completed %}
+                        Завершено {{ class.time_since }}
+                        {% endif %}
+                    </span>
+                </div>
+                {% endif %}
+
+                <!-- Action Buttons -->
+                <div class="fx-card-actions">
+                    <button class="fx-action-btn fx-edit-btn" data-class-id="{{ class.id }}" 
+                            {% if not class.can_edit %}disabled title="Редактирование невозможно менее чем за 1 час до начала"{% endif %}>
+                        <i class="fas fa-edit"></i>
+                        Редактировать
+                    </button>
+                    <button class="fx-action-btn fx-cancel-btn" data-class-id="{{ class.id }}"
+                            {% if not class.can_edit %}disabled title="Отмена невозможна менее чем за 1 час до начала"{% endif %}>
+                        <i class="fas fa-times"></i>
+                        Отменить
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="fx-empty-state">
+            <div class="fx-empty-icon">
+                <i class="fas fa-calendar-plus"></i>
+            </div>
+            <h3>У вас пока нет тренировок</h3>
+            <p>Создайте первую тренировку, чтобы начать работать с клиентами</p>
+            <button class="fx-create-first-btn" id="createFirstClass">
+                <i class="fas fa-plus"></i>
+                СОЗДАТЬ ПЕРВУЮ ТРЕНИРОВКУ
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Modern Modal -->
+<div class="fx-modal-overlay" id="createClassModal">
+    <div class="fx-modal-content">
+        <div class="fx-modal-header">
+            <div class="fx-modal-icon">
+                <i class="fas fa-dumbbell"></i>
+            </div>
+            <h2>СОЗДАНИЕ ТРЕНИРОВКИ</h2>
+            <button class="fx-close-btn" id="closeModal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <form id="createClassForm" class="fx-modal-form">
+            {% csrf_token %}
+            
+            <div class="fx-form-grid">
+                <div class="fx-form-group fx-form-full-width">
+                    <label class="fx-form-label">
+                        <i class="fas fa-heading"></i>
+                        Название тренировки *
+                    </label>
+                    <input type="text" name="name" required placeholder="Например: Силовая тренировка, Йога, Кардио" class="fx-form-input">
+                </div>
+                
+                <div class="fx-form-group fx-form-full-width">
+                    <label class="fx-form-label">
+                        <i class="fas fa-align-left"></i>
+                        Описание тренировки
+                    </label>
+                    <textarea name="description" placeholder="Опишите что будет на тренировке, уровень сложности, необходимый инвентарь..." rows="3" class="fx-form-textarea"></textarea>
+                </div>
+                
+                <div class="fx-form-group">
+                    <label class="fx-form-label">
+                        <i class="fas fa-users"></i>
+                        Макс. участников *
+                    </label>
+                    <input type="number" name="maxclient" min="1" max="20" value="10" required class="fx-form-input">
+                </div>
+                
+                <div class="fx-form-group">
+                    <label class="fx-form-label">
+                        <i class="fas fa-wallet"></i>
+                        Стоимость (₽) *
+                    </label>
+                    <input type="number" name="price" min="500" step="100" value="1000" required class="fx-form-input">
+                </div>
+                
+                <div class="fx-form-group">
+                    <label class="fx-form-label">
+                        <i class="fas fa-clock"></i>
+                        Длительность *
+                    </label>
+                    <select name="duration" required class="fx-form-select">
+                        <option value="45">45 минут</option>
+                        <option value="60" selected>60 минут</option>
+                        <option value="75">75 минут</option>
+                        <option value="90">90 минут</option>
+                        <option value="120">120 минут</option>
+                    </select>
+                </div>
+                
+                <div class="fx-form-group">
+                    <label class="fx-form-label">
+                        <i class="fas fa-calendar"></i>
+                        Дата *
+                    </label>
+                    <input type="date" name="date" required class="fx-form-input">
+                </div>
+                
+                <div class="fx-form-group">
+                    <label class="fx-form-label">
+                        <i class="fas fa-clock"></i>
+                        Время начала *
+                    </label>
+                    <input type="time" name="time" required class="fx-form-input">
+                </div>
+            </div>
+            
+            <div class="fx-modal-actions">
+                <button type="button" class="fx-btn-secondary" id="cancelBtn">
+                    <i class="fas fa-times"></i>
+                    Отмена
+                </button>
+                <button type="submit" class="fx-btn-primary">
+                    <i class="fas fa-plus"></i>
+                    СОЗДАТЬ ТРЕНИРОВКУ
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Class Modal -->
+<div class="fx-modal-overlay" id="editClassModal">
+    <div class="fx-modal-content">
+        <div class="fx-modal-header">
+            <div class="fx-modal-icon">
+                <i class="fas fa-edit"></i>
+            </div>
+            <h2>РЕДАКТИРОВАНИЕ ТРЕНИРОВКИ</h2>
+            <button class="fx-close-btn" id="closeEditModal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <form id="editClassForm" class="fx-modal-form">
+            {% csrf_token %}
+            <input type="hidden" id="edit-class-id" name="class_id">
+            
+            <div class="fx-form-grid">
+                <div class="fx-form-group fx-form-full-width">
+                    <label class="fx-form-label">
+                        <i class="fas fa-heading"></i>
+                        Название тренировки *
+                    </label>
+                    <input type="text" id="edit-name" name="name" required class="fx-form-input">
+                </div>
+                
+                <div class="fx-form-group fx-form-full-width">
+                    <label class="fx-form-label">
+                        <i class="fas fa-align-left"></i>
+                        Описание тренировки
+                    </label>
+                    <textarea id="edit-description" name="description" rows="3" class="fx-form-textarea"></textarea>
+                </div>
+                
+                <div class="fx-form-group">
+                    <label class="fx-form-label">
+                        <i class="fas fa-users"></i>
+                        Макс. участников *
+                    </label>
+                    <input type="number" id="edit-maxclient" name="maxclient" min="1" max="20" required class="fx-form-input">
+                </div>
+                
+                <div class="fx-form-group">
+                    <label class="fx-form-label">
+                        <i class="fas fa-wallet"></i>
+                        Стоимость (₽) *
+                    </label>
+                    <input type="number" id="edit-price" name="price" min="500" step="100" required class="fx-form-input">
+                </div>
+                
+                <div class="fx-form-group">
+                    <label class="fx-form-label">
+                        <i class="fas fa-clock"></i>
+                        Длительность *
+                    </label>
+                    <select id="edit-duration" name="duration" required class="fx-form-select">
+                        <option value="45">45 минут</option>
+                        <option value="60">60 минут</option>
+                        <option value="75">75 минут</option>
+                        <option value="90">90 минут</option>
+                        <option value="120">120 минут</option>
+                    </select>
+                </div>
+                
+                <div class="fx-form-group">
+                    <label class="fx-form-label">
+                        <i class="fas fa-calendar"></i>
+                        Дата *
+                    </label>
+                    <input type="date" id="edit-date" name="date" required class="fx-form-input">
+                </div>
+                
+                <div class="fx-form-group">
+                    <label class="fx-form-label">
+                        <i class="fas fa-clock"></i>
+                        Время начала *
+                    </label>
+                    <input type="time" id="edit-time" name="time" required class="fx-form-input">
+                </div>
+            </div>
+            
+            <div class="fx-modal-actions">
+                <button type="button" class="fx-btn-secondary" id="cancelEditBtn">
+                    <i class="fas fa-times"></i>
+                    Отмена
+                </button>
+                <button type="submit" class="fx-btn-primary">
+                    <i class="fas fa-save"></i>
+                    СОХРАНИТЬ ИЗМЕНЕНИЯ
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<style>
+/* Reset and Base Styles */
+.fx-hero-section,
+.fx-controls-section,
+.fx-filters-section,
+.fx-grid-section {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+/* Стили для заблокированных кнопок */
+.fx-action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.fx-edit-btn:disabled {
+    background: #9ca3af !important;
+    border: 1px solid #6b7280 !important;
+}
+
+.fx-cancel-btn:disabled {
+    background: #9ca3af !important;
+    color: #6b7280 !important;
+    border: 1px solid #6b7280 !important;
+}
+
+.fx-cancel-btn {
+    background: #f8fafc;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.dark-theme .fx-cancel-btn {
+    background: #374151;
+    color: #fecaca;
+    border-color: #7f1d1d;
+}
+
+.fx-cancel-btn:hover:not(:disabled) {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fecaca;
+    transform: translateY(-2px);
+}
+
+.dark-theme .fx-cancel-btn:hover:not(:disabled) {
+    background: #7f1d1d;
+    color: #fecaca;
+    border-color: #dc2626;
+}
+
+/* Hero Section */
+.fx-hero-section {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+    padding: 80px 0 60px;
+    margin-bottom: 40px;
+}
+
+.fx-hero-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 40px;
+}
+
+.fx-hero-content {
+    text-align: center;
+}
+
+.fx-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 12px 20px;
+    border-radius: 50px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    margin-bottom: 30px;
+}
+
+.dark-theme .fx-hero-badge {
+    background: rgba(30, 41, 59, 0.95);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.fx-badge-icon {
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fx-badge-icon i {
+    color: white;
+    font-size: 0.8rem;
+}
+
+.fx-badge-text {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.fx-hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 20px;
+    line-height: 1.1;
+}
+
+.fx-hero-desc {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Controls Section */
+.fx-controls-section {
+    margin-bottom: 40px;
+}
+
+.fx-controls-glass {
+    max-width: 1200px;
+    margin: 0 auto 30px;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.dark-theme .fx-controls-glass {
+    background: rgba(30, 41, 59, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.fx-controls-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.fx-controls-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.fx-controls-title i {
+    color: #8b5cf6;
+}
+
+.fx-create-btn {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.fx-create-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+}
+
+.fx-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.fx-stat-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.3s ease;
+}
+
+.dark-theme .fx-stat-card {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.fx-stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.15);
+}
+
+.fx-stat-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.fx-stat-icon i {
+    color: white;
+    font-size: 1.2rem;
+}
+
+.fx-stat-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.fx-stat-number {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.fx-stat-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 5px;
+}
+
+/* Filters Section */
+.fx-filters-section {
+    margin-bottom: 40px;
+}
+
+.fx-filters-glass {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 25px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.dark-theme .fx-filters-glass {
+    background: rgba(30, 41, 59, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.fx-filters-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.fx-filters-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.fx-filters-title i {
+    color: #8b5cf6;
+}
+
+.fx-count-bubble {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.fx-filters-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 15px;
+    align-items: center;
+}
+
+.fx-search-glass {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.fx-search-icon {
+    position: absolute;
+    left: 15px;
+    color: var(--text-secondary);
+    z-index: 2;
+}
+
+.fx-search-input {
+    width: 100%;
+    padding: 12px 15px 12px 45px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.dark-theme .fx-search-input {
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.fx-search-input:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.fx-filter-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.fx-filter-icon {
+    position: absolute;
+    left: 12px;
+    color: var(--text-secondary);
+    z-index: 2;
+}
+
+.fx-filter-select {
+    width: 100%;
+    padding: 12px 15px 12px 40px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    appearance: none;
+}
+
+.dark-theme .fx-filter-select {
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+/* Modern Training Cards */
+.fx-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 24px;
+}
+
+.fx-training-card {
+    position: relative;
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    overflow: hidden;
+}
+
+.dark-theme .fx-training-card {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+.fx-training-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.fx-card-gradient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #06b6d4 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.fx-training-card:hover .fx-card-gradient {
+    opacity: 1;
+}
+
+.fx-card-header {
+    padding: 24px 24px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.fx-header-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    flex: 1;
+}
+
+.fx-card-icon {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+}
+
+.fx-card-icon i {
+    color: white;
+    font-size: 1.4rem;
+}
+
+.fx-title-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.fx-card-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 12px 0;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.dark-theme .fx-card-title {
+    color: #f9fafb;
+}
+
+.fx-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.fx-type-badge {
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.fx-type-badge.group {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.fx-type-badge.personal {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
+    color: #8b5cf6;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.fx-time-badge {
+    padding: 6px 10px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: rgba(107, 114, 128, 0.1);
+    color: #6b7280;
+    border: 1px solid rgba(107, 114, 128, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.dark-theme .fx-time-badge {
+    background: rgba(156, 163, 175, 0.1);
+    color: #9ca3af;
+    border-color: rgba(156, 163, 175, 0.2);
+}
+
+.fx-status-badge {
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid;
+    white-space: nowrap;
+}
+
+.fx-status-badge.active {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
+    color: #16a34a;
+    border-color: rgba(34, 197, 94, 0.2);
+}
+
+.fx-status-badge.upcoming {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+    color: #3b82f6;
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+.fx-status-badge.completed {
+    background: linear-gradient(135deg, rgba(107, 114, 128, 0.1) 0%, rgba(107, 114, 128, 0.05) 100%);
+    color: #6b7280;
+    border-color: rgba(107, 114, 128, 0.2);
+}
+
+.fx-status-badge i {
+    font-size: 0.4rem;
+}
+
+/* Card Description */
+.fx-card-description {
+    padding: 0 24px 20px;
+}
+
+.fx-card-description p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #6b7280;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.dark-theme .fx-card-description p {
+    color: #9ca3af;
+}
+
+/* Card Details */
+.fx-card-details {
+    padding: 0 24px 20px;
+}
+
+.fx-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.fx-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.dark-theme .fx-detail-item {
+    background: #374151;
+}
+
+.fx-detail-item:hover {
+    background: #f1f5f9;
+    transform: translateY(-2px);
+}
+
+.dark-theme .fx-detail-item:hover {
+    background: #4b5563;
+}
+
+.fx-detail-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.fx-detail-icon i {
+    color: white;
+    font-size: 0.9rem;
+}
+
+.fx-detail-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.fx-detail-label {
+    font-size: 0.7rem;
+    color: #6b7280;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.dark-theme .fx-detail-label {
+    color: #9ca3af;
+}
+
+.fx-detail-value {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dark-theme .fx-detail-value {
+    color: #f9fafb;
+}
+
+.fx-detail-value.fx-price {
+    color: #8b5cf6;
+    font-weight: 700;
+}
+
+/* Time Info */
+.fx-time-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 24px;
+    margin: 0 24px 20px;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(99, 102, 241, 0.05) 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.dark-theme .fx-time-info {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+    border-color: rgba(139, 92, 246, 0.2);
+}
+
+.fx-time-icon {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.fx-time-icon i {
+    color: white;
+    font-size: 0.8rem;
+}
+
+.fx-time-text {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #1f2937;
+}
+
+.dark-theme .fx-time-text {
+    color: #f9fafb;
+}
+
+/* Action Buttons */
+.fx-card-actions {
+    padding: 20px 24px 24px;
+    display: flex;
+    gap: 12px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.dark-theme .fx-card-actions {
+    border-top-color: #374151;
+}
+
+.fx-action-btn {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+}
+
+.fx-edit-btn {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.fx-edit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+}
+
+.fx-delete-btn {
+    background: #f8fafc;
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
+}
+
+.dark-theme .fx-delete-btn {
+    background: #374151;
+    color: #9ca3af;
+    border-color: #4b5563;
+}
+
+.fx-delete-btn:hover {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fecaca;
+    transform: translateY(-2px);
+}
+
+.dark-theme .fx-delete-btn:hover {
+    background: #7f1d1d;
+    color: #fecaca;
+    border-color: #dc2626;
+}
+
+/* Grid Section */
+.fx-grid-section {
+    padding: 40px 0;
+}
+
+.fx-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 40px;
+}
+
+.fx-section-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* Empty State */
+.fx-empty-state {
+    text-align: center;
+    padding: 80px 40px;
+    color: var(--text-secondary);
+}
+
+.fx-empty-icon {
+    font-size: 4rem;
+    color: #8b5cf6;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.fx-empty-state h3 {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-bottom: 15px;
+}
+
+.fx-empty-state p {
+    margin-bottom: 30px;
+    font-size: 1rem;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.fx-create-first-btn {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.fx-create-first-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+}
+
+/* Modal Styles */
+.fx-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.fx-modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    border: 1px solid #e5e7eb;
+}
+
+.dark-theme .fx-modal-content {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+.fx-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 25px 30px;
+    border-bottom: 1px solid #e5e7eb;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+}
+
+.dark-theme .fx-modal-header {
+    border-bottom-color: #374151;
+}
+
+.fx-modal-icon {
+    width: 45px;
+    height: 45px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fx-modal-icon i {
+    color: white;
+    font-size: 1.3rem;
+}
+
+.fx-modal-header h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+    flex: 1;
+}
+
+.fx-close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: white;
+    transition: all 0.3s ease;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fx-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.fx-modal-form {
+    padding: 30px;
+}
+
+.fx-form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.fx-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.fx-form-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    margin-bottom: 5px;
+}
+
+.fx-form-label i {
+    color: #8b5cf6;
+    width: 18px;
+    font-size: 0.9rem;
+}
+
+.fx-form-input,
+.fx-form-select,
+.fx-form-textarea {
+    padding: 14px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    background: white;
+    color: #1f2937;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    width: 100%;
+}
+
+.dark-theme .fx-form-input,
+.dark-theme .fx-form-select,
+.dark-theme .fx-form-textarea {
+    background: #374151;
+    border-color: #4b5563;
+    color: white;
+}
+
+.fx-form-input:focus,
+.fx-form-select:focus,
+.fx-form-textarea:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.fx-form-input::placeholder,
+.fx-form-textarea::placeholder {
+    color: #6b7280;
+}
+
+.dark-theme .fx-form-input::placeholder,
+.dark-theme .fx-form-textarea::placeholder {
+    color: #9ca3af;
+}
+
+.fx-form-select {
+    cursor: pointer;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    background-image: none !important;
+    padding-right: 16px;
+}
+
+.fx-form-select::-ms-expand {
+    display: none !important;
+}
+
+.dark-theme .fx-form-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+}
+
+.fx-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    padding-top: 25px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.dark-theme .fx-modal-actions {
+    border-top-color: #374151;
+}
+
+.fx-btn-primary {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.fx-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+}
+
+.fx-btn-secondary {
+    background: #f3f4f6;
+    color: #374151;
+    border: 2px solid #d1d5db;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.dark-theme .fx-btn-secondary {
+    background: #374151;
+    color: #d1d5db;
+    border-color: #4b5563;
+}
+
+.fx-btn-secondary:hover {
+    border-color: #8b5cf6;
+    color: #8b5cf6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .fx-hero-container,
+    .fx-container {
+        padding: 0 20px;
+    }
+    
+    .fx-hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .fx-controls-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+    
+    .fx-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .fx-cards-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .fx-filters-content {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .fx-detail-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .fx-card-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+    
+    .fx-header-main {
+        width: 100%;
+    }
+    
+    .fx-card-actions {
+        flex-direction: column;
+    }
+    
+    .fx-delete-btn {
+        width: 100%;
+        order: -1;
+    }
+    
+    .fx-modal-content {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .fx-modal-form {
+        padding: 20px;
+    }
+    
+    .fx-modal-header {
+        padding: 20px;
+    }
+    
+    .fx-modal-actions {
+        flex-direction: column;
+    }
+    
+    .fx-btn-primary,
+    .fx-btn-secondary {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .fx-training-card {
+        border-radius: 16px;
+    }
+    
+    .fx-card-header,
+    .fx-card-description,
+    .fx-card-details,
+    .fx-card-actions {
+        padding: 20px;
+    }
+    
+    .fx-header-main {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .fx-card-icon {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .fx-card-title {
+        font-size: 1.1rem;
+    }
+    
+    .fx-modal-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+    }
+    
+    .fx-modal-header h2 {
+        font-size: 1.2rem;
+    }
+    
+    .fx-form-input,
+    .fx-form-select,
+    .fx-form-textarea {
+        padding: 12px 14px;
+        font-size: 0.9rem;
+    }
+    
+    .fx-time-info {
+        margin: 0 20px 20px;
+        padding: 14px 20px;
+    }
+}
+
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Модальное окно создания
+    const modal = document.getElementById('createClassModal');
+    const createBtn = document.getElementById('createClassBtn');
+    const createFirstBtn = document.getElementById('createFirstClass');
+    const closeBtn = document.getElementById('closeModal');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const form = document.getElementById('createClassForm');
+
+    // Модальное окно редактирования
+    const editModal = document.getElementById('editClassModal');
+    const editForm = document.getElementById('editClassForm');
+    const closeEditModal = document.getElementById('closeEditModal');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+
+    // Функция для установки значений по умолчанию
+    function initializeModalDefaults() {
+        const now = new Date();
+        const today = now.toISOString().split('T')[0];
+        
+        // Устанавливаем текущую дату
+        const dateInput = document.querySelector('input[name="date"]');
+        if (dateInput) {
+            dateInput.min = today;
+            dateInput.value = today;
+        }
+        
+        // Устанавливаем следующий час
+        const timeInput = document.querySelector('input[name="time"]');
+        if (timeInput) {
+            const nextHour = new Date(now);
+            nextHour.setHours(nextHour.getHours() + 1);
+            nextHour.setMinutes(0);
+            timeInput.value = nextHour.toTimeString().slice(0, 5);
+        }
+    }
+
+    function openModal() {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        initializeModalDefaults();
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        form.reset();
+        setTimeout(initializeModalDefaults, 100);
+    }
+
+    function openEditModal(classId) {
+        // Загружаем данные занятия
+        fetch(`/trainer/trainer_classes/${classId}/`)
+            .then(response => response.json())
+            .then(classData => {
+                // Заполняем форму данными
+                document.getElementById('edit-class-id').value = classId;
+                document.getElementById('edit-name').value = classData.name;
+                document.getElementById('edit-description').value = classData.description;
+                document.getElementById('edit-maxclient').value = classData.maxclient;
+                document.getElementById('edit-price').value = classData.price;
+                
+                // Преобразуем дату и время
+                const startTime = new Date(classData.starttime);
+                document.getElementById('edit-date').value = startTime.toISOString().split('T')[0];
+                document.getElementById('edit-time').value = startTime.toTimeString().slice(0, 5);
+                
+                // Устанавливаем длительность
+                const duration = (new Date(classData.endtime) - startTime) / 60000;
+                document.getElementById('edit-duration').value = duration;
+                
+                editModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            })
+            .catch(error => {
+                console.error('Error loading class data:', error);
+                alert('Ошибка при загрузке данных занятия');
+            });
+    }
+
+    function closeEditModalFunc() {
+        editModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        editForm.reset();
+    }
+
+    // Инициализируем значения по умолчанию при загрузке
+    initializeModalDefaults();
+
+    // Обработчики для создания занятия
+    createBtn.addEventListener('click', openModal);
+    if (createFirstBtn) createFirstBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+
+    // Обработчики для редактирования
+    document.querySelectorAll('.fx-edit-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (!this.disabled) {
+                const classId = this.getAttribute('data-class-id');
+                openEditModal(classId);
+            }
+        });
+    });
+
+    // Обработчики для отмены
+    document.querySelectorAll('.fx-cancel-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (!this.disabled) {
+                const classId = this.getAttribute('data-class-id');
+                if (confirm('Вы уверены, что хотите отменить эту тренировку? Все записи клиентов будут удалены.')) {
+                    fetch(`/trainer/trainer_classes/${classId}/cancel/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            showNotification('Тренировка отменена!', 'success');
+                            this.closest('.fx-training-card').remove();
+                            filterClasses();
+                        } else {
+                            alert('Ошибка при отмене: ' + result.message);
+                        }
+                    });
+                }
+            }
+        });
+    });
+
+    // Закрытие модальных окон
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            closeModal();
+        }
+        if (event.target === editModal) {
+            closeEditModalFunc();
+        }
+    });
+
+    closeEditModal.addEventListener('click', closeEditModalFunc);
+    cancelEditBtn.addEventListener('click', closeEditModalFunc);
+
+    // Обработчик формы создания
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(form);
+        const data = {
+            name: formData.get('name'),
+            description: formData.get('description'),
+            maxclient: parseInt(formData.get('maxclient')),
+            price: parseInt(formData.get('price')),
+            duration: parseInt(formData.get('duration')),
+            date: formData.get('date'),
+            time: formData.get('time'),
+            csrfmiddlewaretoken: formData.get('csrfmiddlewaretoken')
+        };
+
+        if (!data.name || !data.date || !data.time) {
+            alert('Пожалуйста, заполните все обязательные поля');
+            return;
+        }
+
+        // Создаем дату в локальном времени
+        const startTime = new Date(`${data.date}T${data.time}`);
+        const endTime = new Date(startTime.getTime() + data.duration * 60000);
+
+        // Форматируем даты в ISO строку
+        const startTimeISO = startTime.toISOString();
+        const endTimeISO = endTime.toISOString();
+
+        fetch('/trainer/trainer_classes/create/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': data.csrfmiddlewaretoken
+            },
+            body: JSON.stringify({
+                ...data,
+                starttime: startTimeISO,
+                endtime: endTimeISO
+            })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                closeModal();
+                showNotification('Тренировка успешно создана!', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                alert('Ошибка: ' + result.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при создании тренировки');
+        });
+    });
+
+    // Обработчик формы редактирования
+    editForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(editForm);
+        const classId = document.getElementById('edit-class-id').value;
+        const data = {
+            name: formData.get('name'),
+            description: formData.get('description'),
+            maxclient: parseInt(formData.get('maxclient')),
+            price: parseInt(formData.get('price')),
+            duration: parseInt(formData.get('duration')),
+            date: formData.get('date'),
+            time: formData.get('time'),
+            csrfmiddlewaretoken: formData.get('csrfmiddlewaretoken')
+        };
+
+        // Создаем дату в локальном времени
+        const startTime = new Date(`${data.date}T${data.time}`);
+        const endTime = new Date(startTime.getTime() + data.duration * 60000);
+
+        // Форматируем даты в ISO строку
+        const startTimeISO = startTime.toISOString();
+        const endTimeISO = endTime.toISOString();
+
+        fetch(`/trainer/trainer_classes/${classId}/edit/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': data.csrfmiddlewaretoken
+            },
+            body: JSON.stringify({
+                ...data,
+                starttime: startTimeISO,
+                endtime: endTimeISO
+            })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                closeEditModalFunc();
+                showNotification('Тренировка успешно обновлена!', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                alert('Ошибка: ' + result.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при обновлении тренировки');
+        });
+    });
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 10001;
+            background: ${type === 'success' ? '#10b981' : '#ef4444'};
+        `;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+    }
+
+    // Фильтрация и поиск
+    const searchInput = document.getElementById('fx-search-input');
+    const statusFilter = document.getElementById('fx-status-filter');
+    const typeFilter = document.getElementById('fx-type-filter');
+    const classCards = document.querySelectorAll('.fx-training-card');
+    const resultsCount = document.getElementById('results-count');
+
+    function filterClasses() {
+        const searchValue = searchInput.value.toLowerCase();
+        const statusValue = statusFilter.value;
+        const typeValue = typeFilter.value;
+
+        let visibleCount = 0;
+
+        classCards.forEach(card => {
+            const name = card.getAttribute('data-name');
+            const description = card.getAttribute('data-description');
+            const status = card.getAttribute('data-status');
+            const type = card.getAttribute('data-type');
+
+            const searchMatch = !searchValue || 
+                name.includes(searchValue) || 
+                description.includes(searchValue);
+            const statusMatch = statusValue === 'all' || status === statusValue;
+            const typeMatch = typeValue === 'all' || type === typeValue;
+
+            if (searchMatch && statusMatch && typeMatch) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        resultsCount.textContent = visibleCount;
+    }
+
+    searchInput.addEventListener('input', filterClasses);
+    statusFilter.addEventListener('change', filterClasses);
+    typeFilter.addEventListener('change', filterClasses);
+
+    // Удаление занятий
+    document.querySelectorAll('.fx-delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const classId = this.getAttribute('data-class-id');
+            if (confirm('Вы уверены, что хотите удалить эту тренировку?')) {
+                fetch(`/trainer/trainer_classes/${classId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        showNotification('Тренировка удалена!', 'success');
+                        this.closest('.fx-training-card').remove();
+                        filterClasses();
+                    } else {
+                        alert('Ошибка при удалении: ' + result.message);
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

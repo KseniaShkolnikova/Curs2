@@ -1,0 +1,109 @@
+<nav class="navbar">
+    <div class="nav-content">
+        <button class="hamburger" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div class="nav-links">
+                <a style="font-size:30px; margin-right:200px"  class="active">FITZONE</a>
+
+{% if user.is_authenticated %}
+    {% if user.groups.all.0.name == 'Тренер' %}
+        <!-- Меню для тренера -->
+        <a href="{% url 'trainerservice:trainer_home' %}" {% if request.resolver_match.url_name == 'trainer_home' %}class="active"{% endif %}>Главная</a>
+        <a href="{% url 'trainerservice:trainer_classes' %}" {% if request.resolver_match.url_name == 'trainer_classes' %}class="active"{% endif %}>Мои&nbsp;занятия</a>
+        <a href="{% url 'trainerservice:my_clients' %}" {% if request.resolver_match.url_name == 'my_clients' %}class="active"{% endif %}>Мои&nbsp;клиенты</a>
+    {% elif user.groups.all.0.name == 'Менеджер по продажам' %}  <!-- ИСПРАВЛЕНО -->
+        <!-- Меню для менеджера -->
+        <a href="{% url 'menegerservice:manager_home' %}" {% if request.resolver_match.url_name == 'manager_home' %}class="active"{% endif %}>Главная</a>
+        <a href="{% url 'menegerservice:create_subscription' %}" {% if request.resolver_match.url_name == 'create_subscription' %}class="active"{% endif %}>Абонементы</a>
+        <a href="{% url 'menegerservice:reports' %}" {% if request.resolver_match.url_name == 'reports' %}class="active"{% endif %}>Отчеты</a>
+        <a href="{% url 'menegerservice:subscriptions_list' %}" {% if request.resolver_match.url_name == 'subscriptions_list' %}class="active"{% endif %}>Все&nbsp;абонементы</a>
+{% elif user.groups.all.0.name == 'Администратор' %}
+    <!-- Меню для администратора клуба -->
+    <a href="{% url 'adminservice:admin_dashboard' %}" {% if request.resolver_match.url_name == 'admin_dashboard' %}class="active"{% endif %}>Главная</a>
+    <a href="{% url 'adminservice:action_logs' %}" {% if request.resolver_match.url_name == 'action_logs' %}class="active"{% endif %}>Логи&nbsp;действий</a>
+    <a href="{% url 'adminservice:backup_management' %}" {% if request.resolver_match.url_name == 'backup_management' %}class="active"{% endif %}>Бэкапы&nbsp;и&nbsp;данные</a>
+<a href="{% url 'adminservice:staff_management' %}" class="nav-link">
+    <span>Сотрудники</span>
+</a>
+{% else %}
+        <!-- Меню для клиента -->
+        <a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}class="active"{% endif %}>Главная</a>
+        <a href="{% url 'classes' %}" {% if request.resolver_match.url_name == 'classes' %}class="active"{% endif %}>Тренировки</a>
+        <a href="{% url 'subscription' %}" {% if request.resolver_match.url_name == 'subscription' %}class="active"{% endif %}>Абонементы</a>
+        <a href="{% url 'personal_training' %}" {% if request.resolver_match.url_name == 'personal_training' %}class="active"{% endif %}>Персональные&nbsp;тренировки</a>
+    {% endif %}
+    
+    <!-- Общие пункты меню для всех авторизованных -->
+    <a href="{% url 'profile' %}" class="btn-auth">Мой&nbsp;профиль</a>
+    <a href="{% url 'logout' %}" class="btn-auth">Выйти</a>
+{% else %}
+    <!-- Меню для неавторизованных -->
+    <a href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}class="active"{% endif %}>Главная</a>
+    <a href="{% url 'classes' %}" {% if request.resolver_match.url_name == 'classes' %}class="active"{% endif %}>Тренировки</a>
+    <a href="{% url 'subscription' %}" {% if request.resolver_match.url_name == 'subscription' %}class="active"{% endif %}>Абонементы</a>
+    <a href="{% url 'personal_training' %}" {% if request.resolver_match.url_name == 'personal_training' %}class="active"{% endif %}>Персональные&nbsp;тренировки</a>
+    <a href="{% url 'login' %}" class="btn-auth">Войти</a>
+{% endif %}
+        </div>
+    </div>
+</nav>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Hamburger menu toggle
+        const hamburger = document.querySelector('.hamburger');
+        const navLinks = document.querySelector('.nav-links');
+
+        if (hamburger && navLinks) {
+            hamburger.addEventListener('click', () => {
+                hamburger.classList.toggle('active');
+                navLinks.classList.toggle('active');
+            });
+        }
+
+        // Navigation animation on scroll
+        const navbar = document.querySelector('.navbar');
+        if (navbar) {
+            let lastScrollY = window.scrollY;
+
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 100) {
+                    navbar.classList.add('visible');
+                } else {
+                    navbar.classList.remove('visible');
+                }
+                lastScrollY = window.scrollY;
+            });
+
+            // Initialize navbar as visible if not at top
+            if (window.scrollY > 100) {
+                navbar.classList.add('visible');
+            }
+        }
+
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"], .btn-auth').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href && href.startsWith('#')) {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+                // Close mobile menu after clicking a link
+                if (navLinks && navLinks.classList.contains('active')) {
+                    hamburger.classList.remove('active');
+                    navLinks.classList.remove('active');
+                }
+            });
+        });
+    });
+</script>

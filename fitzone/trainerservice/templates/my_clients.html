@@ -1,0 +1,501 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title_name %}
+FITZONE - Мои клиенты
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <section class="pt-hero">
+        <div class="pt-hero-container">
+            <div class="pt-hero-content">
+                <div class="pt-hero-badge">
+                    <div class="pt-badge-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <span class="pt-badge-text">Мои клиенты</span>
+                </div>
+                
+                <div class="pt-hero-main">
+                    <h1 class="pt-hero-title">МОИ КЛИЕНТЫ</h1>
+                    <p class="pt-hero-desc">Все пользователи, которые когда-либо тренировались у меня</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Clients Section -->
+    <section class="pt-section">
+        <div class="pt-header">
+            <h2 class="pt-title">СПИСОК КЛИЕНТОВ</h2>
+            <p class="pt-subtitle">Всего клиентов: {{ clients|length }}</p>
+        </div>
+
+        {% if clients %}
+        <div class="clients-grid">
+            {% for client in clients %}
+            <div class="client-card">
+                <div class="client-avatar">
+                    {% if client.userprofile.avatar %}
+                        <img src="{{ client.userprofile.avatar.url }}" alt="{{ client.userprofile.full_name }}" class="client-avatar-img">
+                    {% else %}
+                        <div class="client-avatar-default">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="client-info">
+                    <h3 class="client-name">{{ client.userprofile.full_name }}</h3>
+                    
+                    <div class="client-details">
+                        <div class="client-detail">
+                            <i class="fas fa-envelope"></i>
+                            <span>{{ client.email }}</span>
+                        </div>
+                        
+                        {% if client.userprofile.gender %}
+                        <div class="client-detail">
+                            <i class="fas fa-venus-mars"></i>
+                            <span>{{ client.userprofile.get_gender_display }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="client-stats">
+                        <div class="client-stat">
+                            <span class="stat-label">Тренировочных планов:</span>
+                            <span class="stat-value">{{ client.training_plans_count }}</span>
+                        </div>
+                        <div class="client-stat">
+                            <span class="stat-label">Групповых занятий:</span>
+                            <span class="stat-value">{{ client.classes_count }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="client-actions">
+<a href="{% url 'trainerservice:create_training_plan' client.id %}" class="client-btn primary">                            <i class="fas fa-dumbbell"></i>
+                            <span>Создать план</span>
+                        </a>
+<a href="{% url 'trainerservice:client_details' client.id %}" class="client-btn secondary">                            <i class="fas fa-chart-line"></i>
+                            <span>Подробнее</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="pt-empty">
+            <i class="fas fa-user-slash"></i>
+            <h3>Клиенты не найдены</h3>
+            <p>У вас пока нет клиентов, которые тренировались у вас</p>
+        </div>
+        {% endif %}
+    </section>
+</div>
+
+<style>
+/* HERO SECTION */
+.pt-hero {
+    background: var(--light-bg);
+    padding: 120px 0 80px;
+    text-align: center;
+    margin-bottom: 60px;
+    margin-top: 80px;
+}
+
+.dark-theme .pt-hero {
+    background: var(--dark-bg);
+}
+
+.pt-hero-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.pt-hero-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
+
+.pt-hero-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.pt-badge-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--accent-gradient);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pt-badge-icon i {
+    color: white;
+    font-size: 1.3rem;
+}
+
+.pt-badge-text {
+    color: var(--neon-purple);
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.dark-theme .pt-badge-text {
+    color: var(--neon-purple-light);
+}
+
+.pt-hero-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    max-width: 800px;
+}
+
+.pt-hero-title {
+    font-size: 3.2rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin: 0;
+    line-height: 1.1;
+}
+
+.dark-theme .pt-hero-title {
+    color: var(--dark-text);
+}
+
+.pt-hero-desc {
+    font-size: 1.2rem;
+    color: var(--text-gray);
+    margin: 0;
+    line-height: 1.6;
+    font-weight: 500;
+    max-width: 600px;
+}
+
+.dark-theme .pt-hero-desc {
+    color: var(--dark-text-light);
+}
+
+/* SECTION STYLES */
+.pt-section {
+    padding: 60px 0;
+}
+
+.pt-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.pt-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 15px;
+}
+
+.dark-theme .pt-title {
+    color: var(--dark-text);
+}
+
+.pt-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-gray);
+    font-weight: 500;
+}
+
+.dark-theme .pt-subtitle {
+    color: var(--dark-text-light);
+}
+
+/* CLIENTS GRID */
+.clients-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 25px;
+    margin-bottom: 60px;
+}
+
+/* CLIENT CARD */
+.client-card {
+    background: var(--light-card);
+    border-radius: 20px;
+    padding: 25px;
+    border: 1px solid var(--light-border);
+    box-shadow: var(--shadow-medium);
+    transition: all 0.3s ease;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.dark-theme .client-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.client-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-large);
+}
+
+.client-avatar {
+    flex-shrink: 0;
+}
+
+.client-avatar-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--neon-purple);
+}
+
+.client-avatar-default {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--accent-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.8rem;
+}
+
+.client-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.client-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.dark-theme .client-name {
+    color: var(--dark-text);
+}
+
+.client-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.client-detail {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-gray);
+    font-size: 0.9rem;
+}
+
+.dark-theme .client-detail {
+    color: var(--dark-text-light);
+}
+
+.client-detail i {
+    color: var(--neon-purple);
+    width: 16px;
+}
+
+.client-stats {
+    display: flex;
+    gap: 20px;
+    margin-top: 5px;
+}
+
+.client-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--text-gray);
+    font-weight: 500;
+}
+
+.dark-theme .stat-label {
+    color: var(--dark-text-light);
+}
+
+.stat-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--neon-purple);
+}
+
+.dark-theme .stat-value {
+    color: var(--neon-purple-light);
+}
+
+.client-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.client-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 15px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.client-btn.primary {
+    background: var(--accent-gradient);
+    color: white;
+}
+
+.client-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+}
+
+.client-btn.secondary {
+    background: transparent;
+    color: var(--neon-purple);
+    border: 2px solid var(--neon-purple);
+}
+
+.dark-theme .client-btn.secondary {
+    color: var(--neon-purple-light);
+    border-color: var(--neon-purple-light);
+}
+
+.client-btn.secondary:hover {
+    background: var(--neon-purple);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.dark-theme .client-btn.secondary:hover {
+    background: var(--neon-purple-light);
+}
+
+/* EMPTY STATE */
+.pt-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-gray);
+}
+
+.pt-empty i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
+    color: var(--neon-purple);
+}
+
+.pt-empty h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: var(--text-dark);
+}
+
+.dark-theme .pt-empty h3 {
+    color: var(--dark-text);
+}
+
+.pt-empty p {
+    color: var(--text-gray);
+}
+
+.dark-theme .pt-empty p {
+    color: var(--dark-text-light);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .pt-hero {
+        padding: 100px 0 60px;
+        margin-top: 60px;
+    }
+    
+    .pt-hero-title {
+        font-size: 2.2rem;
+    }
+    
+    .pt-hero-desc {
+        font-size: 1rem;
+        padding: 0 20px;
+    }
+    
+    .pt-title {
+        font-size: 2rem;
+    }
+    
+    .clients-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .client-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .client-avatar {
+        align-self: center;
+    }
+    
+    .client-stats {
+        justify-content: center;
+    }
+    
+    .client-actions {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .pt-hero-title {
+        font-size: 1.8rem;
+    }
+    
+    .pt-title {
+        font-size: 1.6rem;
+    }
+    
+    .client-card {
+        padding: 16px;
+    }
+    
+    .clients-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

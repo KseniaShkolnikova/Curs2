@@ -1,0 +1,457 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title_name %}
+FITZONE - Редактирование плана
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <section class="page-hero-section">
+        <div class="page-hero-container">
+            <div class="page-hero-content">
+                <div class="page-hero-badge">
+                    <div class="page-badge-icon">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <span class="page-badge-text">Редактирование плана</span>
+                </div>
+                
+                <div class="page-hero-main">
+                    <h1 class="page-hero-title">Редактировать тренировочный план</h1>
+                    <p class="page-hero-desc">Внесите изменения в план тренировок</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Edit Form Section -->
+    <section class="form-section">
+        <div class="form-container">
+            <div class="form-card">
+                <div class="form-header">
+                    <h2 class="form-title">{{ plan.name }}</h2>
+                    <p class="form-subtitle">Для клиента: {{ client.userprofile.full_name|default:client.username }}</p>
+                </div>
+
+                <form method="post" class="training-plan-form" id="editPlanForm">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                    <div class="form-errors">
+                        <div class="error-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="error-content">
+                            <h4>Пожалуйста, исправьте ошибки:</h4>
+                            <ul>
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                        <li>{{ field.label }}: {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="form-group">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">
+                            Название плана
+                            <span class="required">*</span>
+                        </label>
+                        <input type="text" 
+                               name="{{ form.name.name }}" 
+                               id="{{ form.name.id_for_label }}" 
+                               class="form-input" 
+                               placeholder="Название тренировочного плана"
+                               value="{{ form.name.value|default:'' }}"
+                               required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">
+                            Описание
+                            <span class="required">*</span>
+                        </label>
+                        <textarea name="{{ form.description.name }}" 
+                                  id="{{ form.description.id_for_label }}" 
+                                  class="form-textarea" 
+                                  placeholder="Подробное описание тренировочного плана..."
+                                  rows="6"
+                                  required>{{ form.description.value|default:'' }}</textarea>
+                    </div>
+                    
+                    <div class="form-group checkbox-group">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" 
+                                   name="{{ form.is_active.name }}" 
+                                   id="{{ form.is_active.id_for_label }}" 
+                                   class="form-checkbox"
+                                   {% if form.is_active.value %}checked{% endif %}>
+                            <label for="{{ form.is_active.id_for_label }}" class="checkbox-label">
+                                Активный план
+                            </label>
+                        </div>
+                        <div class="checkbox-help">
+                            Активный план будет отображаться у клиента как текущий
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            Сохранить изменения
+                        </button>
+                        <a href="{% url 'trainerservice:client_details' client.id %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i>
+                            Отмена
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+/* Page Hero Section */
+.page-hero-section {
+    padding: 40px 0 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.page-hero-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.page-hero-content {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.page-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 50px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.page-badge-icon {
+    width: 24px;
+    height: 24px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #667eea;
+    font-size: 0.8rem;
+}
+
+.page-badge-text {
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.page-hero-main {
+    color: white;
+}
+
+.page-hero-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.page-hero-desc {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin: 0;
+}
+
+/* Form Section */
+.form-section {
+    padding: 30px 0 50px;
+}
+
+.form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.form-card {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    border: 1px solid #e1e5e9;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.dark-theme .form-card {
+    background: #2d3748;
+    border-color: #4a5568;
+}
+
+.form-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.form-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 8px;
+}
+
+.dark-theme .form-title {
+    color: #f7fafc;
+}
+
+.form-subtitle {
+    color: #718096;
+    margin: 0;
+}
+
+/* Form Elements */
+.training-plan-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-errors {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.error-icon {
+    color: #dc2626;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.error-content h4 {
+    margin: 0 0 8px 0;
+    color: #dc2626;
+    font-size: 1rem;
+}
+
+.error-content ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #dc2626;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 0.95rem;
+}
+
+.dark-theme .form-label {
+    color: #f9fafb;
+}
+
+.required {
+    color: #dc2626;
+}
+
+.form-input, .form-textarea {
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+    color: #1f2937;
+    font-family: inherit;
+}
+
+.dark-theme .form-input,
+.dark-theme .form-textarea {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+}
+
+.form-input:focus, .form-textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.checkbox-group {
+    margin-top: 10px;
+}
+
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-checkbox {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 2px solid #e5e7eb;
+    background: white;
+    cursor: pointer;
+    position: relative;
+}
+
+.dark-theme .form-checkbox {
+    background: #374151;
+    border-color: #4b5563;
+}
+
+.form-checkbox:checked {
+    background: #667eea;
+    border-color: #667eea;
+}
+
+.form-checkbox:checked::after {
+    content: '✓';
+    position: absolute;
+    color: white;
+    font-size: 12px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.checkbox-label {
+    font-weight: 500;
+    color: #1f2937;
+    cursor: pointer;
+}
+
+.dark-theme .checkbox-label {
+    color: #f9fafb;
+}
+
+.checkbox-help {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-top: 5px;
+    margin-left: 28px;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    margin-top: 10px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.dark-theme .form-actions {
+    border-top-color: #4b5563;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.btn-secondary {
+    background: #f8f9fa;
+    color: #6b7280;
+    border: 2px solid #e5e7eb;
+}
+
+.dark-theme .btn-secondary {
+    background: #374151;
+    color: #d1d5db;
+    border-color: #4b5563;
+}
+
+.btn-secondary:hover {
+    background: #e5e7eb;
+}
+
+.dark-theme .btn-secondary:hover {
+    background: #4b5563;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .page-hero-section {
+        padding: 30px 0 20px;
+    }
+    
+    .page-hero-title {
+        font-size: 1.7rem;
+    }
+    
+    .form-card {
+        padding: 20px;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

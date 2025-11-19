@@ -1,0 +1,404 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load class_tags %}
+
+{% block title_name %}
+FITZONE - Запись на тренировку
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/class_booking.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="booking-container">
+    <!-- Hero Section -->
+    <section class="booking-hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="fas fa-calendar-plus"></i>
+                    <span>Запись на тренировку</span>
+                </div>
+                <h1 class="hero-title">ПОДТВЕРЖДЕНИЕ ЗАПИСИ</h1>
+                <p class="hero-description">Проверьте детали тренировки и подтвердите запись</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        <div class="booking-content">
+            <!-- Основная информация -->
+            <div class="booking-card">
+                <div class="card-header">
+                    <div class="class-icon">
+                        {% if "йога" in class_item.name.lower %}
+                        <i class="fas fa-spa"></i>
+                        {% elif "силов" in class_item.name.lower %}
+                        <i class="fas fa-dumbbell"></i>
+                        {% elif "кардио" in class_item.name.lower %}
+                        <i class="fas fa-running"></i>
+                        {% elif "стретчинг" in class_item.name.lower %}
+                        <i class="fas fa-child"></i>
+                        {% elif "танц" in class_item.name.lower %}
+                        <i class="fas fa-music"></i>
+                        {% else %}
+                        <i class="fas fa-star"></i>
+                        {% endif %}
+                    </div>
+                    <h2 class="class-title">{{ class_item.name }}</h2>
+                </div>
+
+                <div class="class-details">
+                    <!-- Тренер -->
+                    <div class="detail-item">
+                        <div class="detail-icon">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="detail-content">
+                            <span class="detail-label">Тренер</span>
+                            <span class="detail-value">{{ trainer_name }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Дата и время -->
+                    <div class="detail-item">
+                        <div class="detail-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="detail-content">
+                            <span class="detail-label">Дата и время</span>
+                            <span class="detail-value">
+                                {{ class_item.starttime|date:"d E Y" }}, 
+                                {{ class_item.starttime|date:"H:i" }} - {{ class_item.endtime|date:"H:i" }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Длительность -->
+                    <div class="detail-item">
+                        <div class="detail-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="detail-content">
+                            <span class="detail-label">Длительность</span>
+                            <span class="detail-value">{{ duration_minutes|duration_display }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Места -->
+                    <div class="detail-item">
+                        <div class="detail-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="detail-content">
+                            <span class="detail-label">Доступные места</span>
+                            <span class="detail-value">
+                                {{ available_spots }} из {{ class_item.maxclient }}
+                                {% if available_spots <= 3 and available_spots > 0 %}
+                                <span class="spots-warning">(Осталось мало мест!)</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Цена -->
+                    <div class="detail-item highlight">
+                        <div class="detail-icon">
+                            <i class="fas fa-tag"></i>
+                        </div>
+                        <div class="detail-content">
+                            <span class="detail-label">Стоимость</span>
+                            <span class="detail-value price">{{ class_item.price|floatformat:0 }} ₽</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Описание -->
+                <div class="class-description">
+                    <h3>Описание тренировки</h3>
+                    <p>{{ class_item.description }}</p>
+                </div>
+            </div>
+
+            <!-- Боковая панель с действиями -->
+            <div class="booking-sidebar">
+                {% if existing_booking %}
+                <div class="status-card warning">
+                    <div class="status-icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <h3>Вы уже записаны</h3>
+                    <p>Вы уже зарегистрированы на эту тренировку.</p>
+                    <a href="{% url 'classes' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Вернуться к расписанию
+                    </a>
+                </div>
+                {% elif available_spots <= 0 %}
+                <div class="status-card error">
+                    <div class="status-icon">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <h3>Мест нет</h3>
+                    <p>К сожалению, на эту тренировку нет свободных мест.</p>
+                    <a href="{% url 'classes' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Найти другую тренировку
+                    </a>
+                </div>
+                {% else %}
+                <div class="status-card success">
+                    <div class="status-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3>Готово к записи</h3>
+                    <p>Подтвердите запись на тренировку.</p>
+                    
+                    <button id="open-payment-modal" class="btn btn-primary">
+                        <i class="fas fa-credit-card"></i>
+                        Перейти к оплате
+                    </button>
+                    
+                    <div class="booking-note">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Стоимость будет списана с вашего счета</span>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Дополнительная информация -->
+                <div class="info-card">
+                    <h4>Что нужно знать:</h4>
+                    <ul>
+                        <li>
+                            <i class="fas fa-t-shirt"></i>
+                            <span>Возьмите с собой удобную спортивную одежду</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-water"></i>
+                            <span>Не забудьте бутылку с водой</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-clock"></i>
+                            <span>Приходите за 10-15 минут до начала</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно оплаты -->
+{% include 'class_payment_modal.html' %}
+
+{% endblock %}
+
+{% block skripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Кнопка открытия модального окна оплаты
+    const openPaymentBtn = document.getElementById('open-payment-modal');
+    
+    if (openPaymentBtn) {
+        openPaymentBtn.addEventListener('click', function() {
+            // Открываем модальное окно оплаты
+            const paymentModal = document.getElementById('payment-modal');
+            if (paymentModal) {
+                paymentModal.style.display = 'flex';
+            }
+        });
+    }
+
+    // Закрытие модального окна при клике на крестик
+    const closeModalBtn = document.querySelector('.close-modal');
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', function() {
+            const paymentModal = document.getElementById('payment-modal');
+            if (paymentModal) {
+                paymentModal.style.display = 'none';
+            }
+        });
+    }
+
+    // Закрытие модального окна при клике вне его
+    window.addEventListener('click', function(event) {
+        const paymentModal = document.getElementById('payment-modal');
+        if (event.target === paymentModal) {
+            paymentModal.style.display = 'none';
+        }
+        
+        const successModal = document.getElementById('class-success-modal');
+        if (event.target === successModal) {
+            successModal.style.display = 'none';
+        }
+    });
+
+    // Закрытие модального окна успеха
+    const closeSuccessModalBtn = document.getElementById('close-success-modal');
+    if (closeSuccessModalBtn) {
+        closeSuccessModalBtn.addEventListener('click', function() {
+            const successModal = document.getElementById('class-success-modal');
+            if (successModal) {
+                successModal.style.display = 'none';
+                // Перенаправляем на страницу классов
+                window.location.href = "{% url 'classes' %}";
+            }
+        });
+    }
+});
+</script>
+<style>
+    /* Исправления для светлой темы в booking */
+.booking-hero .hero-description {
+    color: #6b7280 !important;
+}
+
+.dark-theme .booking-hero .hero-description {
+    color: #9ca3af !important;
+}
+
+/* Кнопка оплаты в светлой теме */
+.btn-primary {
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9) !important;
+    color: white !important;
+    border: none !important;
+}
+
+/* Чекбокс в модальном окне */
+.payment-modal .save-card-label {
+    color: #374151 !important;
+}
+
+.dark-theme .payment-modal .save-card-label {
+    color: #e5e7eb !important;
+}
+
+.payment-modal .checkbox-container input[type="checkbox"] {
+    accent-color: #8b5cf6;
+}
+
+/* Валидация формы оплаты */
+.payment-modal input::placeholder {
+    color: #9ca3af !important;
+}
+
+.dark-theme .payment-modal input::placeholder {
+    color: #6b7280 !important;
+}
+/* Стили для сохраненных карт */
+.saved-cards-section {
+    margin-bottom: 20px;
+}
+
+.saved-cards-section h4 {
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.saved-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.saved-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    background: var(--light-bg);
+    border: 2px solid var(--light-border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dark-theme .saved-card {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.saved-card:hover {
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
+}
+
+.saved-card.active {
+    border-color: var(--accent-primary);
+    background: var(--accent-light);
+}
+
+.dark-theme .saved-card.active {
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.card-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.card-icon {
+    color: var(--accent-primary);
+    font-size: 1.2rem;
+}
+
+.card-details span {
+    display: block;
+}
+
+.card-number {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.card-expiry {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.delete-card-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+.delete-card-btn:hover {
+    background: rgba(229, 62, 62, 0.1);
+    color: #e53e3e;
+}
+
+.use-new-card-btn {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 2px dashed var(--light-border);
+    border-radius: 10px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.dark-theme .use-new-card-btn {
+    border-color: var(--dark-border);
+}
+
+.use-new-card-btn:hover {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+}
+</style>
+{% endblock %}

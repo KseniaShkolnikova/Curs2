@@ -1,0 +1,216 @@
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3 class="footer-title">FITZONE</h3>
+                <p class="footer-description">Премиальный фитнес-клуб с современным оборудованием и профессиональными тренерами</p>
+            </div>
+            
+            <div class="footer-section">
+                <h4 class="footer-subtitle">КОНТАКТЫ</h4>
+                <div class="footer-contacts">
+                    <a href="https://t.me/fitzone_official" class="footer-link" target="_blank">
+                        <svg class="footer-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.14.14-.26.26-.534.26l.213-3.05 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.136-.954l11.566-4.458c.538-.196 1.006.128.832.941z"/>
+                        </svg>
+                        Телеграм канал
+                    </a>
+                    <a href="mailto:info@fitzone.ru" class="footer-link">
+                        <svg class="footer-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 12.713l11.985-8.713h-23.97l11.985 8.713zm0 2.287l-12-8.714v15.714h24v-15.714l-12 8.714z"/>
+                        </svg>
+                        info@fitzone.ru
+                    </a>
+                </div>
+            </div>
+            
+            <div class="footer-section">
+                <h4 class="footer-subtitle">ЧАСЫ РАБОТЫ</h4>
+                <div class="footer-hours">
+                    <p>Пн-Пт: 7:00 - 23:00</p>
+                    <p>Сб-Вс: 8:00 - 22:00</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2024 FITZONE. Все права защищены.</p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    :root {
+        --neon-purple: #8b5cf6;
+        --light-bg: #f5f5f5;
+        --light-border: #e0e0e0;
+        --text-dark: #1a1a1a;
+        --text-gray: #64748b;
+        --text-light: #94a3b8;
+        --accent-gradient: linear-gradient(135deg, var(--neon-purple), var(--neon-purple-dark));
+        /* Добавляем переменные для темной темы */
+        --dark-bg: #0f172a;
+        --dark-card: #1e293b;
+        --dark-border: #334155;
+        --dark-text: #e2e8f0;
+        --dark-text-light: #94a3b8;
+    }
+
+    .site-footer {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        color: var(--text-dark);
+        padding: 60px 0 20px;
+        margin-top: 80px;
+        position: relative;
+        border-top: 1px solid var(--light-border);
+        box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    /* Стили для темной темы */
+    .dark-theme .site-footer {
+        background: linear-gradient(135deg, var(--dark-bg) 0%, #1e293b 100%);
+        color: var(--dark-text);
+        border-top: 1px solid var(--dark-border);
+        box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .dark-theme .footer-description,
+    .dark-theme .footer-link,
+    .dark-theme .footer-hours p {
+        color: var(--dark-text-light);
+    }
+
+    .dark-theme .footer-link:hover {
+        color: var(--dark-text);
+    }
+
+    .dark-theme .footer-bottom {
+        border-top: 1px solid var(--dark-border);
+        color: var(--dark-text-light);
+    }
+
+    .site-footer::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--accent-gradient);
+    }
+
+    .footer-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr;
+        gap: 40px;
+        margin-bottom: 40px;
+    }
+
+    .footer-section h3.footer-title {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 15px;
+        background: var(--accent-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .footer-section h4.footer-subtitle {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: var(--neon-purple);
+    }
+
+    .footer-description {
+        color: var(--text-gray);
+        line-height: 1.6;
+        max-width: 300px;
+    }
+
+    .footer-contacts {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .footer-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--text-gray);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        padding: 8px 0;
+    }
+
+    .footer-link:hover {
+        color: var(--neon-purple);
+        transform: translateX(5px);
+    }
+
+    .footer-icon {
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+        color: var(--neon-purple);
+    }
+
+    .footer-link:hover .footer-icon {
+        transform: scale(1.1);
+        color: var(--neon-purple-dark);
+    }
+
+    .footer-hours p {
+        color: var(--text-gray);
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid var(--light-border);
+        padding-top: 20px;
+        text-align: center;
+        color: var(--text-light);
+        font-size: 0.9rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 30px;
+            text-align: center;
+        }
+
+        .footer-description {
+            max-width: none;
+            margin: 0 auto;
+        }
+
+        .footer-contacts {
+            align-items: center;
+        }
+
+        .site-footer {
+            padding: 40px 0 20px;
+            margin-top: 60px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .footer-container {
+            padding: 0 15px;
+        }
+
+        .footer-section h3.footer-title {
+            font-size: 1.8rem;
+        }
+    }
+</style>

@@ -1,0 +1,1088 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title_name %}
+FITZONE - Управление сотрудниками
+{% endblock %}
+
+{% block content %}
+<div class="particles-container" id="particles"></div>
+
+<section class="hero-section" style="margin: 20px 40px 40px; min-height: auto; padding-top: 20px;">
+    <div class="hero-content">
+        <h1 class="hero-title">
+            УПРАВЛЕНИЕ СОТРУДНИКАМИ
+        </h1>
+
+        <div class="staff-management-container">
+            <!-- Кнопка создания нового сотрудника -->
+            <div class="staff-header">
+                <button onclick="showCreateModal()" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Добавить сотрудника
+                </button>
+                <div class="staff-stats">
+                    <span class="stat-item">Всего: {{ total_count }}</span>
+                    <span class="stat-item active">Активных: {{ active_count }}</span>
+                    <span class="stat-item inactive">Неактивных: {{ inactive_count }}</span>
+                </div>
+            </div>
+
+            <!-- Список сотрудников -->
+            <div class="staff-list">
+                {% for user in staff_users %}
+                <div class="staff-card {% if not user.is_active %}staff-inactive{% endif %}" id="staff-{{ user.id }}">
+                    <div class="staff-info">
+                        <div class="staff-avatar">
+                            {% if user.userprofile.avatar %}
+                                <img src="{{ user.userprofile.avatar.url }}" alt="Аватар">
+                            {% else %}
+                                <div class="avatar-placeholder">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            {% endif %}
+                            {% if not user.is_active %}
+                                <div class="inactive-overlay">
+                                    <i class="fas fa-ban"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="staff-details">
+                            <h3 class="staff-name">
+                                {{ user.userprofile.full_name|default:user.username }}
+                                {% if not user.is_active %}
+                                    <span class="inactive-badge">НЕАКТИВЕН</span>
+                                {% endif %}
+                            </h3>
+                            <p class="staff-email">{{ user.email }}</p>
+                            <p class="staff-role">
+                                {% for group in user.groups.all %}
+                                    <span class="role-badge">{{ group.name }}</span>
+                                {% endfor %}
+                            </p>
+                            <p class="staff-status">
+                                {% if user.is_active %}
+                                    <span class="status-active">✅ Активен</span>
+                                {% else %}
+                                    <span class="status-inactive">❌ Неактивен</span>
+                                {% endif %}
+                                <span class="staff-date">Зарегистрирован: {{ user.date_joined|date:"d.m.Y" }}</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="staff-actions">
+                        <button onclick="editStaff({{ user.id }})" class="btn btn-edit">
+                            <i class="fas fa-edit"></i> Изменить
+                        </button>
+                        {% if user.is_active %}
+                            <button onclick="deleteStaff({{ user.id }})" class="btn btn-delete">
+                                <i class="fas fa-user-slash"></i> Деактивировать
+                            </button>
+                        {% else %}
+                            <button onclick="activateStaff({{ user.id }})" class="btn btn-activate">
+                                <i class="fas fa-user-check"></i> Активировать
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="no-staff">
+                    <i class="fas fa-users"></i>
+                    <p>Сотрудники не найдены</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Модальное окно создания сотрудника -->
+<div id="createModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Добавить сотрудника</h2>
+            <span class="close" onclick="closeCreateModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="createStaffForm">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Пароль *</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="first_name">Имя</label>
+                    <input type="text" id="first_name" name="first_name">
+                </div>
+                <div class="form-group">
+                    <label for="last_name">Фамилия</label>
+                    <input type="text" id="last_name" name="last_name">
+                </div>
+                <div class="form-group">
+                    <label for="group_id">Должность</label>
+                    <select id="group_id" name="group_id">
+                        {% for group in available_groups %}
+                        <option value="{{ group.id }}">{{ group.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="closeCreateModal()" class="btn btn-secondary">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Создать</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно редактирования сотрудника -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Редактировать сотрудника</h2>
+            <span class="close" onclick="closeEditModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="editStaffForm">
+                {% csrf_token %}
+                <input type="hidden" id="edit_user_id" name="user_id">
+                <div class="form-group">
+                    <label for="edit_first_name">Имя</label>
+                    <input type="text" id="edit_first_name" name="first_name">
+                </div>
+                <div class="form-group">
+                    <label for="edit_last_name">Фамилия</label>
+                    <input type="text" id="edit_last_name" name="last_name">
+                </div>
+                <div class="form-group">
+                    <label for="edit_group_id">Должность</label>
+                    <select id="edit_group_id" name="group_id">
+                        {% for group in available_groups %}
+                        <option value="{{ group.id }}">{{ group.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="edit_is_active" name="is_active" value="true">
+                        <span class="checkmark"></span>
+                        Активный сотрудник
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="closeEditModal()" class="btn btn-secondary">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Статус сообщения -->
+<div id="staffStatus" class="status-message"></div>
+
+<style>
+.staff-management-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 0;
+}
+
+.staff-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: var(--light-card);
+    border-radius: 12px;
+    margin-top: 20px;
+}
+
+.dark-theme .staff-header {
+    background: var(--dark-card);
+}
+
+.staff-stats {
+    display: flex;
+    gap: 20px;
+    font-size: 14px;
+}
+
+.stat-item {
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: var(--light-bg);
+    border: 1px solid var(--light-border);
+}
+
+.dark-theme .stat-item {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.stat-item.active {
+    background: rgba(46, 204, 113, 0.1);
+    border-color: #2ecc71;
+    color: #2ecc71;
+}
+
+.stat-item.inactive {
+    background: rgba(231, 76, 60, 0.1);
+    border-color: #e74c3c;
+    color: #e74c3c;
+}
+
+.staff-list {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 40px;
+}
+
+.staff-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: var(--light-card);
+    border-radius: 12px;
+    border: 1px solid var(--light-border);
+    transition: all 0.3s ease;
+}
+
+.dark-theme .staff-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.staff-card.staff-inactive {
+    opacity: 0.7;
+    background: rgba(149, 165, 166, 0.1);
+    border-color: #95a5a6;
+}
+
+.staff-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.staff-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.staff-avatar {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.staff-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: var(--neon-purple);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+}
+
+.inactive-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+}
+
+.staff-details h3 {
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dark-theme .staff-details h3 {
+    color: var(--dark-text);
+}
+
+.inactive-badge {
+    background: #e74c3c;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.staff-email {
+    margin: 0 0 8px 0;
+    color: var(--text-gray);
+    font-size: 14px;
+}
+
+.staff-role {
+    margin: 0 0 8px 0;
+}
+
+.role-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    background: var(--neon-purple);
+    color: white;
+    border-radius: 6px;
+    font-size: 12px;
+    margin-right: 4px;
+}
+
+.staff-status {
+    margin: 0;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.status-active {
+    color: #27ae60;
+    font-weight: 500;
+}
+
+.status-inactive {
+    color: #e74c3c;
+    font-weight: 500;
+}
+
+.staff-date {
+    color: var(--text-gray);
+    font-size: 12px;
+}
+
+.staff-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-primary {
+    background: var(--neon-purple);
+    color: white;
+}
+
+.btn-edit {
+    background: #3498db;
+    color: white;
+}
+
+.btn-delete {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-activate {
+    background: #27ae60;
+    color: white;
+}
+
+.btn-secondary {
+    background: var(--light-bg);
+    color: var(--text-dark);
+    border: 1px solid var(--light-border);
+}
+
+.dark-theme .btn-secondary {
+    background: var(--dark-bg);
+    color: var(--dark-text);
+    border-color: var(--dark-border);
+}
+
+.no-staff {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-gray);
+}
+
+.no-staff i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+.staff-management-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.staff-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: var(--light-card);
+    border-radius: 12px;
+}
+
+.dark-theme .staff-header {
+    background: var(--dark-card);
+}
+
+.staff-stats {
+    font-size: 16px;
+    color: var(--text-gray);
+}
+
+.staff-list {
+    display: grid;
+    gap: 16px;
+}
+
+.staff-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: var(--light-card);
+    border-radius: 12px;
+    border: 1px solid var(--light-border);
+    transition: all 0.3s ease;
+}
+
+.dark-theme .staff-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+.staff-management-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 0; /* Добавляем отступы сверху и снизу */
+}
+
+.staff-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: var(--light-card);
+    border-radius: 12px;
+    margin-top: 20px; /* Дополнительный отступ сверху */
+}
+
+.dark-theme .staff-header {
+    background: var(--dark-card);
+}
+
+.staff-list {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 40px; /* Добавляем отступ снизу списка */
+}
+
+/* Увеличиваем отступ для модальных окон */
+.modal-content {
+    background-color: var(--light-card);
+    margin: 10% auto; /* Увеличиваем отступ сверху для модалок */
+    padding: 0;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.dark-theme .modal-content {
+    background-color: var(--dark-card);
+}
+
+/* Увеличиваем отступ для статусных сообщений */
+.status-message {
+    position: fixed;
+    top: 40px; /* Увеличиваем отступ сверху */
+    right: 20px;
+    padding: 16px 20px;
+    border-radius: 8px;
+    z-index: 1001;
+    display: none;
+}
+
+
+.staff-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.staff-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.staff-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.staff-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: var(--neon-purple);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+}
+
+.staff-details h3 {
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    color: var(--text-dark);
+}
+
+.dark-theme .staff-details h3 {
+    color: var(--dark-text);
+}
+
+.staff-email {
+    margin: 0 0 8px 0;
+    color: var(--text-gray);
+    font-size: 14px;
+}
+
+.staff-role {
+    margin: 0;
+}
+
+.role-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    background: var(--neon-purple);
+    color: white;
+    border-radius: 6px;
+    font-size: 12px;
+    margin-right: 4px;
+}
+
+.staff-status {
+    margin: 8px 0 0 0;
+}
+
+.status-active {
+    color: #27ae60;
+    font-weight: 500;
+}
+
+.status-inactive {
+    color: #e74c3c;
+    font-weight: 500;
+}
+
+.staff-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-primary {
+    background: var(--neon-purple);
+    color: white;
+}
+
+.btn-edit {
+    background: #3498db;
+    color: white;
+}
+
+.btn-delete {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-secondary {
+    background: var(--light-bg);
+    color: var(--text-dark);
+    border: 1px solid var(--light-border);
+}
+
+.dark-theme .btn-secondary {
+    background: var(--dark-bg);
+    color: var(--dark-text);
+    border-color: var(--dark-border);
+}
+
+.no-staff {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-gray);
+}
+
+.no-staff i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+/* Модальные окна */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: var(--light-card);
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.dark-theme .modal-content {
+    background-color: var(--dark-card);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--light-border);
+}
+
+.dark-theme .modal-header {
+    border-bottom-color: var(--dark-border);
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 20px;
+    color: var(--text-dark);
+}
+
+.dark-theme .modal-header h2 {
+    color: var(--dark-text);
+}
+
+.close {
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: var(--text-gray);
+}
+
+.close:hover {
+    color: var(--text-dark);
+}
+
+.dark-theme .close:hover {
+    color: var(--dark-text);
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.dark-theme .form-group label {
+    color: var(--dark-text);
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--light-border);
+    border-radius: 6px;
+    background: var(--light-bg);
+    color: var(--text-dark);
+    font-size: 14px;
+}
+
+.dark-theme .form-group input,
+.dark-theme .form-group select {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+    color: var(--dark-text);
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 24px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    gap: 8px;
+}
+
+.status-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 16px 20px;
+    border-radius: 8px;
+    z-index: 1001;
+    display: none;
+}
+
+.status-message.success {
+    background: rgba(46, 204, 113, 0.1);
+    border: 1px solid #2ecc71;
+    color: #2ecc71;
+    display: block;
+}
+
+.status-message.error {
+    background: rgba(231, 76, 60, 0.1);
+    border: 1px solid #e74c3c;
+    color: #e74c3c;
+    display: block;
+}
+
+</style>
+
+<script>
+// Добавьте функцию активации сотрудника
+async function activateStaff(userId) {
+    if (!confirm('Вы уверены, что хотите активировать этого сотрудника?')) {
+        return;
+    }
+    
+    try {
+        const formData = new FormData();
+        formData.append('is_active', 'true');
+        
+        const response = await fetch(`/admin-panel/update-staff/${userId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        showStaffStatus(data.message, data.success);
+        
+        if (data.success) {
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
+    } catch (error) {
+        showStaffStatus('Ошибка сети: ' + error, false);
+    }
+}
+
+// Обновите функцию удаления для уточнения действия
+async function deleteStaff(userId) {
+    if (!confirm('Вы уверены, что хотите деактивировать этого сотрудника? Он не сможет войти в систему.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/admin-panel/delete-staff/${userId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        });
+        
+        const data = await response.json();
+        showStaffStatus(data.message, data.success);
+        
+        if (data.success) {
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
+    } catch (error) {
+        showStaffStatus('Ошибка сети: ' + error, false);
+    }
+}
+
+// Модальные окна
+function showCreateModal() {
+    document.getElementById('createModal').style.display = 'block';
+}
+
+function closeCreateModal() {
+    document.getElementById('createModal').style.display = 'none';
+    document.getElementById('createStaffForm').reset();
+}
+
+function showEditModal() {
+    document.getElementById('editModal').style.display = 'block';
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+}
+
+// Показать статус
+function showStaffStatus(message, isSuccess) {
+    const statusEl = document.getElementById('staffStatus');
+    statusEl.textContent = message;
+    statusEl.className = `status-message ${isSuccess ? 'success' : 'error'}`;
+    
+    setTimeout(() => {
+        statusEl.style.display = 'none';
+    }, 5000);
+}
+
+// Создание сотрудника
+document.getElementById('createStaffForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const btn = this.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Создание...';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch('{% url "adminservice:create_staff" %}', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        showStaffStatus(data.message, data.success);
+        
+        if (data.success) {
+            closeCreateModal();
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
+    } catch (error) {
+        showStaffStatus('Ошибка сети: ' + error, false);
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+});
+
+// Редактирование сотрудника
+// Редактирование сотрудника
+async function editStaff(userId) {
+    try {
+        // Показываем загрузку
+        showEditModal();
+        document.getElementById('editStaffForm').style.opacity = '0.5';
+        
+        // Загружаем данные сотрудника
+        const response = await fetch(`/admin-panel/get-staff-data/${userId}/`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const user = data.user;
+            
+            // Заполняем форму данными
+            document.getElementById('edit_user_id').value = user.id;
+            document.getElementById('edit_first_name').value = user.first_name || '';
+            document.getElementById('edit_last_name').value = user.last_name || '';
+            document.getElementById('edit_group_id').value = user.group_id || '';
+            document.getElementById('edit_is_active').checked = user.is_active;
+            
+            // Восстанавливаем прозрачность
+            document.getElementById('editStaffForm').style.opacity = '1';
+        } else {
+            closeEditModal();
+            showStaffStatus(data.message, false);
+        }
+    } catch (error) {
+        closeEditModal();
+        showStaffStatus('Ошибка загрузки данных: ' + error, false);
+    }
+}
+
+// Обработка формы редактирования
+document.getElementById('editStaffForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const userId = document.getElementById('edit_user_id').value;
+    const formData = new FormData(this);
+    
+    // Добавляем CSRF токен
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    const btn = this.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch(`/admin-panel/update-staff/${userId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        showStaffStatus(data.message, data.success);
+        
+        if (data.success) {
+            closeEditModal();
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
+    } catch (error) {
+        showStaffStatus('Ошибка сети: ' + error, false);
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+});
+
+document.getElementById('editStaffForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const userId = document.getElementById('edit_user_id').value;
+    const formData = new FormData(this);
+    const btn = this.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch(`/admin-panel/update-staff/${userId}/`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        showStaffStatus(data.message, data.success);
+        
+        if (data.success) {
+            closeEditModal();
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
+    } catch (error) {
+        showStaffStatus('Ошибка сети: ' + error, false);
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+});
+
+// Удаление сотрудника
+async function deleteStaff(userId) {
+    if (!confirm('Вы уверены, что хотите удалить этого сотрудника?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/admin-panel/delete-staff/${userId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        });
+        
+        const data = await response.json();
+        showStaffStatus(data.message, data.success);
+        
+        if (data.success) {
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
+    } catch (error) {
+        showStaffStatus('Ошибка сети: ' + error, false);
+    }
+}
+
+// Закрытие модальных окон при клике вне их
+window.onclick = function(event) {
+    const createModal = document.getElementById('createModal');
+    const editModal = document.getElementById('editModal');
+    
+    if (event.target == createModal) {
+        closeCreateModal();
+    }
+    if (event.target == editModal) {
+        closeEditModal();
+    }
+}
+</script>
+{% endblock %}

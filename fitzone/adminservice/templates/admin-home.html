@@ -1,0 +1,888 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load tz %}
+
+{% block title_name %}
+FITZONE - Административная панель
+{% endblock %}
+
+{% block content %}
+<div class="particles-container" id="particles"></div>
+
+<section class="hero-section" style="margin: 50px 40px 40px; min-height: auto; padding-top: 20px;">
+    <div class="hero-content">
+        <h1 class="hero-title">
+            АДМИН ПАНЕЛЬ<br>
+            {% if user.userprofile.full_name %}
+                {{ user.userprofile.full_name|upper }}
+            {% else %}
+                {{ user.username|upper }}
+            {% endif %}
+        </h1>
+        
+        <div class="admin-dashboard">
+            <!-- Левая колонка -->
+            <div class="dashboard-column">
+                <!-- Блок общей статистики -->
+                <div class="dashboard-card system-stats">
+                    <div class="card-header">
+                        <h2><i class="fas fa-chart-network"></i> СИСТЕМНАЯ СТАТИСТИКА</h2>
+                        <span class="date-badge">Все время</span>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-content">
+                                <div class="stat-value">{{ total_users|default:"0" }}</div>
+                                <div class="stat-label">Всего пользователей</div>
+                            </div>
+                            <div class="stat-trend">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-content">
+                                <div class="stat-value">{{ active_managers|default:"0" }}</div>
+                                <div class="stat-label">Активных менеджеров</div>
+                            </div>
+                            <div class="stat-trend">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                        </div>
+                    
+                        
+                        <div class="stat-item">
+                            <div class="stat-content">
+                                <div class="stat-value">{{ monthly_growth|default:"0" }}%</div>
+                                <div class="stat-label">Рост за месяц</div>
+                            </div>
+                            <div class="stat-trend">
+                                <i class="fas fa-trend-up"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Блок последних действий -->
+                <div class="dashboard-card recent-activity">
+                    <div class="card-header">
+                        <h2><i class="fas fa-history"></i> ПОСЛЕДНИЕ ДЕЙСТВИЯ</h2>
+                        <span class="date-badge">Сегодня</span>
+                    </div>
+                    
+                    {% if recent_activities %}
+                    <div class="activity-list">
+                        {% for activity in recent_activities %}
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                {% if activity.type == 'user' %}
+                                    <i class="fas fa-user-plus"></i>
+                                {% elif activity.type == 'payment' %}
+                                    <i class="fas fa-credit-card"></i>
+                                {% elif activity.type == 'subscription' %}
+                                    <i class="fas fa-id-card"></i>
+                                {% else %}
+                                    <i class="fas fa-cog"></i>
+                                {% endif %}
+                            </div>
+                            <div class="activity-info">
+                                <div class="activity-header">
+                                    <h4>{{ activity.title }}</h4>
+                                    <span class="activity-time">{{ activity.time|date:"H:i" }}</span>
+                                </div>
+                                <div class="activity-details">
+                                    <span class="activity-user">{{ activity.user }}</span>
+                                    <span class="activity-description">{{ activity.description }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-history"></i>
+                        <h3>Нет активностей за сегодня</h3>
+                        <p>Здесь будут отображаться действия пользователей</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Правая колонка -->
+            <div class="dashboard-column">
+                <!-- Блок управления системой -->
+<div class="dashboard-card system-management">
+    <div class="card-header">
+        <h2><i class="fas fa-cogs"></i> УПРАВЛЕНИЕ СИСТЕМОЙ</h2>
+    </div>
+    <div class="management-grid">
+        <a href="{% url 'adminservice:staff_management' %}" class="management-card">
+            <div class="management-icon">
+                <i class="fas fa-users-cog"></i>
+            </div>
+            <div class="management-content">
+                <h3>Управление пользователями</h3>
+                <p>Просмотр и редактирование пользователей</p>
+            </div>
+        </a>
+        
+        <a href="{% url 'adminservice:action_logs' %}" class="management-card">
+            <div class="management-icon">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <div class="management-content">
+                <h3>Логи</h3>
+                <p>Отслеживание действий пользователей</p>
+            </div>
+        </a>
+        
+        
+        <a href="{% url 'adminservice:backup_management' %}" class="management-card">
+            <div class="management-icon">
+                <i class="fas fa-database"></i>
+            </div>
+            <div class="management-content">
+                <h3>Резервные копии</h3>
+                <p>Управление backup системы</p>
+            </div>
+        </a>
+    </div>
+</div>
+
+                <!-- Блок мониторинга -->
+                <!-- Блок мониторинга -->
+<div class="dashboard-card system-monitoring">
+    <div class="card-header">
+        <h2><i class="fas fa-heartbeat"></i> МОНИТОРИНГ СИСТЕМЫ</h2>
+        <span class="status-badge {{ db_status }}">{{ db_status_text }}</span>
+    </div>
+    
+    <div class="monitoring-list">
+        <div class="monitoring-item">
+            <div class="monitoring-info">
+                <h4>База данных</h4>
+                <div class="monitoring-meta">
+                    <span class="monitoring-status {{ db_status }}">{{ db_status_text }}</span>
+                    <span class="monitoring-value">{{ db_size }}</span>
+                </div>
+            </div>
+            <div class="monitoring-indicator">
+                <div class="indicator-dot {{ db_status }}"></div>
+            </div>
+        </div>
+        
+        <div class="monitoring-item">
+            <div class="monitoring-info">
+                <h4>Таблицы БД</h4>
+                <div class="monitoring-meta">
+                    <span class="monitoring-status status-ok">Активно</span>
+                    <span class="monitoring-value">{{ table_count }} таблиц</span>
+                </div>
+            </div>
+            <div class="monitoring-indicator">
+                <div class="indicator-dot status-ok"></div>
+            </div>
+        </div>
+        
+        <div class="monitoring-item">
+            <div class="monitoring-info">
+                <h4>Платежи сегодня</h4>
+                <div class="monitoring-meta">
+                    <span class="monitoring-status status-ok">Обработано</span>
+                    <span class="monitoring-value">{{ payments_today }}</span>
+                </div>
+            </div>
+            <div class="monitoring-indicator">
+                <div class="indicator-dot status-ok"></div>
+            </div>
+        </div>
+        
+        <div class="monitoring-item">
+            <div class="monitoring-info">
+                <h4>Активные абонементы</h4>
+                <div class="monitoring-meta">
+                    <span class="monitoring-status status-ok">Активно</span>
+                    <span class="monitoring-value">{{ active_subscriptions }}</span>
+                </div>
+            </div>
+            <div class="monitoring-indicator">
+                <div class="indicator-dot status-ok"></div>
+            </div>
+        </div>
+    </div>
+</div>
+            </div>
+        </div>
+
+        <!-- Расширенная статистика -->
+        <div class="extended-stats">
+            <div class="dashboard-card extended-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-analytics"></i> ДЕТАЛЬНАЯ СТАТИСТИКА</h2>
+                    <span class="date-badge">За 30 дней</span>
+                </div>
+                
+                <div class="extended-grid">
+                    <div class="extended-stat">
+                        <div class="extended-value">{{ new_users_30d|default:"0" }}</div>
+                        <div class="extended-label">Новых пользователей</div>
+                        <div class="extended-trend trend-up">+12%</div>
+                    </div>
+                    
+                    <div class="extended-stat">
+                        <div class="extended-value">{{ total_payments_30d|default:"0" }}</div>
+                        <div class="extended-label">Всего платежей</div>
+                        <div class="extended-trend trend-up">+8%</div>
+                    </div>
+                    
+                    <div class="extended-stat">
+                        <div class="extended-value">{{ avg_receipt|default:"0" }} ₽</div>
+                        <div class="extended-label">Средний чек</div>
+                        <div class="extended-trend trend-down">-3%</div>
+                    </div>
+                    
+                    <div class="extended-stat">
+                        <div class="extended-value">{{ system_errors|default:"0" }}</div>
+                        <div class="extended-label">Ошибок системы</div>
+                        <div class="extended-trend trend-ok">0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.admin-dashboard {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 24px;
+    margin-top: 32px;
+    align-items: start;
+}
+
+.dashboard-column {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.dashboard-card {
+    background: var(--light-card);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid var(--light-border);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    height: fit-content;
+}
+
+.dark-theme .dashboard-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.dashboard-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--light-border);
+}
+
+.dark-theme .card-header {
+    border-bottom-color: var(--dark-border);
+}
+
+.card-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.dark-theme .card-header h2 {
+    color: var(--dark-text);
+}
+
+.card-header h2 i {
+    color: var(--text-gray);
+    font-size: 16px;
+}
+
+.date-badge {
+    background: var(--light-bg);
+    color: var(--text-gray);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 12px;
+    border: 1px solid var(--light-border);
+}
+
+.dark-theme .date-badge {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+/* Системная статистика */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: var(--light-bg);
+    border-radius: 12px;
+    border: 1px solid var(--light-border);
+    transition: all 0.3s ease;
+}
+
+.dark-theme .stat-item {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.stat-item:hover {
+    border-color: var(--neon-purple);
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-dark);
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.dark-theme .stat-value {
+    color: var(--dark-text);
+}
+
+.stat-label {
+    color: var(--text-gray);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.dark-theme .stat-label {
+    color: var(--dark-text-light);
+}
+
+.stat-trend {
+    color: var(--neon-purple);
+    font-size: 16px;
+}
+
+/* Список активностей */
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px;
+    background: var(--light-bg);
+    border-radius: 12px;
+    border: 1px solid var(--light-border);
+    transition: all 0.3s ease;
+}
+
+.dark-theme .activity-item {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.activity-item:hover {
+    border-color: var(--neon-purple);
+}
+
+.activity-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--light-card);
+    color: var(--neon-purple);
+    flex-shrink: 0;
+    font-size: 14px;
+    margin-top: 2px;
+}
+
+.dark-theme .activity-icon {
+    background: var(--dark-card);
+}
+
+.activity-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+}
+
+.activity-header h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin: 0;
+    flex: 1;
+}
+
+.dark-theme .activity-header h4 {
+    color: var(--dark-text);
+}
+
+.activity-time {
+    font-weight: 500;
+    color: var(--neon-purple);
+    font-size: 12px;
+    margin-left: 12px;
+}
+
+.activity-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.activity-user, .activity-description {
+    color: var(--text-gray);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.dark-theme .activity-user,
+.dark-theme .activity-description {
+    color: var(--dark-text-light);
+}
+
+/* Управление системой */
+.management-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.management-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--light-bg);
+    border-radius: 12px;
+    border: 1px solid var(--light-border);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.dark-theme .management-card {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.management-card:hover {
+    border-color: var(--neon-purple);
+    text-decoration: none;
+    transform: translateX(4px);
+}
+
+.management-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--light-card);
+    color: var(--neon-purple);
+    flex-shrink: 0;
+    font-size: 16px;
+}
+
+.dark-theme .management-icon {
+    background: var(--dark-card);
+}
+
+.management-content {
+    flex: 1;
+}
+
+.management-card h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+}
+
+.dark-theme .management-card h3 {
+    color: var(--dark-text);
+}
+
+.management-card p {
+    color: var(--text-gray);
+    font-size: 12px;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.dark-theme .management-card p {
+    color: var(--dark-text-light);
+}
+
+/* Мониторинг системы */
+.monitoring-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.monitoring-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: var(--light-bg);
+    border-radius: 12px;
+    border: 1px solid var(--light-border);
+    transition: all 0.3s ease;
+}
+
+.dark-theme .monitoring-item {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.monitoring-item:hover {
+    border-color: var(--neon-purple);
+}
+
+.monitoring-info h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 6px;
+}
+
+.dark-theme .monitoring-info h4 {
+    color: var(--dark-text);
+}
+
+.monitoring-meta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.monitoring-status {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.status-ok {
+    background: rgba(46, 204, 113, 0.1);
+    color: #2ecc71;
+}
+
+.status-warning {
+    background: rgba(243, 156, 18, 0.1);
+    color: #f39c12;
+}
+
+.status-error {
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+}
+
+.monitoring-value {
+    color: var(--text-gray);
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.dark-theme .monitoring-value {
+    color: var(--dark-text-light);
+}
+
+.monitoring-indicator {
+    display: flex;
+    align-items: center;
+}
+
+.indicator-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+/* Расширенная статистика */
+.extended-stats {
+    margin-top: 24px;
+    margin-bottom: 60px; /* Добавил отступ снизу */
+}
+.extended-card {
+    margin-bottom: 40px; /* Дополнительный отступ для карточки */
+}
+
+.extended-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.extended-stat {
+    text-align: center;
+    padding: 20px;
+    background: var(--light-bg);
+    border-radius: 12px;
+    border: 1px solid var(--light-border);
+    transition: all 0.3s ease;
+}
+
+.dark-theme .extended-stat {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.extended-stat:hover {
+    border-color: var(--neon-purple);
+}
+
+.extended-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-dark);
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.dark-theme .extended-value {
+    color: var(--dark-text);
+}
+
+.extended-label {
+    color: var(--text-gray);
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.dark-theme .extended-label {
+    color: var(--dark-text-light);
+}
+
+.extended-trend {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.trend-up {
+    background: rgba(46, 204, 113, 0.1);
+    color: #2ecc71;
+}
+
+.trend-down {
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+}
+
+.trend-ok {
+    background: rgba(52, 152, 219, 0.1);
+    color: #3498db;
+}
+
+/* Состояние пустоты */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-gray);
+}
+
+.empty-state i {
+    font-size: 32px;
+    color: var(--text-gray);
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    font-size: 16px;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.dark-theme .empty-state h3 {
+    color: var(--dark-text);
+}
+
+.empty-state p {
+    font-size: 14px;
+    margin: 0;
+    opacity: 0.7;
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+    .admin-dashboard {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .dashboard-column {
+        gap: 20px;
+    }
+    
+    .extended-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+/* СТАЛО: */
+.hero-section {
+    margin: 100px 40px 80px; /* Увеличил верхний отступ */
+    min-height: auto;
+    padding-top: 20px;
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        margin: 20px 20px 20px;
+    }
+    
+    .dashboard-card {
+        padding: 20px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .extended-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .activity-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    
+    .activity-time {
+        margin-left: 0;
+    }
+    
+    .activity-details {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-dashboard {
+        gap: 16px;
+    }
+    
+    .dashboard-card {
+        padding: 16px;
+    }
+    
+    .stat-value {
+        font-size: 20px;
+    }
+    
+    .extended-value {
+        font-size: 24px;
+    }
+    
+    .management-card {
+        padding: 12px;
+    }
+    
+    .monitoring-meta {
+        flex-direction: column;
+        gap: 4px;
+        align-items: flex-start;
+    }
+}
+</style>
+{% endblock %}
+
+{% block skripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация появления карточек
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -30px 0px'
+    };
+    
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    document.querySelectorAll('.dashboard-card').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.5s ease';
+        observer.observe(card);
+    });
+    
+    // Обновление статуса системы в реальном времени
+    function updateSystemStatus() {
+        // Здесь можно добавить AJAX запросы для обновления статуса
+        console.log('System status updated');
+    }
+    
+    // Обновляем статус каждые 30 секунд
+    setInterval(updateSystemStatus, 30000);
+});
+</script>
+{% endblock %}

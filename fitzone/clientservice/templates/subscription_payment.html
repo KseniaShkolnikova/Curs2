@@ -1,0 +1,1079 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load subscription_tags %}
+
+{% block title_name %}
+FITZONE - Оформление абонемента
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/subscription.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="payment-page">
+    <div class="payment-container">
+        <div class="payment-header">
+            <a href="{% url 'detail_subscription' subscription.id %}" class="back-link">
+                <i class="fas fa-arrow-left"></i>
+                <span>Назад к абонементу</span>
+            </a>
+            <h1>Оформление абонемента</h1>
+            <div class="subscription-badge">
+                {{ subscription.name }}
+            </div>
+        </div>
+
+        <div class="payment-content">
+            <!-- Левая колонка - Формы -->
+            <div class="payment-forms">
+                <!-- Паспортные данные -->
+                <div class="form-section">
+                    <h2><i class="fas fa-passport"></i> Паспортные данные</h2>
+                    <div class="passport-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="passport_series">Серия паспорта *</label>
+                                <input type="text" id="passport_series" name="passport_series" 
+                                       pattern="[0-9]{4}" maxlength="4" class="form-input" 
+                                       placeholder="0000" required>
+                                <div class="validation-message" id="passport_series_error"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="passport_number">Номер паспорта *</label>
+                                <input type="text" id="passport_number" name="passport_number" 
+                                       pattern="[0-9]{6}" maxlength="6" class="form-input" 
+                                       placeholder="000000" required>
+                                <div class="validation-message" id="passport_number_error"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="passport_issued">Кем выдан *</label>
+                            <input type="text" id="passport_issued" name="passport_issued" class="form-input" 
+                                   placeholder="Отделом УФМС России" maxlength="150" required>
+                            <div class="validation-message" id="passport_issued_error"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="issue_date">Дата выдачи *</label>
+                                <input type="date" id="issue_date" name="issue_date" class="form-input" required>
+                                <div class="validation-message" id="issue_date_error"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="division_code">Код подразделения *</label>
+                                <input type="text" id="division_code" name="division_code" 
+                                       pattern="[0-9]{3}-[0-9]{3}" class="form-input" 
+                                       placeholder="000-000" maxlength="7" required>
+                                <div class="validation-message" id="division_code_error"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+<!-- Платежные данные -->
+<div class="form-section">
+    <h2><i class="fas fa-credit-card"></i> Платежные данные</h2>
+    <!-- ФОРМА ВВОДА ДАННЫХ КАРТЫ -->
+    <div class="new-card-form">
+        <div class="form-group">
+            <label for="card_number">Номер карты *</label>
+            <div class="card-input-wrapper">
+                <input type="text" id="card_number" name="card_number" 
+                       pattern="[0-9]{16}" maxlength="19" 
+                       placeholder="0000 0000 0000 0000" class="form-input" required>
+                <div class="card-icons">
+                    <i class="fab fa-cc-visa"></i>
+                    <i class="fab fa-cc-mastercard"></i>
+                    <i class="fab fa-cc-mir"></i>
+                </div>
+            </div>
+            <div class="validation-message" id="card_number_error"></div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="expiry_date">Срок действия *</label>
+                <input type="text" id="expiry_date" name="expiry_date" 
+                       placeholder="ММ/ГГ" class="form-input" maxlength="5" required>
+                <div class="validation-message" id="expiry_date_error"></div>
+            </div>
+            <div class="form-group">
+                <label for="cvv">CVV/CVC *</label>
+                <input type="text" id="cvv" name="cvv" 
+                       pattern="[0-9]{3}" maxlength="3" 
+                       placeholder="000" class="form-input" required>
+                <div class="validation-message" id="cvv_error"></div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="card_holder">Имя владельца карты *</label>
+            <input type="text" id="card_holder" name="card_holder" 
+                   class="form-input" placeholder="IVAN IVANOV" required>
+            <div class="validation-message" id="card_holder_error"></div>
+        </div>
+    </div>
+</div>
+
+                <!-- Соглашения -->
+                <div class="agreements-section">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="agreement" required>
+                        <span class="checkmark"></span>
+                        Я соглашаюсь с <a href="/static/documents/clubrules.pdf"  target="_blank">правилами клуба</a> и 
+                        <a href="/static/documents/confend.pdf"  target="_blank">политикой конфиденциальности</a>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="personal_data" required>
+                        <span class="checkmark"></span>
+                        Я согласен на обработку <a href="/static/documents/personal.pdf"  target="_blank">персональных данных</a>
+                    </label>
+                </div>
+
+                <button type="button" id="pay-button" class="pay-button" disabled>
+                    <i class="fas fa-lock"></i>
+                    <span>Оплатить {{ subscription.price|floatformat:0 }} ₽</span>
+                </button>
+            </div>
+
+            <!-- Правая колонка - Информация о заказе -->
+            <div class="order-summary">
+                <div class="summary-card">
+                    <h3>Ваш заказ</h3>
+                    <div class="subscription-info">
+                        <div class="subscription-name">{{ subscription.name }}</div>
+                        <div class="subscription-duration">
+                            <i class="fas fa-calendar"></i>
+                            {% duration_display subscription.durationdays %}
+                        </div>
+                    </div>
+
+                    <div class="features-list">
+                        {% if subscription.gym_access %}
+                        <div class="feature">
+                            <i class="fas fa-check"></i>
+                            <span>Тренажерный зал</span>
+                        </div>
+                        {% endif %}
+                        {% if subscription.pool_access %}
+                        <div class="feature">
+                            <i class="fas fa-check"></i>
+                            <span>Бассейн</span>
+                        </div>
+                        {% endif %}
+                        {% if subscription.spa_access %}
+                        <div class="feature">
+                            <i class="fas fa-check"></i>
+                            <span>СПА зона</span>
+                        </div>
+                        {% endif %}
+                        
+                    </div>
+
+                    <div class="price-breakdown">
+                        <div class="price-row">
+                            <span>Стоимость абонемента:</span>
+                            <span>{{ subscription.price|floatformat:0 }} ₽</span>
+                        </div>
+                        <div class="price-row">
+                            <span>Скидка:</span>
+                            <span class="discount">0 ₽</span>
+                        </div>
+                        <div class="price-row total">
+                            <span>Итого к оплате:</span>
+                            <span class="total-price">{{ subscription.price|floatformat:0 }} ₽</span>
+                        </div>
+                    </div>
+
+                    <div class="security-info">
+                        <div class="security-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <div>
+                                <strong>Безопасная оплата</strong>
+                                <span>Все данные защищены</span>
+                            </div>
+                        </div>
+                        <div class="security-item">
+                            <i class="fas fa-lock"></i>
+                            <div>
+                                <strong>SSL шифрование</strong>
+                                <span>256-битное шифрование</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно успешной оплаты -->
+<div id="success-modal" class="modal">
+    <div class="modal-content">
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h2>Оплата прошла успешно!</h2>
+        <p>Ваш абонемент активирован. На ваш email отправлено подтверждение.</p>
+        
+        <div class="order-details">
+            <div class="detail-item">
+                <span>Номер заказа:</span>
+                <strong id="order-number">#{{ random_order_number }}</strong>
+            </div>
+            <div class="detail-item">
+                <span>Абонемент:</span>
+                <strong>{{ subscription.name }}</strong>
+            </div>
+            <div class="detail-item">
+                <span>Сумма:</span>
+                <strong>{{ subscription.price|floatformat:0 }} ₽</strong>
+            </div>
+            <div class="detail-item">
+                <span>Дата активации:</span>
+                <strong id="activation-date"></strong>
+            </div>
+        </div>
+        
+        <!-- СЕКЦИЯ ДОКУМЕНТА -->
+        <div class="document-download">
+            <div class="document-info">
+                <i class="fas fa-file-contract"></i>
+                <div>
+                    <strong>Официальный договор</strong>
+                    <span>Скачайте документ для предъявления в клубе</span>
+                </div>
+            </div>
+            <a href="#" id="download-contract" class="btn-download">
+                <i class="fas fa-download"></i>
+                Скачать договор PDF
+            </a>
+        </div>
+        
+        <div class="modal-actions">
+            <a href="{% url 'profile' %}" class="btn-primary">Перейти в профиль</a>
+            <a href="{% url 'subscription' %}" class="btn-secondary">Вернуться к абонементам</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block skripts %}
+<script>
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const payButton = document.getElementById('pay-button');
+    const agreementCheckbox = document.getElementById('agreement');
+    const personalDataCheckbox = document.getElementById('personal_data');
+    
+    // Все обязательные поля
+    // Все обязательные поля
+const requiredFields = [
+    'passport_series', 'passport_number', 'passport_issued', 'issue_date', 'division_code',
+    'card_number', 'expiry_date', 'cvv', 'card_holder'
+];
+
+    // Функция проверки заполнения всех полей
+    function checkFormValidity() {
+        const allFieldsValid = requiredFields.every(fieldId => {
+            const field = document.getElementById(fieldId);
+            return field && field.value.trim() !== '' && validateField(fieldId);
+        });
+
+        const checkboxesChecked = agreementCheckbox.checked && personalDataCheckbox.checked;
+
+        if (allFieldsValid && checkboxesChecked) {
+            payButton.disabled = false;
+            payButton.classList.remove('disabled');
+        } else {
+            payButton.disabled = true;
+            payButton.classList.add('disabled');
+        }
+    }
+
+    // Валидация отдельных полей
+function validateField(fieldId) {
+    const field = document.getElementById(fieldId);
+    const value = field.value.trim();
+    const errorElement = document.getElementById(fieldId + '_error');
+    
+    let isValid = true;
+    let errorMessage = '';
+
+    switch(fieldId) {
+        case 'passport_series':
+            if (!/^\d{4}$/.test(value)) {
+                isValid = false;
+                errorMessage = 'Серия паспорта должна содержать 4 цифры';
+            }
+            break;
+
+        case 'passport_number':
+            if (!/^\d{6}$/.test(value)) {
+                isValid = false;
+                errorMessage = 'Номер паспорта должен содержать 6 цифр';
+            }
+            break;
+
+        case 'passport_issued':
+            if (value.length < 20 || value.length > 150) {
+                isValid = false;
+                errorMessage = 'Поле должно содержать от 20 до 150 символов';
+            } else if (!/^[a-zA-Zа-яА-ЯёЁ\s\-.,()]+$/.test(value)) {
+                isValid = false;
+                errorMessage = 'Можно использовать только буквы, пробелы и знаки препинания';
+            }
+            break;
+
+        case 'issue_date':
+            const issueDate = new Date(value);
+            const today = new Date();
+            const minDate = new Date();
+            minDate.setFullYear(today.getFullYear() - 100);
+            
+            if (!value || issueDate > today || issueDate < minDate) {
+                isValid = false;
+                errorMessage = 'Дата должна быть в пределах последних 100 лет';
+            }
+            break;
+
+        case 'division_code':
+            const codeDigits = value.replace(/\D/g, '');
+            if (codeDigits.length !== 6) {
+                isValid = false;
+                errorMessage = 'Код подразделения должен содержать 6 цифр';
+            }
+            break;
+
+        case 'card_number':
+    const cardDigits = value.replace(/\s/g, '');
+    if (!/^\d{16}$/.test(cardDigits)) {
+        isValid = false;
+        errorMessage = 'Номер карты должен содержать 16 цифр';
+    }
+    break;
+
+        case 'expiry_date':
+    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(value)) {
+        isValid = false;
+        errorMessage = 'Формат: ММ/ГГ (например: 12/25)';
+    } else {
+        const [month, year] = value.split('/');
+        const expiryDate = new Date(2000 + parseInt(year), parseInt(month));
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // Устанавливаем дату на последний день месяца
+        const lastDayOfMonth = new Date(2000 + parseInt(year), parseInt(month), 0);
+        expiryDate.setDate(lastDayOfMonth.getDate());
+        
+        if (expiryDate <= today) {
+            isValid = false;
+            errorMessage = 'Срок действия карты истек';
+        }
+        
+        const maxDate = new Date();
+        maxDate.setFullYear(today.getFullYear() + 5);
+        if (expiryDate > maxDate) {
+            isValid = false;
+            errorMessage = 'Срок действия не может быть больше 5 лет';
+        }
+    }
+    break;
+
+        case 'cvv':
+            if (!/^\d{3}$/.test(value)) {
+                isValid = false;
+                errorMessage = 'CVV должен содержать 3 цифры';
+            }
+            break;
+
+        case 'card_holder':
+            if (!/^[A-Z\s]+$/.test(value)) {
+                isValid = false;
+                errorMessage = 'Только заглавные латинские буквы и пробелы';
+            } else if (value.split(' ').length < 2) {
+                isValid = false;
+                errorMessage = 'Введите имя и фамилию через пробел';
+            } else if (value.length < 3) {
+                isValid = false;
+                errorMessage = 'Минимум 3 символа';
+            }
+            break;
+    }
+
+    // Показываем/скрываем сообщение об ошибке
+    if (errorElement) {
+        if (!isValid) {
+            errorElement.textContent = errorMessage;
+            errorElement.style.display = 'block';
+            field.classList.add('error');
+        } else {
+            errorElement.textContent = '';
+            errorElement.style.display = 'none';
+            field.classList.remove('error');
+        }
+    }
+
+    return isValid;
+}
+
+    // Добавляем обработчики событий на все поля
+    requiredFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('input', function() {
+                validateField(fieldId);
+                checkFormValidity();
+            });
+            field.addEventListener('change', function() {
+                validateField(fieldId);
+                checkFormValidity();
+            });
+            field.addEventListener('blur', function() {
+                validateField(fieldId);
+            });
+        }
+    });
+
+    // Обработчики для чекбоксов
+    agreementCheckbox.addEventListener('change', checkFormValidity);
+    personalDataCheckbox.addEventListener('change', checkFormValidity);
+
+    // Запрет ввода не-цифр для числовых полей
+    const numericFields = ['passport_series', 'passport_number', 'division_code', 'card_number', 'expiry_date', 'cvv'];
+    
+    numericFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            // Запрещаем ввод не-цифр
+            field.addEventListener('input', function(e) {
+                if (fieldId === 'expiry_date') {
+                    // Для даты разрешаем только цифры и слэш
+                    this.value = this.value.replace(/[^\d/]/g, '');
+                } else {
+                    // Для остальных - только цифры
+                    this.value = this.value.replace(/\D/g, '');
+                }
+            });
+            
+            // Запрещаем вставку не-цифр
+            field.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                let cleanedText;
+                
+                if (fieldId === 'expiry_date') {
+                    cleanedText = pastedText.replace(/[^\d/]/g, '');
+                } else {
+                    cleanedText = pastedText.replace(/\D/g, '');
+                }
+                
+                document.execCommand('insertText', false, cleanedText);
+            });
+            
+            // Предотвращаем ввод не-цифр через keydown
+            field.addEventListener('keydown', function(e) {
+                // Разрешаем: цифры, Backspace, Delete, Tab, стрелки
+                if ((e.key >= '0' && e.key <= '9') || 
+                    e.key === 'Backspace' || 
+                    e.key === 'Delete' || 
+                    e.key === 'Tab' || 
+                    e.key === 'ArrowLeft' || 
+                    e.key === 'ArrowRight' ||
+                    e.key === 'Home' ||
+                    e.key === 'End') {
+                    return;
+                }
+                
+                // Для поля expiry разрешаем слэш
+                if (fieldId === 'expiry_date' && e.key === '/') {
+                    return;
+                }
+                
+                e.preventDefault();
+            });
+        }
+    });
+
+// Форматирование номера карты (строго 16 цифр с пробелами каждые 4 цифры)
+const cardNumberInput = document.getElementById('card_number');
+if (cardNumberInput) {
+    cardNumberInput.addEventListener('input', function(e) {
+        // Удаляем все не-цифры
+        let value = e.target.value.replace(/\D/g, '');
+        
+        // Ограничиваем 16 цифрами
+        value = value.substring(0, 16);
+        
+        // Добавляем пробелы каждые 4 цифры
+        let formattedValue = '';
+        for (let i = 0; i < value.length; i++) {
+            if (i > 0 && i % 4 === 0) {
+                formattedValue += ' ';
+            }
+            formattedValue += value[i];
+        }
+        
+        e.target.value = formattedValue;
+        validateField('card_number');
+        checkFormValidity();
+    });
+    
+    // Запрещаем ввод больше 16 цифр
+    cardNumberInput.addEventListener('keydown', function(e) {
+        const currentValue = this.value.replace(/\D/g, '');
+        if (currentValue.length >= 16 && 
+            !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End'].includes(e.key)) {
+            e.preventDefault();
+        }
+    });
+}
+
+// Форматирование срока действия карты (строго ММ/ГГ)
+const expiryDateInput = document.getElementById('expiry_date');
+if (expiryDateInput) {
+    expiryDateInput.addEventListener('input', function(e) {
+        // Удаляем все не-цифры
+        let value = e.target.value.replace(/\D/g, '');
+        
+        // Ограничиваем 4 цифрами
+        value = value.substring(0, 4);
+        
+        // Форматируем как ММ/ГГ
+        let formattedValue = '';
+        if (value.length >= 1) {
+            // Первая цифра месяца (0-1)
+            let month = value[0];
+            if (month > 1 && value.length === 1) {
+                month = '0' + month;
+            }
+            formattedValue = month;
+        }
+        if (value.length >= 2) {
+            // Вторая цифра месяца
+            let month = value.substring(0, 2);
+            // Проверяем валидность месяца
+            if (month > 12) {
+                month = '12';
+            }
+            formattedValue = month + '/';
+        }
+        if (value.length >= 3) {
+            formattedValue += value.substring(2, 4);
+        }
+        
+        e.target.value = formattedValue;
+        validateField('expiry_date');
+        checkFormValidity();
+    });
+    
+    // Автоматическое добавление слэша
+    expiryDateInput.addEventListener('keydown', function(e) {
+        const currentValue = this.value.replace(/\D/g, '');
+        
+        // Если ввели 2 цифры и следующая не Backspace, добавляем слэш
+        if (currentValue.length === 2 && e.key !== 'Backspace' && !['ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End'].includes(e.key)) {
+            setTimeout(() => {
+                if (this.value.length === 2 && !this.value.includes('/')) {
+                    this.value = this.value + '/';
+                }
+            }, 10);
+        }
+    });
+}
+
+
+
+
+    // Запрет ввода будущих дат для даты выдачи паспорта
+    const issueDateInput = document.getElementById('issue_date');
+    if (issueDateInput) {
+        const today = new Date().toISOString().split('T')[0];
+        issueDateInput.setAttribute('max', today);
+    }
+
+    // Ограничение длины для текстовых полей
+    const passportIssuedInput = document.getElementById('passport_issued');
+    if (passportIssuedInput) {
+        passportIssuedInput.addEventListener('input', function(e) {
+            if (this.value.length > 150) {
+                this.value = this.value.substring(0, 150);
+            }
+            validateField('passport_issued');
+            checkFormValidity();
+        });
+        
+        // Запрещаем ввод цифр в поле "Кем выдан"
+        passportIssuedInput.addEventListener('keydown', function(e) {
+            if (!/^[a-zA-Zа-яА-ЯёЁ\s\-.,()]$/.test(e.key) && 
+                e.key !== 'Backspace' && 
+                e.key !== 'Delete' && 
+                e.key !== 'ArrowLeft' && 
+                e.key !== 'ArrowRight' &&
+                e.key !== 'Tab' &&
+                e.key !== 'Home' &&
+                e.key !== 'End') {
+                e.preventDefault();
+            }
+        });
+    }
+
+    // Обработчик нажатия на кнопку оплаты
+    payButton.addEventListener('click', async function() {
+        if (!payButton.disabled) {
+            // Проверяем все поля перед отправкой
+            const allValid = requiredFields.every(fieldId => validateField(fieldId));
+            
+            if (!allValid) {
+                alert('Пожалуйста, исправьте ошибки в форме');
+                return;
+            }
+
+            // Показываем индикатор загрузки
+            payButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Обработка платежа...</span>';
+            payButton.disabled = true;
+            
+            try {
+                // Собираем данные формы
+                const formData = {
+                    passport_series: document.getElementById('passport_series').value,
+                    passport_number: document.getElementById('passport_number').value,
+                    passport_issued: document.getElementById('passport_issued').value,
+                    issue_date: document.getElementById('issue_date').value,
+                    division_code: document.getElementById('division_code').value,
+                    card_number: document.getElementById('card_number').value.replace(/\s/g, ''),
+                    expiry_date: document.getElementById('expiry_date').value,
+                    cvv: document.getElementById('cvv').value,
+                    card_holder: document.getElementById('card_holder').value
+                };
+
+                // Отправляем запрос на сервер для создания записи в БД
+                const response = await fetch(`/process-payment/{{ subscription.id }}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                // В обработчике успешной оплаты:
+// В обработчике успешной оплаты:
+if (result.success) {
+    // Обновляем номер заказа в модальном окне
+    document.getElementById('order-number').textContent = result.order_number;
+    
+    // Устанавливаем дату активации
+    const now = new Date();
+    document.getElementById('activation-date').textContent = 
+        now.toLocaleDateString('ru-RU');
+    
+    // Устанавливаем ссылку для скачивания договора
+    const downloadLink = document.getElementById('download-contract');
+    downloadLink.href = `/generate-payment-document/${result.payment_id}/`;
+    
+    // Показываем модальное окно успеха
+    const successModal = document.getElementById('success-modal');
+    if (successModal) {
+        successModal.style.display = 'flex';
+    }
+} else {
+                    alert('Ошибка: ' + result.message);
+                    // Возвращаем кнопку в исходное состояние
+                    payButton.innerHTML = '<i class="fas fa-lock"></i><span>Оплатить {{ subscription.price|floatformat:0 }} ₽</span>';
+                    payButton.disabled = false;
+                    checkFormValidity();
+                }
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Произошла ошибка при обработке платежа');
+                // Возвращаем кнопку в исходное состояние
+                payButton.innerHTML = '<i class="fas fa-lock"></i><span>Оплатить {{ subscription.price|floatformat:0 }} ₽</span>';
+                payButton.disabled = false;
+                checkFormValidity();
+            }
+        }
+    });
+
+    // Функция для получения CSRF токена
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Закрытие модального окна при клике вне его
+    window.addEventListener('click', function(event) {
+        const successModal = document.getElementById('success-modal');
+        if (event.target === successModal) {
+            successModal.style.display = 'none';
+        }
+    });
+
+    // Переключение методов оплаты
+    const paymentMethods = document.querySelectorAll('.payment-method');
+    const paymentForms = document.querySelectorAll('.payment-form');
+
+    paymentMethods.forEach(method => {
+        method.addEventListener('click', function() {
+            const methodType = this.getAttribute('data-method');
+            
+            paymentMethods.forEach(m => m.classList.remove('active'));
+            this.classList.add('active');
+            
+            paymentForms.forEach(form => {
+                form.classList.remove('active');
+                form.style.display = 'none';
+            });
+            
+            const activeForm = document.getElementById(methodType + '-form');
+            if (activeForm) {
+                activeForm.classList.add('active');
+                activeForm.style.display = 'block';
+            }
+        });
+    });
+
+    // Инициализация проверки при загрузке
+    checkFormValidity();
+});
+</script>
+<style>
+
+    /* Стили для секции документа */
+.document-download {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+    border: 2px dashed #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dark-theme .document-download {
+    background: #2d3748;
+    border-color: #4a5568;
+}
+
+.document-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.document-info i {
+    font-size: 2rem;
+    color: #4CAF50;
+}
+
+.document-info div {
+    display: flex;
+    flex-direction: column;
+}
+
+.document-info strong {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.dark-theme .document-info strong {
+    color: var(--dark-text);
+}
+
+.document-info span {
+    font-size: 0.875rem;
+    color: var(--text-gray);
+}
+
+.dark-theme .document-info span {
+    color: var(--dark-text-light);
+}
+
+.btn-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-download:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .document-download {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+    
+    .document-info {
+        justify-content: center;
+    }
+}
+/* Стили для заблокированной кнопки */
+.pay-button.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.pay-button:not(.disabled) {
+    opacity: 1;
+    cursor: pointer;
+}
+
+/* Стили для модального окна */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+}
+
+/* Стили для сообщений валидации */
+.validation-message {
+    display: none;
+    color: #e53e3e;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.form-input.error {
+    border-color: #e53e3e;
+    box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+}
+
+/* Стили для темной темы */
+body.dark-theme .modal-content {
+    background: #2d3748;
+    color: #e2e8f0;
+}
+
+body.dark-theme .modal-content h2 {
+    color: #ffffff;
+}
+
+body.dark-theme .modal-content p {
+    color: #cbd5e0;
+}
+
+body.dark-theme .order-details .detail-item {
+    color: #e2e8f0;
+}
+
+body.dark-theme .order-details .detail-item strong {
+    color: #ffffff;
+}
+
+/* Стили кнопок модального окна для темной темы */
+body.dark-theme .btn-primary {
+    background: #4CAF50;
+    color: white;
+    border: none;
+}
+
+body.dark-theme .btn-primary:hover {
+    background: #45a049;
+}
+
+body.dark-theme .btn-secondary {
+    background: #6b7280;
+    color: white;
+    border: none;
+}
+
+body.dark-theme .btn-secondary:hover {
+    background: #4b5563;
+}
+
+/* Базовые стили кнопок */
+.btn-primary, .btn-secondary {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.3s;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: #4CAF50;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #45a049;
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+}
+
+.success-icon {
+    color: #4CAF50;
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+/* Стили для сохраненных карт */
+.saved-cards-section {
+    margin-bottom: 20px;
+}
+
+.saved-cards-section h4 {
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.saved-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.saved-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    background: var(--light-bg);
+    border: 2px solid var(--light-border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dark-theme .saved-card {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.saved-card:hover {
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
+}
+
+.saved-card.active {
+    border-color: var(--accent-primary);
+    background: var(--accent-light);
+}
+
+.dark-theme .saved-card.active {
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.card-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.card-icon {
+    color: var(--accent-primary);
+    font-size: 1.2rem;
+}
+
+.card-details span {
+    display: block;
+}
+
+.card-number {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.card-expiry {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.delete-card-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+.delete-card-btn:hover {
+    background: rgba(229, 62, 62, 0.1);
+    color: #e53e3e;
+}
+
+.use-new-card-btn {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 2px dashed var(--light-border);
+    border-radius: 10px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.dark-theme .use-new-card-btn {
+    border-color: var(--dark-border);
+}
+
+.use-new-card-btn:hover {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+}
+</style>
+{% endblock %}

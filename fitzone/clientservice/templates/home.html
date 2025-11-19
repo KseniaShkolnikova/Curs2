@@ -1,0 +1,1848 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load subscription_tags %}
+{% load image_tags %}
+
+{% block title_name %}
+FITZONE - Premium Fitness
+{% endblock %}
+
+{% block content %}
+<!-- Отладочная информация -->
+<script>
+    console.log('Home page - User authenticated:', {% if user.is_authenticated %}true{% else %}false{% endif %});
+    {% if user.is_authenticated %}
+        console.log('Home page - User profile theme:', {% if user.userprofile.theme %}true{% else %}false{% endif %});
+    {% endif %}
+    
+    // Принудительно применяем тему
+    {% if user.is_authenticated and user.userprofile.theme %}
+        document.body.classList.add('dark-theme');
+        console.log('Dark theme applied to home page');
+    {% else %}
+        document.body.classList.remove('dark-theme');
+        console.log('Light theme applied to home page');
+    {% endif %}
+</script>
+
+<div class="particles-container" id="particles"></div>
+
+<section class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">FITZONE<br>ПРЕМИУМ ФИТНЕС</h1>
+        <p class="hero-subtitle">Современный фитнес-клуб с лучшим оборудованием, профессиональными тренерами и комфортной атмосферой для достижения ваших спортивных целей</p>
+        <div class="hero-buttons">
+            <a href="{% url 'subscription' %}" class="btn-modern">ВЫБРАТЬ АБОНЕМЕНТ</a>
+            <a href="{% url 'personal_training' %}" class="btn-modern btn-secondary">ЗАПИСАТЬСЯ НА ТРЕНИРОВКУ</a>
+        </div>
+    </div>
+</section>
+
+<section id="classes" class="section">
+    <h2 class="section-title">ГРУППОВЫЕ ЗАНЯТИЯ</h2>
+    <div class="scroll-section">
+        <div class="scroll-container">
+            {% if featured_classes %}
+                {% for class_item in featured_classes %}
+                <div class="class-card">
+                    {% if class_item.image %}
+                        <img src="{{ class_item.image.url }}" class="class-image" alt="{{ class_item.name }}">
+                    {% else %}
+                        <img src="{% random_fitness_image %}" class="class-image" alt="{{ class_item.name }}">
+                    {% endif %}
+                    <div class="class-content">
+                        <span class="class-time">
+                            {{ class_item.starttime|date:"l" }} • {{ class_item.starttime|time:"H:i" }}
+                        </span>
+                        <h3>{{ class_item.name|upper }}</h3>
+                        <p>{{ class_item.description }}</p>
+                        <div class="class-footer">
+                            <span class="class-trainer">
+                                {% with trainer_profile=class_item.trainer.userprofile %}
+                                    {% if trainer_profile.full_name %}
+                                        {{ trainer_profile.full_name }}
+                                    {% else %}
+                                        {{ class_item.trainer.username }}
+                                    {% endif %}
+                                {% endwith %}
+                            </span>
+                            <span class="class-price">{{ class_item.price }}₽</span>
+                        </div>
+                        <button class="class-button book-class-btn" 
+                                data-type="group" 
+                                data-class-id="{{ class_item.id }}"
+                                data-class-name="{{ class_item.name }}"
+                                data-trainer-name="{% with trainer_profile=class_item.trainer.userprofile %}{% if trainer_profile.full_name %}{{ trainer_profile.full_name }}{% else %}{{ class_item.trainer.username }}{% endif %}{% endwith %}"
+                                data-datetime="{{ class_item.starttime|date:'l' }} • {{ class_item.starttime|time:'H:i' }}"
+                                data-price="{{ class_item.price }}">
+                            ЗАПИСАТЬСЯ
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <!-- Запасные карточки если нет занятий в БД -->
+                <div class="class-card">
+                    <img src="{% random_fitness_image %}" class="class-image" alt="Силовые тренировки">
+                    <div class="class-content">
+                        <span class="class-time">ПН, СР, ПТ • 19:00</span>
+                        <h3>СИЛОВОЙ ТРЕНИНГ</h3>
+                        <p>Интенсивные тренировки для развития мышечной силы и выносливости под руководством опытного тренера</p>
+                        <div class="class-footer">
+                            <span class="class-trainer">Алексей Петров</span>
+                            <span class="class-price">800₽</span>
+                        </div>
+                        <button class="class-button book-class-btn" 
+                                data-type="group"
+                                data-class-name="СИЛОВОЙ ТРЕНИНГ"
+                                data-trainer-name="Алексей Петров"
+                                data-datetime="ПН, СР, ПТ • 19:00"
+                                data-price="800">
+                            ЗАПИСАТЬСЯ
+                        </button>
+                    </div>
+                </div>
+
+                <div class="class-card">
+                    <img src="{% random_fitness_image %}" class="class-image" alt="Йога">
+                    <div class="class-content">
+                        <span class="class-time">ВТ, ЧТ • 9:00 & 18:00</span>
+                        <h3>ЙОГА ДЛЯ ВСЕХ</h3>
+                        <p>Расслабляющие практики для улучшения гибкости, снятия стресса и гармонизации тела и разума</p>
+                        <div class="class-footer">
+                            <span class="class-trainer">Мария Сидорова</span>
+                            <span class="class-price">700₽</span>
+                        </div>
+                        <button class="class-button book-class-btn" 
+                                data-type="group"
+                                data-class-name="ЙОГА ДЛЯ ВСЕХ"
+                                data-trainer-name="Мария Сидорова"
+                                data-datetime="ВТ, ЧТ • 9:00 & 18:00"
+                                data-price="700">
+                            ЗАПИСАТЬСЯ
+                        </button>
+                    </div>
+                </div>
+
+                <div class="class-card">
+                    <img src="{% random_fitness_image %}" class="class-image" alt="Кардио">
+                    <div class="class-content">
+                        <span class="class-time">ЕЖЕДНЕВНО • 8:00 & 20:00</span>
+                        <h3>ФУНКЦИОНАЛЬНОЕ КАРДИО</h3>
+                        <p>Динамичные тренировки для улучшения работы сердечно-сосудистой системы и сжигания калорий</p>
+                        <div class="class-footer">
+                            <span class="class-trainer">Дмитрий Козлов</span>
+                            <span class="class-price">900₽</span>
+                        </div>
+                        <button class="class-button book-class-btn" 
+                                data-type="group"
+                                data-class-name="ФУНКЦИОНАЛЬНОЕ КАРДИО"
+                                data-trainer-name="Дмитрий Козлов"
+                                data-datetime="ЕЖЕДНЕВНО • 8:00 & 20:00"
+                                data-price="900">
+                            ЗАПИСАТЬСЯ
+                        </button>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<section id="membership" class="section fitzone-pricing-section">
+    <div class="fitzone-pricing-container">
+        <h2 class="section-title">ПОПУЛЯРНЫЕ АБОНЕМЕНТЫ</h2>
+        <p class="fitzone-pricing-subtitle">Выберите оптимальный вариант для достижения ваших целей</p>
+        
+        <div class="fitzone-pricing-grid">
+            {% if featured_subscriptions %}
+                {% for subscription in featured_subscriptions %}
+                <div class="fitzone-pricing-card {% if forloop.first %}featured{% endif %}">
+                    <div class="fitzone-pricing-header">
+                        <div class="fitzone-pricing-badge">
+                            {% if forloop.first %}
+                            <span class="fitzone-popular-badge">ПОПУЛЯРНЫЙ</span>
+                            {% endif %}
+                        </div>
+                        <h3 class="fitzone-pricing-title">{{ subscription.name }}</h3>
+                        <p class="fitzone-pricing-duration">{% duration_display subscription.durationdays %}</p>
+                    </div>
+                    
+                    <div class="fitzone-pricing-price">
+                        <span class="fitzone-price-amount">{{ subscription.price|floatformat:0 }}</span>
+                        <span class="fitzone-price-currency">₽</span>
+                    </div>
+                    <p class="fitzone-price-note">единоразовый платеж</p>
+                    
+                    <div class="fitzone-pricing-features">
+                        <div class="fitzone-features-grid">
+                            {% if subscription.gym_access %}
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-dumbbell fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">Тренажерный зал</span>
+                            </div>
+                            {% endif %}
+                            {% if subscription.group_classes %}
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-users fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">Групповые занятия</span>
+                            </div>
+                            {% endif %}
+                            {% if subscription.pool_access %}
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-swimmer fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">Бассейн</span>
+                            </div>
+                            {% endif %}
+                            {% if subscription.spa_access %}
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-spa fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">SPA-зона</span>
+                            </div>
+                            {% endif %}
+                            {% if subscription.personal_training %}
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-user-shield fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">Персональные тренировки</span>
+                            </div>
+                            {% endif %}
+                            {% if subscription.locker_room %}
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-lock fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">Раздевалка и душ</span>
+                            </div>
+                            {% endif %}
+                            {% if subscription.towel_service %}
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-tshirt fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">Полотенце</span>
+                            </div>
+                            {% endif %}
+                            {% if subscription.fitness_consultation %}
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-chart-line fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">Фитнес-консультация</span>
+                            </div>
+                            {% endif %}
+                            {% if subscription.nutrition_consultation %}
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-apple-alt fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">Консультация по питанию</span>
+                            </div>
+                            {% endif %}
+                            {% if subscription.guest_visits > 0 %}
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-user-friends fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">{{ subscription.guest_visits }} гостевых визитов</span>
+                            </div>
+                            {% endif %}
+                            {% if subscription.freeze_days > 0 %}
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-pause-circle fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">{{ subscription.freeze_days }} дней заморозки</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="fitzone-pricing-actions">
+                        <a href="{% url 'detail_subscription' subscription.id %}" class="fitzone-pricing-btn {% if forloop.first %}fitzone-btn-primary{% else %}fitzone-btn-secondary{% endif %}">
+                            ВЫБРАТЬ АБОНЕМЕНТ
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <!-- Запасные карточки абонементов с обновленными классами -->
+                <div class="fitzone-pricing-card">
+                    <div class="fitzone-pricing-header">
+                        <h3 class="fitzone-pricing-title">СТАНДАРТ</h3>
+                        <p class="fitzone-pricing-duration">1 МЕСЯЦ</p>
+                    </div>
+                    
+                    <div class="fitzone-pricing-price">
+                        <span class="fitzone-price-amount">3 900</span>
+                        <span class="fitzone-price-currency">₽</span>
+                    </div>
+                    <p class="fitzone-price-note">единоразовый платеж</p>
+                    
+                    <div class="fitzone-pricing-features">
+                        <div class="fitzone-features-grid">
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-dumbbell fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">Тренажерный зал</span>
+                            </div>
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-users fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">Групповые занятия</span>
+                            </div>
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-lock fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">Раздевалка и душ</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="fitzone-pricing-actions">
+                        <a href="{% url 'subscription' %}" class="fitzone-pricing-btn fitzone-btn-secondary">
+                            ВЫБРАТЬ АБОНЕМЕНТ
+                        </a>
+                    </div>
+                </div>
+
+                <div class="fitzone-pricing-card featured">
+                    <div class="fitzone-pricing-header">
+                        <div class="fitzone-pricing-badge">
+                            <span class="fitzone-popular-badge">ПОПУЛЯРНЫЙ</span>
+                        </div>
+                        <h3 class="fitzone-pricing-title">ПРЕМИУМ</h3>
+                        <p class="fitzone-pricing-duration">3 МЕСЯЦА</p>
+                    </div>
+                    
+                    <div class="fitzone-pricing-price">
+                        <span class="fitzone-price-amount">9 900</span>
+                        <span class="fitzone-price-currency">₽</span>
+                    </div>
+                    <p class="fitzone-price-note">единоразовый платеж</p>
+                    
+                    <div class="fitzone-pricing-features">
+                        <div class="fitzone-features-grid">
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-dumbbell fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">Тренажерный зал</span>
+                            </div>
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-users fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">Групповые занятия</span>
+                            </div>
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-swimmer fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">Бассейн</span>
+                            </div>
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-spa fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">SPA-зона</span>
+                            </div>
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-tshirt fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">Полотенце</span>
+                            </div>
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-pause-circle fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">14 дней заморозки</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="fitzone-pricing-actions">
+                        <a href="{% url 'subscription' %}" class="fitzone-pricing-btn fitzone-btn-primary">
+                            ВЫБРАТЬ АБОНЕМЕНТ
+                        </a>
+                    </div>
+                </div>
+
+                <div class="fitzone-pricing-card">
+                    <div class="fitzone-pricing-header">
+                        <h3 class="fitzone-pricing-title">ВСЕ ВКЛЮЧЕНО</h3>
+                        <p class="fitzone-pricing-duration">6 МЕСЯЦЕВ</p>
+                    </div>
+                    
+                    <div class="fitzone-pricing-price">
+                        <span class="fitzone-price-amount">17 900</span>
+                        <span class="fitzone-price-currency">₽</span>
+                    </div>
+                    <p class="fitzone-price-note">единоразовый платеж</p>
+                    
+                    <div class="fitzone-pricing-features">
+                        <div class="fitzone-features-grid">
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-dumbbell fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">Тренажерный зал</span>
+                            </div>
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-users fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">Групповые занятия</span>
+                            </div>
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-swimmer fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">Бассейн</span>
+                            </div>
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-spa fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">SPA-зона</span>
+                            </div>
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-user-shield fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">Персональные тренировки</span>
+                            </div>
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-tshirt fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">Полотенце</span>
+                            </div>
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-chart-line fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">Фитнес-консультация</span>
+                            </div>
+                            <div class="fitzone-feature-item">
+                                <i class="fas fa-pause-circle fitzone-feature-icon"></i>
+                                <span class="fitzone-feature-text">30 дней заморозки</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="fitzone-pricing-actions">
+                        <a href="{% url 'subscription' %}" class="fitzone-pricing-btn fitzone-btn-secondary">
+                            ВЫБРАТЬ АБОНЕМЕНТ
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+<section id="trainers" class="section">
+    <h2 class="section-title">НАШИ ТРЕНЕРЫ</h2>
+    <div class="scroll-section">
+        <div class="scroll-container">
+            {% if featured_trainers %}
+                {% for trainer in featured_trainers %}
+                <div class="trainer-card">
+                    {% if trainer.userprofile.avatar %}
+                        <img src="{{ trainer.userprofile.avatar.url }}" class="trainer-img" alt="{{ trainer.userprofile.full_name|default:trainer.username }}">
+                    {% else %}
+                        <div class="trainer-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    {% endif %}
+                    <div class="trainer-info">
+                        <h3>{{ trainer.userprofile.full_name|default:trainer.username|upper }}</h3>
+                        <span class="trainer-specialty">
+                            {% with specializations=trainer.trainerspecializations_set.all %}
+                                {% if specializations %}
+                                    {{ specializations.0.specialization|upper }}
+                                {% else %}
+                                    ПЕРСОНАЛЬНЫЙ ТРЕНЕР
+                                {% endif %}
+                            {% endwith %}
+                        </span>
+                        <p>
+                            {% with specializations=trainer.trainerspecializations_set.all %}
+                                {% if specializations %}
+                                    Специализация: {{ specializations.0.specialization }}
+                                    {% if specializations|length > 1 %}
+                                        и еще {{ specializations|length|add:"-1" }} специализаций
+                                    {% endif %}
+                                {% else %}
+                                    Профессиональный тренер с индивидуальным подходом к каждому клиенту
+                                {% endif %}
+                            {% endwith %}
+                        </p>
+                        <a href="{% url 'book_personal_training' trainer.id %}" class="trainer-book-btn">
+                            <i class="fas fa-calendar-plus"></i>
+                            ЗАПИСАТЬСЯ
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <!-- Запасные карточки тренеров если нет в БД -->
+                <div class="trainer-card">
+                    <div class="trainer-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="trainer-info">
+                        <h3>АНДРЕЙ ИВАНОВ</h3>
+                        <span class="trainer-specialty">ФИТНЕС-ТРЕНЕР</span>
+                        <p>Сертифицированный специалист по силовым тренировкам и функциональному тренингу. Стаж работы 8 лет.</p>
+                        <a href="{% url 'personal_training' %}" class="trainer-book-btn">
+                            <i class="fas fa-calendar-plus"></i>
+                            ЗАПИСАТЬСЯ
+                        </a>
+                    </div>
+                </div>
+
+                <div class="trainer-card">
+                    <div class="trainer-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="trainer-info">
+                        <h3>МАРИЯ ПЕТРОВА</h3>
+                        <span class="trainer-specialty">ЙОГА-ИНСТРУКТОР</span>
+                        <p>Сертифицированный инструктор по йоге и пилатесу. Помогает достичь гармонии тела и разума.</p>
+                        <a href="{% url 'personal_training' %}" class="trainer-book-btn">
+                            <i class="fas fa-calendar-plus"></i>
+                            ЗАПИСАТЬСЯ
+                        </a>
+                    </div>
+                </div>
+
+                <div class="trainer-card">
+                    <div class="trainer-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="trainer-info">
+                        <h3>ДМИТРИЙ СИДОРОВ</h3>
+                        <span class="trainer-specialty">КАРДИО-ТРЕНЕР</span>
+                        <p>Специалист по кардио-тренировкам и снижению веса. Индивидуальный подход к каждому клиенту.</p>
+                        <a href="{% url 'personal_training' %}" class="trainer-book-btn">
+                            <i class="fas fa-calendar-plus"></i>
+                            ЗАПИСАТЬСЯ
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<section class="cta-section">
+    <h2 class="cta-title">ГОТОВЫ НАЧАТЬ?</h2>
+    <p style="font-size: 1.3rem; color: var(--text-gray); margin-bottom: 4rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+        Присоединяйтесь к нашему фитнес-сообществу и начните свой путь к здоровому образу жизни уже сегодня
+    </p>
+    <div class="cta-buttons">
+        <a href="{% url 'subscription' %}" class="btn-modern" style="font-size: 1.4rem; padding: 22px 60px; margin: 0 15px;">
+            ВЫБРАТЬ АБОНЕМЕНТ
+        </a>
+        <a href="{% url 'classes' %}" class="btn-modern btn-secondary" style="font-size: 1.4rem; padding: 22px 60px; margin: 0 15px;">
+            ГРУППОВЫЕ ЗАНЯТИЯ
+        </a>
+    </div>
+</section>
+
+<!-- Блок с картой -->
+<section id="location" class="fitzone-map-section">
+    <div class="fitzone-map-container">
+        <h2 class="section-title">МЫ НАХОДИМСЯ</h2>
+        <p class="fitzone-map-subtitle">Приходите в наш современный фитнес-клуб в центре города</p>
+        
+        <div class="fitzone-map-content">
+            <div class="fitzone-map-info">
+                <div class="fitzone-info-card">
+                    <div class="fitzone-info-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="fitzone-info-content">
+                        <h3>АДРЕС</h3>
+                        <p>г. Москва, ул. Тверская, д. 25</p>
+                        <p>Бизнес-центр "Премиум", 3 этаж</p>
+                    </div>
+                </div>
+                
+                <div class="fitzone-info-card">
+                    <div class="fitzone-info-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="fitzone-info-content">
+                        <h3>РЕЖИМ РАБОТЫ</h3>
+                        <p>Пн-Пт: 07:00 - 23:00</p>
+                        <p>Сб-Вс: 08:00 - 22:00</p>
+                    </div>
+                </div>
+                
+                <div class="fitzone-info-card">
+                    <div class="fitzone-info-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <div class="fitzone-info-content">
+                        <h3>ТЕЛЕФОН</h3>
+                        <p>+7 (495) 123-45-67</p>
+                        <p>+7 (800) 100-20-30</p>
+                    </div>
+                </div>
+                
+                <div class="fitzone-info-card">
+                    <div class="fitzone-info-icon">
+                        <i class="fas fa-subway"></i>
+                    </div>
+                    <div class="fitzone-info-content">
+                        <h3>МЕТРО</h3>
+                        <p>Тверская (2 мин. пешком)</p>
+                        <p>Пушкинская (5 мин. пешком)</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="fitzone-map-wrapper">
+                <!-- Яндекс Карта с меткой -->
+                <iframe 
+                    src="https://yandex.ru/map-widget/v1/?ll=37.6050%2C55.7610&z=17&pt=37.6050%2C55.7610%2Cpm2rdm" 
+                    width="100%" 
+                    height="100%" 
+                    frameborder="0"
+                    style="border: 0; border-radius: 20px;"
+                    allowfullscreen=""
+                    aria-hidden="false"
+                    tabindex="0">
+                </iframe>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+/* Уникальные стили для секции абонементов - FITZONE_PRICING */
+.fitzone-pricing-section {
+    padding: 100px 0;
+    background: linear-gradient(135deg, var(--light-bg) 0%, #f8f9fa 100%);
+    position: relative;
+}
+
+.dark-theme .fitzone-pricing-section {
+    background: linear-gradient(135deg, var(--dark-bg) 0%, #1a1a1a 100%);
+}
+
+.fitzone-pricing-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.fitzone-pricing-subtitle {
+    text-align: center;
+    color: var(--text-gray);
+    font-size: 1.3rem;
+    margin-bottom: 60px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.dark-theme .fitzone-pricing-subtitle {
+    color: var(--dark-text-light);
+}
+
+/* Сетка карточек с одинаковой высотой */
+.fitzone-pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    align-items: stretch;
+}
+.trainer-avatar {
+    width: 100%;
+    height: 250px;
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 15px 15px 0 0;
+    color: white;
+    font-size: 4rem;
+}
+
+.trainer-img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 15px 15px 0 0;
+}
+
+/* Карточки с фиксированной одинаковой высотой */
+.fitzone-pricing-card {
+    background: var(--light-card);
+    border-radius: 24px;
+    padding: 40px 35px;
+    box-shadow: var(--shadow-medium);
+    border: 1px solid var(--light-border);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 650px; /* Фиксированная высота */
+    min-height: 650px;
+}
+
+.dark-theme .fitzone-pricing-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.fitzone-pricing-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: var(--accent-gradient);
+    transform: scaleX(0);
+    transition: transform 0.4s ease;
+}
+
+.fitzone-pricing-card:hover::before {
+    transform: scaleX(1);
+}
+
+.fitzone-pricing-card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 25px 50px rgba(139, 92, 246, 0.15);
+}
+
+.fitzone-pricing-card.featured {
+    border: 2px solid var(--neon-purple);
+    transform: scale(1.02);
+}
+
+.fitzone-pricing-card.featured:hover {
+    transform: scale(1.02) translateY(-12px);
+}
+
+/* Заголовок карточки */
+.fitzone-pricing-header {
+    text-align: center;
+    margin-bottom: 30px;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.fitzone-pricing-badge {
+    position: absolute;
+    top: -45px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.fitzone-popular-badge {
+    background: var(--accent-gradient);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
+}
+
+.fitzone-pricing-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+    line-height: 1.2;
+}
+
+.dark-theme .fitzone-pricing-title {
+    color: var(--dark-text);
+}
+
+.fitzone-pricing-duration {
+    color: var(--neon-purple);
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Цена */
+.fitzone-pricing-price {
+    text-align: center;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+.fitzone-price-amount {
+    font-size: 3.5rem;
+    font-weight: 900;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+}
+
+.fitzone-price-currency {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--neon-purple);
+}
+
+.fitzone-price-note {
+    text-align: center;
+    color: var(--text-gray);
+    font-size: 1rem;
+    margin-bottom: 30px;
+    flex-shrink: 0;
+}
+
+.dark-theme .fitzone-price-note {
+    color: var(--dark-text-light);
+}
+
+/* Особенности с прокруткой */
+.fitzone-pricing-features {
+    margin-bottom: 30px;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.fitzone-features-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Стили для скроллбара */
+.fitzone-features-grid::-webkit-scrollbar {
+    width: 4px;
+}
+
+.fitzone-features-grid::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.05);
+    border-radius: 10px;
+}
+
+.dark-theme .fitzone-features-grid::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.05);
+}
+
+.fitzone-features-grid::-webkit-scrollbar-thumb {
+    background: var(--neon-purple);
+    border-radius: 10px;
+}
+
+.fitzone-features-grid::-webkit-scrollbar-thumb:hover {
+    background: var(--neon-blue);
+}
+
+.fitzone-feature-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.dark-theme .fitzone-feature-item {
+    border-bottom: 1px solid var(--dark-border);
+}
+
+.fitzone-feature-item:hover {
+    transform: translateX(5px);
+}
+
+.fitzone-feature-item:last-child {
+    border-bottom: none;
+}
+
+.fitzone-feature-icon {
+    width: 22px;
+    height: 22px;
+    background: var(--accent-gradient);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.fitzone-feature-text {
+    color: var(--text-gray);
+    font-weight: 500;
+    font-size: 0.95rem;
+    line-height: 1.3;
+}
+
+.dark-theme .fitzone-feature-text {
+    color: var(--dark-text-light);
+}
+
+/* Кнопки */
+.fitzone-pricing-actions {
+    margin-top: auto;
+    flex-shrink: 0;
+}
+
+.fitzone-pricing-btn {
+    display: block;
+    width: 100%;
+    padding: 16px 30px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.fitzone-btn-primary {
+    background: var(--accent-gradient);
+    color: white;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+}
+
+.fitzone-btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.4);
+    color: white;
+}
+
+.fitzone-btn-secondary {
+    background: transparent;
+    color: var(--neon-purple);
+    border: 2px solid var(--neon-purple);
+}
+
+.fitzone-btn-secondary:hover {
+    background: var(--neon-purple);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+    .fitzone-pricing-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+    }
+    
+    .fitzone-pricing-card.featured {
+        transform: none;
+    }
+    
+    .fitzone-pricing-card.featured:hover {
+        transform: translateY(-12px);
+    }
+}
+
+@media (max-width: 768px) {
+    .fitzone-pricing-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .fitzone-pricing-card {
+        padding: 30px 25px;
+        height: 600px;
+        min-height: 600px;
+    }
+    
+    .fitzone-price-amount {
+        font-size: 3rem;
+    }
+    
+    .fitzone-pricing-title {
+        font-size: 1.6rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .fitzone-pricing-section {
+        padding: 60px 0;
+    }
+    
+    .fitzone-pricing-container {
+        padding: 0 15px;
+    }
+    
+    .fitzone-pricing-card {
+        padding: 25px 20px;
+        height: 550px;
+        min-height: 550px;
+    }
+    
+    .fitzone-price-amount {
+        font-size: 2.5rem;
+    }
+    
+    .fitzone-pricing-title {
+        font-size: 1.4rem;
+    }
+    
+    .fitzone-feature-item {
+        padding: 8px 0;
+    }
+    
+    .fitzone-feature-text {
+        font-size: 0.9rem;
+    }
+}
+
+/* Анимации */
+@keyframes fitzoneFadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fitzone-pricing-card {
+    animation: fitzoneFadeInUp 0.6s ease forwards;
+}
+
+.fitzone-pricing-card:nth-child(1) { animation-delay: 0.1s; }
+.fitzone-pricing-card:nth-child(2) { animation-delay: 0.2s; }
+.fitzone-pricing-card:nth-child(3) { animation-delay: 0.3s; }
+/* Стили для блока с картой */
+.fitzone-map-section {
+    padding: 80px 0;
+    background: linear-gradient(135deg, var(--light-bg) 0%, #f0f2f5 100%);
+    position: relative;
+}
+
+.dark-theme .fitzone-map-section {
+    background: linear-gradient(135deg, var(--dark-bg) 0%, #1a1a1a 100%);
+}
+
+.fitzone-map-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.fitzone-map-subtitle {
+    text-align: center;
+    color: var(--text-gray);
+    font-size: 1.2rem;
+    margin-bottom: 50px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.dark-theme .fitzone-map-subtitle {
+    color: var(--dark-text-light);
+}
+.fitzone-map-content {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 40px;
+    align-items: stretch; /* Растягиваем по высоте */
+    min-height: 500px; /* Минимальная высота */
+}
+
+.fitzone-map-info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 100%; /* Занимает всю высоту */
+    justify-content: space-between; /* Равномерно распределяет карточки */
+}
+
+.fitzone-info-card {
+    background: var(--light-card);
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: var(--shadow-medium);
+    border: 1px solid var(--light-border);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    flex: 1; /* Карточки занимают равное пространство */
+    min-height: 100px; /* Минимальная высота карточек */
+}
+
+.dark-theme .fitzone-info-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.fitzone-info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(139, 92, 246, 0.1);
+}
+
+.fitzone-info-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--accent-gradient);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.fitzone-info-content h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.dark-theme .fitzone-info-content h3 {
+    color: var(--dark-text);
+}
+.trainer-card {
+    flex: 0 0 500px; /* Фиксированная ширина, не растягивается и не сжимается */
+    background: var(--light-card);
+    border-radius: 20px;
+    box-shadow: var(--shadow-medium);
+    border: 1px solid var(--light-border);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 480px; /* Фиксированная высота */
+}
+.class-image {
+    width: 100%;
+    height: 500px; 
+}
+.trainer-book-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--accent-gradient);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    margin-top: auto; /* Фиксирует кнопку внизу */
+    flex-shrink: 0; /* Не сжимается */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.fitzone-info-content p {
+    color: var(--text-gray);
+    margin-bottom: 4px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.dark-theme .fitzone-info-content p {
+    color: var(--dark-text-light);
+}
+
+.fitzone-map-wrapper {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow-large);
+    height: 700px; /* Увеличиваем высоту карты */
+}
+
+.fitzone-map-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.fitzone-map-image {
+    text-align: center;
+    color: white;
+    z-index: 2;
+}
+
+.fitzone-map-image i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    opacity: 0.9;
+}
+
+.fitzone-map-image h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.fitzone-map-image p {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    opacity: 0.9;
+}
+
+.fitzone-map-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 12px 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    backdrop-filter: blur(10px);
+}
+
+.fitzone-map-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+    .fitzone-map-content {
+        grid-template-columns: 1fr 1.5fr;
+        gap: 30px;
+    }
+}
+
+@media (max-width: 768px) {
+    .fitzone-map-section {
+        padding: 60px 0;
+    }
+    
+    .fitzone-map-content {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .fitzone-map-wrapper {
+        height: 300px;
+        order: -1;
+    }
+    
+    .fitzone-info-card {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .fitzone-map-container {
+        padding: 0 15px;
+    }
+    
+    .fitzone-map-wrapper {
+        height: 250px;
+    }
+    
+    .fitzone-info-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    
+    .fitzone-info-icon {
+        align-self: center;
+    }
+    
+    .fitzone-map-image i {
+        font-size: 2.5rem;
+    }
+    
+    .fitzone-map-image h3 {
+        font-size: 1.3rem;
+    }
+    
+    .fitzone-map-image p {
+        font-size: 1rem;
+    }
+}
+
+/* Анимации */
+@keyframes fitzoneMapFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fitzone-info-card, .fitzone-map-wrapper {
+    animation: fitzoneMapFadeIn 0.6s ease forwards;
+}
+/* Tablet Styles (768px - 1024px) */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .hero-section {
+        padding: 80px 40px;
+    }
+    
+    .hero-title {
+        font-size: 3rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.2rem;
+        max-width: 600px;
+    }
+    
+    .hero-buttons {
+        flex-direction: row;
+        gap: 20px;
+    }
+    
+    .btn-modern {
+        padding: 16px 35px;
+        font-size: 1.1rem;
+    }
+    
+    /* Абонементы */
+    .fitzone-pricing-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+    }
+    
+    .fitzone-pricing-card {
+        height: 620px;
+        min-height: 620px;
+        padding: 35px 25px;
+    }
+    
+    .fitzone-price-amount {
+        font-size: 3rem;
+    }
+    
+    /* Карта */
+    .fitzone-map-content {
+        grid-template-columns: 1fr 1.5fr;
+        gap: 30px;
+    }
+    
+    .fitzone-map-wrapper {
+        height: 500px;
+    }
+    
+    /* Групповые занятия и тренеры */
+    .scroll-container {
+        gap: 20px;
+        padding: 0 20px;
+    }
+    
+    .class-card, .trainer-card {
+        min-width: 300px;
+    }
+    
+    /* CTA секция */
+    .cta-buttons {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .cta-buttons .btn-modern {
+        margin: 5px 0;
+        font-size: 1.2rem;
+        padding: 18px 40px;
+    }
+}
+
+/* Mobile Styles (768px and below) */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 60px 20px;
+        text-align: center;
+    }
+    
+    .hero-title {
+        font-size: 2.2rem;
+        line-height: 1.2;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem;
+        max-width: 100%;
+        margin: 0 auto 30px;
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+    }
+    
+    .btn-modern {
+        padding: 14px 30px;
+        font-size: 1rem;
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    /* Секции */
+    .section {
+        padding: 50px 0;
+    }
+    
+    .section-title {
+        font-size: 1.8rem;
+        margin-bottom: 30px;
+    }
+    
+    /* Абонементы */
+    .fitzone-pricing-section {
+        padding: 60px 0;
+    }
+    
+    .fitzone-pricing-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .fitzone-pricing-card {
+        height: auto;
+        min-height: auto;
+        padding: 30px 20px;
+    }
+    
+    .fitzone-price-amount {
+        font-size: 2.8rem;
+    }
+    
+    .fitzone-pricing-title {
+        font-size: 1.5rem;
+    }
+    
+    .fitzone-features-grid {
+        max-height: 300px;
+    }
+    
+    /* Карта */
+    .fitzone-map-section {
+        padding: 50px 0;
+    }
+    
+    .fitzone-map-content {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .fitzone-map-wrapper {
+        height: 300px;
+        order: -1;
+    }
+    
+    .fitzone-info-card {
+        padding: 20px;
+        flex-direction: row;
+        text-align: left;
+    }
+    
+    /* Групповые занятия и тренеры */
+    .scroll-section {
+        margin: 0 -15px;
+        padding: 0 15px;
+    }
+    
+    .scroll-container {
+        gap: 15px;
+        padding: 0 5px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+    }
+    
+    .class-card, .trainer-card {
+        min-width: 280px;
+        scroll-snap-align: start;
+    }
+    
+    .class-image, .trainer-img {
+        height: 200px;
+    }
+    
+    /* CTA секция */
+    .cta-section {
+        padding: 60px 20px;
+    }
+    
+    .cta-title {
+        font-size: 2rem;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .cta-buttons .btn-modern {
+        margin: 5px 0;
+        font-size: 1.1rem;
+        padding: 16px 30px;
+        width: 100%;
+        max-width: 280px;
+    }
+}
+
+/* Small Mobile Styles (480px and below) */
+@media (max-width: 480px) {
+    .hero-section {
+        padding: 50px 15px;
+    }
+    
+    .hero-title {
+        font-size: 1.8rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+    
+    .btn-modern {
+        padding: 12px 25px;
+        font-size: 0.9rem;
+    }
+    
+    /* Секции */
+    .section {
+        padding: 40px 0;
+    }
+    
+    .section-title {
+        font-size: 1.6rem;
+        margin-bottom: 25px;
+    }
+    
+    /* Абонементы */
+    .fitzone-pricing-section {
+        padding: 40px 0;
+    }
+    
+    .fitzone-pricing-container {
+        padding: 0 15px;
+    }
+    
+    .fitzone-pricing-card {
+        padding: 25px 15px;
+    }
+    
+    .fitzone-price-amount {
+        font-size: 2.5rem;
+    }
+    
+    .fitzone-pricing-title {
+        font-size: 1.3rem;
+    }
+    
+    .fitzone-feature-item {
+        padding: 8px 0;
+    }
+    
+    .fitzone-feature-text {
+        font-size: 0.9rem;
+    }
+    
+    /* Карта */
+    .fitzone-map-section {
+        padding: 40px 0;
+    }
+    
+    .fitzone-map-container {
+        padding: 0 15px;
+    }
+    
+    .fitzone-map-wrapper {
+        height: 250px;
+    }
+    
+    .fitzone-info-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+        padding: 15px;
+    }
+    
+    .fitzone-info-icon {
+        align-self: center;
+    }
+    
+    /* Групповые занятия и тренеры */
+    .class-card, .trainer-card {
+        min-width: 260px;
+    }
+    
+    .class-content, .trainer-info {
+        padding: 15px;
+    }
+    
+    /* CTA секция */
+    .cta-section {
+        padding: 50px 15px;
+    }
+    
+    .cta-title {
+        font-size: 1.8rem;
+    }
+    
+    .cta-buttons .btn-modern {
+        font-size: 1rem;
+        padding: 14px 25px;
+    }
+}
+
+/* Landscape Mobile Styles */
+@media (max-width: 768px) and (orientation: landscape) {
+    .hero-section {
+        padding: 40px 20px;
+        min-height: auto;
+    }
+    
+    .hero-title {
+        font-size: 1.8rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+        margin-bottom: 20px;
+    }
+    
+    .hero-buttons {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .btn-modern {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+        width: auto;
+        min-width: 200px;
+    }
+    
+    .fitzone-pricing-card {
+        padding: 20px 15px;
+    }
+    
+    .fitzone-map-wrapper {
+        height: 200px;
+    }
+}
+
+/* Обеспечиваем хорошее отображение на очень маленьких экранах */
+@media (max-width: 360px) {
+    .hero-title {
+        font-size: 1.6rem;
+    }
+    
+    .section-title {
+        font-size: 1.4rem;
+    }
+    
+    .class-card, .trainer-card {
+        min-width: 240px;
+    }
+    
+    .fitzone-price-amount {
+        font-size: 2.2rem;
+    }
+}
+
+/* Улучшаем доступность для касаний на мобильных устройствах */
+@media (max-width: 768px) {
+    .btn-modern,
+    .class-button,
+    .trainer-book-btn,
+    .fitzone-pricing-btn {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .scroll-container {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Увеличиваем область клика для маленьких элементов */
+    .password-toggle,
+    .fitzone-feature-item {
+        min-height: 44px;
+    }
+}
+
+/* Оптимизация производительности для мобильных */
+@media (max-width: 768px) {
+    .particles-container {
+        display: none; /* Скрываем частицы на мобильных для производительности */
+    }
+    
+    .fitzone-pricing-card:hover {
+        transform: none; /* Отключаем трансформации при hover на мобильных */
+    }
+    
+    .class-card:hover,
+    .trainer-card:hover {
+        transform: none;
+    }
+}
+
+/* Специфические стили для горизонтального скролла на мобильных */
+@media (max-width: 768px) {
+    .scroll-container {
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE and Edge */
+    }
+    
+    .scroll-container::-webkit-scrollbar {
+        display: none; /* Chrome, Safari and Opera */
+    }
+    
+    /* Добавляем индикатор скролла */
+    .scroll-section {
+        position: relative;
+    }
+    
+    .scroll-section::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 30px;
+        background: linear-gradient(90deg, transparent, var(--light-bg));
+        pointer-events: none;
+    }
+    
+    .dark-theme .scroll-section::after {
+        background: linear-gradient(90deg, transparent, var(--dark-bg));
+    }
+}
+
+/* Адаптация типографики для мобильных */
+@media (max-width: 768px) {
+    .hero-title,
+    .section-title,
+    .cta-title {
+        line-height: 1.2;
+    }
+    
+    .hero-subtitle,
+    .fitzone-pricing-subtitle,
+    .fitzone-map-subtitle {
+        line-height: 1.4;
+    }
+    
+    .class-content h3,
+    .trainer-info h3,
+    .fitzone-pricing-title {
+        line-height: 1.3;
+    }
+}
+
+/* Оптимизация карты для мобильных */
+@media (max-width: 768px) {
+    .fitzone-map-wrapper iframe {
+        border-radius: 12px;
+    }
+}
+
+.fitzone-info-card:nth-child(1) { animation-delay: 0.1s; }
+.fitzone-info-card:nth-child(2) { animation-delay: 0.2s; }
+.fitzone-info-card:nth-child(3) { animation-delay: 0.3s; }
+.fitzone-info-card:nth-child(4) { animation-delay: 0.4s; }
+.fitzone-map-wrapper { animation-delay: 0.5s; }
+
+
+</style>
+{% endblock %}
+
+{% block skripts %}
+<script>
+function openMap() {
+    const url = 'https://yandex.ru/maps/?text=г.%20Москва,%20ул.%20Тверская,%20д.%2025';
+    window.open(url, '_blank');
+}
+
+// Инициализация карты (можно заменить на реальную карту)
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Map section loaded');
+    // Здесь можно добавить инициализацию Яндекс.Карт или Google Maps
+    // Например: initYandexMap();
+});
+    document.addEventListener('DOMContentLoaded', function() {
+        // Применяем тему при загрузке
+        applyTheme();
+
+        // Create dynamic particles
+        const particlesContainer = document.getElementById('particles');
+        const particleCount = 15;
+        
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            const size = Math.random() * 100 + 50;
+            const left = Math.random() * 100;
+            const top = Math.random() * 100;
+            const delay = Math.random() * 20;
+            
+            particle.style.width = `${size}px`;
+            particle.style.height = `${size}px`;
+            particle.style.left = `${left}%`;
+            particle.style.top = `${top}%`;
+            particle.style.animationDelay = `${delay}s`;
+            
+            particlesContainer.appendChild(particle);
+        }
+
+        // Scroll animations for cards
+        const cardObserverOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const cardObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate');
+                }
+            });
+        }, cardObserverOptions);
+
+        document.querySelectorAll('.class-card, .pricing-card, .trainer-card, .cta-section').forEach(el => {
+            cardObserver.observe(el);
+        });
+    });
+
+    // Apply theme function
+    function applyTheme() {
+        {% if user.is_authenticated %}
+            try {
+                {% if user.userprofile.theme %}
+                    document.body.classList.add('dark-theme');
+                {% else %}
+                    document.body.classList.remove('dark-theme');
+                {% endif %}
+            } catch (error) {
+                const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (systemPrefersDark) {
+                    document.body.classList.add('dark-theme');
+                } else {
+                    document.body.classList.remove('dark-theme');
+                }
+            }
+        {% else %}
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (systemPrefersDark) {
+                document.body.classList.add('dark-theme');
+            } else {
+                document.body.classList.remove('dark-theme');
+            }
+        {% endif %}
+    }
+</script>
+{% endblock %}

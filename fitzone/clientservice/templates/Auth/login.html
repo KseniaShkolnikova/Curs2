@@ -1,0 +1,865 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title_name %}
+FITZONE - Вход
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <!-- Фитнес-зал с фиолетовым фильтром слева -->
+    <div class="login-background">
+        <div class="background-image"></div>
+        <div class="background-overlay"></div>
+        <div class="background-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M23 5.5V20.5C23 21.3284 22.3284 22 21.5 22H2.5C1.67157 22 1 21.3284 1 20.5V5.5C1 4.67157 1.67157 4 2.5 4H21.5C22.3284 4 23 4.67157 23 5.5ZM3 7V19H21V7H3ZM7 9C7 8.44772 7.44772 8 8 8H16C16.5523 8 17 8.44772 17 9V17C17 17.5523 16.5523 18 16 18H8C7.44772 18 7 17.5523 7 17V9ZM9 10V16H15V10H9ZM18 10C18.5523 10 19 10.4477 19 11V15C19 15.5523 18.5523 16 18 16C17.4477 16 17 15.5523 17 15V11C17 10.4477 17.4477 10 18 10Z"/>
+                    </svg>
+                </div>
+                <div class="logo-text">FITZONE</div>
+            </div>
+            <h2>Добро пожаловать в FITZONE</h2>
+            <p>Присоединяйтесь к нашему сообществу и достигайте своих фитнес-целей вместе с нами. Персональные тренировки, современное оборудование и мотивирующая атмосфера ждут вас.</p>
+        </div>
+    </div>
+    
+    <!-- Форма справа -->
+    <div class="login-content">
+        <h1 class="login-title">Вход в аккаунт</h1>
+        <p class="login-subtitle">Войдите, чтобы продолжить тренировки</p>
+        
+        <!-- Messages -->
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+                <div class="{% if message.tags == 'success' %}success-message{% elif message.tags == 'error' %}error-message{% else %}info-message{% endif %}">
+                    {{ message }}
+                    <button type="button" class="close-message" onclick="this.parentElement.style.display='none'">×</button>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <form method="post" id="login-form">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+                <div class="error-message">
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            {{ error }}
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <div class="form-group">
+                <label for="{{ form.username.id_for_label }}" class="form-label">Электронная почта</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <div class="field-errors">
+                        {% for error in form.username.errors %}
+                            <span class="error-text">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.password.id_for_label }}" class="form-label">Пароль</label>
+                <div class="password-input-container">
+                    {{ form.password }}
+                    <button type="button" class="password-toggle" id="password-toggle">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+                {% if form.password.errors %}
+                    <div class="field-errors">
+                        {% for error in form.password.errors %}
+                            <span class="error-text">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <button type="submit" class="login-button" id="login-button">
+                <span class="button-text">Войти</span>
+                <div class="button-loader" style="display: none;">
+                    <div class="loader"></div>
+                </div>
+            </button>
+        </form>
+        
+        <div class="login-footer">
+            Нет аккаунта? <a href="{% url 'registration' %}">Зарегистрироваться</a>
+        </div>
+                                    <div class="security-section">
+    <a href="{% url 'password_reset' %}" class="security-button">
+        <i class="fas fa-key"></i>
+        Забыли пароль?
+    </a>
+</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block skripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Функция для переключения видимости пароля
+        const passwordToggle = document.getElementById('password-toggle');
+        if (passwordToggle) {
+            passwordToggle.addEventListener('click', function() {
+                const passwordField = document.getElementById('{{ form.password.id_for_label }}');
+                if (passwordField) {
+                    if (passwordField.type === 'password') {
+                        passwordField.type = 'text';
+                        this.innerHTML = `
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M1 1l22 22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        `;
+                    } else {
+                        passwordField.type = 'password';
+                        this.innerHTML = `
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        `;
+                    }
+                }
+            });
+        }
+
+        // Обработка формы входа
+        const loginForm = document.getElementById('login-form');
+        const loginButton = document.getElementById('login-button');
+        const buttonText = document.querySelector('.button-text');
+        const buttonLoader = document.querySelector('.button-loader');
+
+        if (loginForm) {
+            loginForm.addEventListener('submit', function(e) {
+                // Показываем индикатор загрузки
+                buttonText.style.display = 'none';
+                buttonLoader.style.display = 'block';
+                loginButton.disabled = true;
+            });
+        }
+
+        // Auto-hide messages
+        const messages = document.querySelectorAll('.success-message, .error-message, .info-message');
+        messages.forEach(function(message) {
+            setTimeout(function() {
+                if (message.parentElement) {
+                    message.style.opacity = '0';
+                    message.style.transition = 'opacity 0.5s ease';
+                    setTimeout(function() {
+                        if (message.parentElement) {
+                            message.remove();
+                        }
+                    }, 500);
+                }
+            }, 5000);
+        });
+    });
+</script>
+
+{% block footer %}
+<!-- Пустой блок - footer не отображается -->
+{% endblock %}
+<style>
+    .security-section {
+    margin-top: 30px;
+    margin-left:100px;
+    padding-top: 20px;
+    border-top: 1px solid var(--light-border);
+}
+
+.dark-theme .security-section {
+    border-top-color: var(--dark-border);
+}
+
+.security-section h4 {
+    margin-bottom: 15px;
+    color: var(--text-dark);
+}
+
+.dark-theme .security-section h4 {
+    color: var(--dark-text);
+}
+
+.security-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #8500ddff);
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.security-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+    color: white;
+}
+/* Login Page Specific Styles */
+.login-container {
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* Фитнес-зал с фиолетовым фильтром слева */
+.login-background {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px;
+    order: 1; /* Слева */
+    overflow: hidden;
+}
+
+.background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: brightness(0.8);
+}
+
+.background-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, 
+        rgba(139, 92, 246, 0.85) 0%, 
+        rgba(124, 58, 237, 0.9) 100%);
+}
+
+.background-content {
+    position: relative;
+    z-index: 2;
+    color: white;
+    max-width: 500px;
+    text-align: left;
+}
+
+.background-content .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 40px;
+}
+
+.background-content .logo-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
+
+.background-content .logo-icon svg {
+    width: 28px;
+    height: 28px;
+    fill: white;
+}
+
+.background-content .logo-text {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: white;
+}
+
+.background-content h2 {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 25px;
+    line-height: 1.2;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.background-content p {
+    font-size: 1.3rem;
+    line-height: 1.6;
+    opacity: 0.95;
+    margin-bottom: 40px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.1rem;
+    opacity: 0.95;
+}
+
+.feature-icon {
+    font-size: 1.3rem;
+    width: 30px;
+    text-align: center;
+}
+
+/* Форма справа */
+.login-content {
+    flex: 1;
+    max-width: 500px;
+    padding: 80px 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: var(--light-card);
+    position: relative;
+    z-index: 2;
+    order: 2; /* Справа */
+}
+
+.dark-theme .login-content {
+    background: var(--dark-card);
+}
+
+.login-title {
+    font-size: 2.8rem;
+    font-weight: 800;
+    margin-bottom: 15px;
+    color: var(--text-dark);
+}
+
+.dark-theme .login-title {
+    color: var(--dark-text);
+}
+
+.login-subtitle {
+    color: var(--text-gray);
+    margin-bottom: 40px;
+    font-size: 1.2rem;
+}
+
+.dark-theme .login-subtitle {
+    color: var(--dark-text-light);
+}
+
+.form-group {
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-dark);
+    font-size: 1rem;
+}
+
+.dark-theme .form-label {
+    color: var(--dark-text);
+}
+
+.form-control {
+    width: 100%;
+    padding: 16px 18px;
+    border: 2px solid var(--light-border);
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: var(--light-bg);
+    color: var(--text-dark);
+    font-family: inherit;
+}
+
+.dark-theme .form-control {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+    color: var(--dark-text);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--neon-purple);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.password-input-container {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-gray);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.password-toggle:hover {
+    color: var(--neon-purple);
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.login-button {
+    width: 100%;
+    background: var(--accent-gradient);
+    color: white;
+    border: none;
+    padding: 18px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
+    font-family: inherit;
+    margin-top: 10px;
+}
+
+.login-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+}
+
+.login-footer {
+    text-align: center;
+    margin-top: 30px;
+    color: var(--text-gray);
+    font-size: 1rem;
+}
+
+.dark-theme .login-footer {
+    color: var(--dark-text-light);
+}
+
+.login-footer a {
+    color: var(--neon-purple);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .login-background {
+        padding: 40px;
+    }
+    
+    .login-content {
+        padding: 60px 40px;
+    }
+    
+    .background-content h2 {
+        font-size: 2.5rem;
+    }
+    
+    .background-content p {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .login-container {
+        flex-direction: column;
+    }
+    
+    .login-background {
+        order: 2;
+        padding: 40px 20px;
+        min-height: 400px;
+    }
+    
+    .login-content {
+        order: 1;
+        max-width: 100%;
+        padding: 40px 20px;
+    }
+    
+    .background-content {
+        text-align: center;
+        max-width: 100%;
+    }
+    
+    .background-content h2 {
+        font-size: 2rem;
+    }
+    
+    .background-content p {
+        font-size: 1rem;
+    }
+    
+    .features-list {
+        align-items: center;
+    }
+}
+
+/* Messages Styles */
+.messages-container {
+    margin-bottom: 25px;
+}
+
+.success-message,
+.error-message,
+.info-message {
+    position: relative;
+    padding: 12px 40px 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    border-left: 4px solid;
+}
+
+.success-message {
+    background: #d1fae5;
+    color: #065f46;
+    border-left-color: #10b981;
+}
+
+.error-message {
+    background: #fef2f2;
+    color: #dc2626;
+    border-left-color: #dc2626;
+}
+
+.info-message {
+    background: #dbeafe;
+    color: #1e40af;
+    border-left-color: #3b82f6;
+}
+
+.dark-theme .success-message {
+    background: #064e3b;
+    color: #a7f3d0;
+}
+
+.dark-theme .error-message {
+    background: #7f1d1d;
+    color: #fca5a5;
+}
+
+.dark-theme .info-message {
+    background: #1e3a8a;
+    color: #93c5fd;
+}
+
+.close-message {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7;
+}
+
+.close-message:hover {
+    opacity: 1;
+}
+/* Tablet Styles (768px - 1024px) */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .login-container {
+        flex-direction: row;
+        min-height: 100vh;
+    }
+    
+    .login-background {
+        flex: 0 0 45%;
+        padding: 40px 30px;
+    }
+    
+    .login-content {
+        flex: 0 0 55%;
+        padding: 60px 40px;
+    }
+    
+    .background-content h2 {
+        font-size: 2.2rem;
+        margin-bottom: 20px;
+    }
+    
+    .background-content p {
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+    }
+    
+    .logo-text {
+        font-size: 1.8rem;
+    }
+    
+    .logo-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .login-title {
+        font-size: 2.2rem;
+    }
+    
+    .login-subtitle {
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+    }
+    
+    .form-control {
+        padding: 14px 16px;
+        font-size: 0.95rem;
+    }
+    
+    .login-button {
+        padding: 16px;
+        font-size: 1rem;
+    }
+    
+    .security-section {
+        margin-left: 0;
+        text-align: center;
+    }
+}
+
+/* Mobile Styles (768px and below) */
+@media (max-width: 768px) {
+    .login-container {
+        flex-direction: column;
+        min-height: 100vh;
+    }
+    
+    .login-background {
+        order: 1;
+        padding: 30px 20px;
+        min-height: 40vh;
+        display: flex;
+        align-items: center;
+    }
+    
+    .login-content {
+        order: 2;
+        max-width: 100%;
+        padding: 40px 25px;
+        flex: 1;
+    }
+    
+    .background-content {
+        text-align: center;
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    .background-content h2 {
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+        line-height: 1.3;
+    }
+    
+    .background-content p {
+        font-size: 1rem;
+        margin-bottom: 25px;
+        line-height: 1.5;
+    }
+    
+    .logo {
+        justify-content: center;
+        margin-bottom: 25px;
+    }
+    
+    .logo-text {
+        font-size: 1.6rem;
+    }
+    
+    .logo-icon {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .logo-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .login-title {
+        font-size: 1.8rem;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+    
+    .login-subtitle {
+        font-size: 1rem;
+        margin-bottom: 25px;
+        text-align: center;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+    }
+    
+    .form-control {
+        padding: 12px 14px;
+        font-size: 0.9rem;
+        border-radius: 10px;
+    }
+    
+    .password-toggle {
+        right: 12px;
+        padding: 4px;
+    }
+    
+    .login-button {
+        padding: 14px;
+        font-size: 1rem;
+        border-radius: 10px;
+        margin-top: 5px;
+    }
+    
+    .login-footer {
+        margin-top: 25px;
+        font-size: 0.9rem;
+    }
+    
+    .security-section {
+        margin-top: 25px;
+        margin-left: 0;
+        padding-top: 20px;
+        text-align: center;
+    }
+    
+    .security-button {
+        padding: 10px 16px;
+        font-size: 0.9rem;
+    }
+    
+    /* Messages adjustments for mobile */
+    .messages-container {
+        margin-bottom: 20px;
+    }
+    
+    .success-message,
+    .error-message,
+    .info-message {
+        padding: 10px 35px 10px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .close-message {
+        top: 6px;
+        right: 10px;
+        font-size: 1.1rem;
+    }
+}
+
+/* Small Mobile Styles (480px and below) */
+@media (max-width: 480px) {
+    .login-background {
+        padding: 25px 15px;
+        min-height: 35vh;
+    }
+    
+    .login-content {
+        padding: 30px 20px;
+    }
+    
+    .background-content h2 {
+        font-size: 1.5rem;
+    }
+    
+    .background-content p {
+        font-size: 0.9rem;
+    }
+    
+    .logo-text {
+        font-size: 1.4rem;
+    }
+    
+    .login-title {
+        font-size: 1.6rem;
+    }
+    
+    .login-subtitle {
+        font-size: 0.9rem;
+    }
+    
+    .form-control {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .login-button {
+        padding: 12px;
+        font-size: 0.95rem;
+    }
+    
+    .security-button {
+        padding: 8px 14px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Landscape Mobile Styles */
+@media (max-width: 768px) and (orientation: landscape) {
+    .login-background {
+        min-height: 50vh;
+        padding: 20px;
+    }
+    
+    .login-content {
+        padding: 30px 20px;
+    }
+    
+    .background-content h2 {
+        font-size: 1.4rem;
+        margin-bottom: 10px;
+    }
+    
+    .background-content p {
+        font-size: 0.85rem;
+        margin-bottom: 15px;
+    }
+    
+    .security-section {
+        margin-top: 20px;
+        padding-top: 15px;
+    }
+}
+
+</style>
+{% endblock %}

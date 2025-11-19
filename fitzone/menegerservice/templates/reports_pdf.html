@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        .header h1 {
+            font-size: 18px;
+            margin: 0;
+        }
+        .summary {
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            padding: 15px;
+        }
+        .summary-item {
+            margin: 5px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 10px;
+        }
+        th {
+            background-color: #8a2be2;
+            color: white;
+            padding: 6px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        td {
+            padding: 6px;
+            border: 1px solid #ddd;
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 9px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>ФИНАНСОВЫЙ ОТЧЕТ FITZONE</h1>
+        <p>Период: {{ start_date }} - {{ end_date }}</p>
+        <p>Тип отчета: 
+            {% if report_type == 'subscriptions' %}по абонементам
+            {% elif report_type == 'classes' %}по тренировкам
+            {% else %}общий{% endif %}
+        </p>
+    </div>
+    
+    <div class="summary">
+        <h2>Сводная статистика</h2>
+        <div class="summary-item"><strong>Общий доход:</strong> {{ total_revenue }} ₽</div>
+        <div class="summary-item"><strong>Всего продаж:</strong> {{ total_sales }}</div>
+        <div class="summary-item"><strong>Средний чек:</strong> {{ avg_revenue|floatformat:2 }} ₽</div>
+        {% if report_type == 'combined' %}
+        <div class="summary-item"><strong>Продаж абонементов:</strong> {{ subscription_sales }}</div>
+        <div class="summary-item"><strong>Продаж тренировок:</strong> {{ class_sales }}</div>
+        {% endif %}
+    </div>
+
+    {% if report_data %}
+    <h2>Детализация продаж</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Дата</th>
+                <th>Тип</th>
+                <th>Название</th>
+                <th>Клиент</th>
+                <th>Сумма</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in report_data %}
+            <tr>
+                <td>{{ item.date }}</td>
+                <td>{{ item.type }}</td>
+                <td>{{ item.name }}</td>
+                <td>{{ item.client }}</td>
+                <td>{{ item.amount }} ₽</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Нет данных за выбранный период</p>
+    {% endif %}
+    
+    <div class="footer">
+        <p>Сгенерировано: {{ generated_date }}</p>
+    </div>
+</body>
+</html>
