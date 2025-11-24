@@ -307,14 +307,7 @@ FITZONE - Запись на тренировку
                         <div class="validation-message" id="single_card_holder_error"></div>
                     </div>
 
-                    <!-- Сохранение карты -->
-                    <div class="save-card-option">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="single_save_card" checked>
-                            <span class="checkmark"></span>
-                            Сохранить карту для будущих платежей
-                        </label>
-                    </div>
+                    
                 </div>
 
                 <!-- Соглашения и кнопка оплаты -->
@@ -322,8 +315,8 @@ FITZONE - Запись на тренировку
                     <label class="checkbox-label">
                         <input type="checkbox" id="single_agreement" required>
                         <span class="checkmark"></span>
-                        Я соглашаюсь с <a href="#" target="_blank">правилами клуба</a> и 
-                        <a href="#" target="_blank">договором оферты</a>
+                        Я соглашаюсь с <a href="/static/documents/clubrules.pdf"  target="_blank">правилами клуба</a> и 
+                        <a href="/static/documents/personal.pdf" target="_blank">обработкой данных</a>
                     </label>
                 </div>
 
@@ -387,7 +380,6 @@ FITZONE - Запись на тренировку
                         <div class="package-card">
                             <div class="package-count">3 тренировки</div>
                             <div class="package-price">4 500 ₽</div>
-                            <small>Экономия 0%</small>
                         </div>
                     </label>
                     <label class="package-option">
@@ -395,7 +387,6 @@ FITZONE - Запись на тренировку
                         <div class="package-card">
                             <div class="package-count">5 тренировок</div>
                             <div class="package-price">7 500 ₽</div>
-                            <small>Экономия 0%</small>
                         </div>
                     </label>
                     <label class="package-option">
@@ -403,7 +394,6 @@ FITZONE - Запись на тренировку
                         <div class="package-card">
                             <div class="package-count">10 тренировок</div>
                             <div class="package-price">15 000 ₽</div>
-                            <small>Экономия 0%</small>
                         </div>
                     </label>
                 </div>
@@ -450,20 +440,14 @@ FITZONE - Запись на тренировку
                     <div class="validation-message" id="package_card_holder_error"></div>
                 </div>
 
-                <div class="save-card-option">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="save_card" checked>
-                        <span class="checkmark"></span>
-                        Сохранить карту для будущих платежей
-                    </label>
-                </div>
+                
 
                 <div class="agreements-section">
                     <label class="checkbox-label">
                         <input type="checkbox" id="package_agreement" required>
                         <span class="checkmark"></span>
-                        Я соглашаюсь с <a href="#" target="_blank">правилами клуба</a> и 
-                        <a href="#" target="_blank">договором оферты</a>
+                        Я соглашаюсь с <a href="/static/documents/clubrules.pdf" target="_blank">правилами клуба</a> и 
+                        <a href="/static/documents/personal.pdf" target="_blank">обработкой данных</a>
                     </label>
                 </div>
 
@@ -2777,7 +2761,7 @@ if (packagePaymentForm) {
         if (e.key === 'Escape') {
             closeModals();
         }
-    });я
+    });
 
     // Плавная прокрутка для временных слотов
     const timeSlotsContainer = document.querySelector('.time-slots');

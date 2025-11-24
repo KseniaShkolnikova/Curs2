@@ -1,6 +1,11 @@
 from django.contrib import admin
 from .models import *
 
+# SUMMARY: Регистрация моделей в Django Admin интерфейсе
+# ОСНОВНОЕ НАЗНАЧЕНИЕ: Предоставление доступа к данным через стандартную админ-панель Django
+# ПРИНЦИП РАБОТЫ: Каждая модель регистрируется с базовой конфигурацией ModelAdmin
+# РЕЗУЛЬТАТ: Все модели системы доступны для управления через /admin интерфейс
+
 @admin.register(UserProfiles)
 class UserProfilesAdmin(admin.ModelAdmin):
     pass

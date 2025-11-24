@@ -7,8 +7,10 @@ from django.template.loader import render_to_string  # Добавьте эту �
 from datetime import datetime, timedelta
 from clientservice.models import *
 from django.views.decorators.http import require_http_methods
+from utils.decorators import trainer_required
 
 from .forms import TrainingPlanEditForm, TrainingPlanForm
+@trainer_required
 @login_required
 def get_class_data(request, class_id):
     """Получение данных занятия для редактирования"""
@@ -30,12 +32,15 @@ def get_class_data(request, class_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
 
+@trainer_required
 @login_required
 def trainer_classes(request):
     """Страница занятий тренера"""
-    # Получаем ВСЕ занятия тренера
+    # Получаем занятия ТОЛЬКО текущего тренера и ИСКЛЮЧАЕМ пакеты тренировок
     classes = Classes.objects.filter(
         trainer=request.user
+    ).exclude(
+        name__icontains='Пакет'  # Исключаем пакеты тренировок
     ).select_related('trainer').prefetch_related('classclient_set').order_by('-starttime')
     
     # Обрабатываем данные для шаблона
@@ -99,12 +104,11 @@ def trainer_classes(request):
                     time_since = f"{minutes} мин. назад"
         
         # Проверяем, можно ли редактировать/отменять (не позже чем за 1 час до начала)
-        # Только для предстоящих занятий
         if status == 'upcoming':
             time_until_start = class_item.starttime - now
-            can_edit = time_until_start.total_seconds() >= 3600  # 1 час в секундах
+            can_edit = time_until_start.total_seconds() >= 3600
         else:
-            can_edit = False  # Для активных и завершенных редактирование невозможно
+            can_edit = False
         
         classes_data.append({
             'id': class_item.id,
@@ -126,7 +130,7 @@ def trainer_classes(request):
             'is_completed': status == 'completed',
             'is_active': status == 'active',
             'duration': (class_item.endtime - class_item.starttime).seconds // 60,
-            'can_edit': can_edit  # Добавляем флаг возможности редактирования
+            'can_edit': can_edit
         })
     
     # Статистика
@@ -138,7 +142,7 @@ def trainer_classes(request):
     context = {
         'classes': classes_data,
         'total_classes': total_classes,
-        'active_classes': active_classes + upcoming_classes,  # Активные + предстоящие
+        'active_classes': active_classes + upcoming_classes,
         'upcoming_classes': upcoming_classes,
         'completed_classes': completed_classes,
         'total_clients': sum([len(c['clients']) for c in classes_data])
@@ -148,7 +152,7 @@ def trainer_classes(request):
 
 
 
-
+@trainer_required
 @login_required
 @require_http_methods(["POST"])
 def create_class(request):
@@ -205,6 +209,7 @@ def create_class(request):
         })
     
 
+@trainer_required
 @login_required
 @require_http_methods(["POST"])
 def edit_class(request, class_id):
@@ -262,6 +267,7 @@ def edit_class(request, class_id):
             'message': f'Ошибка при обновлении занятия: {str(e)}'
         })
 
+@trainer_required
 @login_required
 @require_http_methods(["POST"])
 def cancel_class(request, class_id):
@@ -292,6 +298,7 @@ def cancel_class(request, class_id):
         return JsonResponse({'success': False, 'message': str(e)})
 
 
+@trainer_required
 @login_required
 @require_http_methods(["POST"])
 def delete_class(request, class_id):
@@ -311,6 +318,7 @@ def delete_class(request, class_id):
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)})
 
+@trainer_required
 @login_required
 def home(request):
     """Главная страница для тренеров"""
@@ -324,11 +332,13 @@ def home(request):
     now = timezone.now()
     today = now.date()
     
-    # Получаем сегодняшние тренировки тренера
+    # Получаем сегодняшние тренировки тренера (исключаем пакеты)
     today_trainings = Classes.objects.filter(
         trainer=request.user,
         starttime__date=today,
         is_active=True
+    ).exclude(
+        name__icontains='Пакет'  # Исключаем пакеты
     ).order_by('starttime')
     
     # Обрабатываем данные для шаблона
@@ -379,11 +389,13 @@ def home(request):
             'status_display': status_display,
         })
     
-    # Ближайшие тренировки (будущие, начиная с завтра)
+    # Ближайшие тренировки (будущие, начиная с завтра, исключаем пакеты)
     upcoming_trainings = Classes.objects.filter(
         trainer=request.user,
         starttime__date__gt=today,
         is_active=True
+    ).exclude(
+        name__icontains='Пакет'  # Исключаем пакеты
     ).order_by('starttime')[:5]
     
     # Обрабатываем ближайшие тренировки
@@ -399,14 +411,16 @@ def home(request):
             'is_group': is_group,
         })
     
-    # Статистика за неделю
+    # Статистика за неделю (исключаем пакеты)
     week_ago = today - timedelta(days=7)
     
-    # Получаем все тренировки за неделю
+    # Получаем все тренировки за неделю (исключаем пакеты)
     weekly_classes = Classes.objects.filter(
         trainer=request.user,
         starttime__date__gte=week_ago,
         is_active=True
+    ).exclude(
+        name__icontains='Пакет'  # Исключаем пакеты
     )
     
     # Считаем статистику
@@ -438,22 +452,24 @@ def home(request):
 
 from django.db.models import Q, Count
 
+@trainer_required
 @login_required
 def my_clients(request):
     # Получаем текущего авторизованного тренера
     current_trainer = request.user
     
     # Находим всех пользователей, у которых когда-либо была тренировка с текущим тренером
-    # через тренировочные планы ИЛИ групповые занятия
+    # через тренировочные планы ИЛИ групповые занятия (исключая пакеты)
     
     # Пользователи из тренировочных планов
     training_plan_clients = User.objects.filter(
         client_plans__trainer=current_trainer
     ).distinct()
     
-    # Пользователи из групповых занятий
+    # Пользователи из групповых занятий (исключаем только пакеты)
     class_clients = User.objects.filter(
-        classclient__class_id__trainer=current_trainer
+        classclient__class_id__trainer=current_trainer,
+        classclient__amount=1  # Только обычные тренировки
     ).distinct()
     
     # Объединяем оба QuerySet
@@ -467,7 +483,8 @@ def my_clients(request):
         ),
         classes_count=Count(
             'classclient', 
-            filter=Q(classclient__class_id__trainer=current_trainer)
+            filter=Q(classclient__class_id__trainer=current_trainer) & 
+                   Q(classclient__amount=1)  # Только обычные тренировки
         )
     ).select_related('userprofile')
     
@@ -477,6 +494,7 @@ def my_clients(request):
     
     return render(request, 'my_clients.html', context)
 
+@trainer_required
 @login_required
 def client_details(request, client_id):
     client = get_object_or_404(User, id=client_id)
@@ -500,10 +518,11 @@ def client_details(request, client_id):
         client=client
     ).order_by('-is_active', '-id')
     
-    # Получаем групповые занятия
+    # Получаем групповые занятия (ИСКЛЮЧАЕМ ТОЛЬКО ПАКЕТЫ - где amount > 1)
     group_classes = ClassClient.objects.filter(
         user=client,
-        class_id__trainer=current_trainer
+        class_id__trainer=current_trainer,
+        amount=1  # Только обычные тренировки, не пакеты
     ).select_related('class_id').order_by('-class_id__starttime')
     
     # Получаем активные подписки
@@ -515,14 +534,20 @@ def client_details(request, client_id):
     # Статистика
     total_training_plans = training_plans.count()
     active_training_plans = training_plans.filter(is_active=True).count()
-    total_classes = group_classes.count()
+    total_classes = group_classes.count()  # Теперь считаем без пакетов
     
     # Дата регистрации и стаж
-    registration_date = client.date_joined
-    membership_duration = timezone.now() - registration_date
-    membership_days = membership_duration.days
-    membership_months = membership_days // 30
-    membership_years = membership_days // 365
+    registration_date = client.date_joined.date()
+    today = timezone.now().date()
+    
+    # Рассчитываем разницу
+    total_days = (today - registration_date).days
+    
+    # Рассчитываем годы, месяцы и дни
+    membership_years = total_days // 365
+    remaining_days = total_days % 365
+    membership_months = remaining_days // 30
+    membership_days = remaining_days % 30
     
     context = {
         'client': client,
@@ -533,14 +558,16 @@ def client_details(request, client_id):
         'active_training_plans': active_training_plans,
         'total_classes': total_classes,
         'registration_date': registration_date,
-        'membership_days': membership_days,
-        'membership_months': membership_months,
         'membership_years': membership_years,
+        'membership_months': membership_months,
+        'membership_days': membership_days,
+        'total_days': total_days,
     }
     
     return render(request, 'client_details.html', context)
 
 
+@trainer_required
 @login_required
 def create_training_plan(request, client_id):
     client = get_object_or_404(User, id=client_id)
@@ -580,6 +607,7 @@ def create_training_plan(request, client_id):
     return render(request, 'create_training_plan.html', context)
 
 
+@trainer_required
 @login_required
 def client_details(request, client_id):
     client = get_object_or_404(User, id=client_id)
@@ -650,6 +678,7 @@ def client_details(request, client_id):
     
     return render(request, 'client_details.html', context)
 
+@trainer_required
 @login_required
 def training_plan_edit_form(request, plan_id):
     training_plan = get_object_or_404(TrainingPlans, id=plan_id, trainer=request.user)
@@ -670,6 +699,7 @@ def training_plan_edit_form(request, plan_id):
     
     return render(request, 'includes/training_plan_edit_form.html', context)
 
+@trainer_required
 @login_required
 def delete_training_plan(request, plan_id):
     training_plan = get_object_or_404(TrainingPlans, id=plan_id, trainer=request.user)

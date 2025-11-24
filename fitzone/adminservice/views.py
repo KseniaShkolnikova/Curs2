@@ -1,22 +1,47 @@
 # adminservice/views.py
-from django.contrib.auth.models import User, Group  # ДОБАВЬ Group
+from django.contrib.auth.models import User, Group
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Sum, Q
 from django.utils import timezone
 from datetime import timedelta
 from django.db import connection
-
-# Правильные импорты
-from django.contrib.auth.models import User
+from utils.decorators import admin_required
+import os
+import json
+import csv
+from django.http import HttpResponse, JsonResponse
+from django.contrib import messages
+from datetime import datetime
+import subprocess
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+from django.core.paginator import Paginator
 from clientservice.models import *
 
-def get_database_stats():
-    """Получение статистики базы данных"""
+# SUMMARY: Основной модуль представлений для административной панели
+# Включает функции для управления пользователями, бэкапами, логами и статистикой
+
+@admin_required
+def get_database_stats(request):
+    """
+    SUMMARY: Получение статистики базы данных для мониторинга
+    
+    ОСНОВНОЕ НАЗНАЧЕНИЕ:
+    - Мониторинг размера БД и количества таблиц
+    - Проверка статуса подключения к базе данных
+    - Предоставление метрик для админ-панели
+    
+    ВОЗВРАЩАЕМЫЕ ДАННЫЕ:
+    - db_size: Размер базы данных в читаемом формате
+    - table_count: Количество таблиц в схеме public
+    - db_status: Статус подключения ('status-ok' или 'status-error')
+    - db_status_text: Текстовое описание статуса
+    """
     stats = {}
     
     try:
-        # Размер базы данных
+        # SUMMARY: Получение размера базы данных через системные функции PostgreSQL
         with connection.cursor() as cursor:
             cursor.execute("SELECT pg_size_pretty(pg_database_size('fitZone_DB'))")
             db_size = cursor.fetchone()[0]
@@ -25,7 +50,7 @@ def get_database_stats():
         stats['db_size'] = "Недоступно"
     
     try:
-        # Количество таблиц
+        # SUMMARY: Подсчет количества таблиц в схеме public
         with connection.cursor() as cursor:
             cursor.execute("""
                 SELECT COUNT(*) 
@@ -38,7 +63,7 @@ def get_database_stats():
         stats['table_count'] = "Недоступно"
     
     try:
-        # Статус подключения
+        # SUMMARY: Проверка доступности базы данных
         with connection.cursor() as cursor:
             cursor.execute("SELECT 1")
         stats['db_status'] = 'status-ok'
@@ -49,34 +74,44 @@ def get_database_stats():
     
     return stats
 
-
+@admin_required
 @login_required
 def admin_dashboard(request):
-    """Главная панель администратора клуба"""
+    """
+    SUMMARY: Главная панель администратора с ключевыми метриками системы
     
-    # Текущая дата и период
+    ОСНОВНОЕ НАЗНАЧЕНИЕ:
+    - Отображение основной статистики (пользователи, доходы, активность)
+    - Мониторинг финансовых показателей за разные периоды
+    - Отслеживание активности пользователей и тренеров
+    
+    КЛЮЧЕВЫЕ МЕТРИКИ:
+    - Общее количество пользователей, менеджеров, тренеров
+    - Финансовая статистика (общий доход, месячный доход, рост)
+    - Активные абонементы и предстоящие тренировки
+    - Статистика за 30 дней и популярные услуги
+    """
+    
+    # SUMMARY: Установка временных периодов для анализа
     today = timezone.now().date()
     month_ago = today - timedelta(days=30)
     
-    # Основная статистика
+    # SUMMARY: Базовая статистика пользователей
     total_users = User.objects.filter(is_active=True).count()
     
-    # Менеджеры
+    # SUMMARY: Статистика сотрудников по ролям
     active_managers = User.objects.filter(
         groups__name='Менеджер по продажам',
         is_active=True
     ).count()
     
-    # Тренеры
     active_trainers = User.objects.filter(
         groups__name='Тренер',
         is_active=True
     ).count()
     
-    # Финансовая статистика - ИСПРАВЛЕННЫЙ КОД
-    total_revenue_result = Payments.objects.aggregate(
-        total=Sum('price')
-    )
+    # SUMMARY: Финансовая статистика с обработкой Decimal значений
+    total_revenue_result = Payments.objects.aggregate(total=Sum('price'))
     total_revenue = total_revenue_result['total'] or 0
     
     # Преобразуем в целое число если это Decimal
@@ -95,7 +130,7 @@ def admin_dashboard(request):
     elif isinstance(monthly_revenue, float):
         monthly_revenue = int(monthly_revenue)
     
-    # Рост за месяц
+    # SUMMARY: Расчет роста доходов за месяц
     previous_month = month_ago - timedelta(days=30)
     previous_revenue_result = Payments.objects.filter(
         paymentdate__gte=previous_month,
@@ -114,7 +149,7 @@ def admin_dashboard(request):
     else:
         monthly_growth = 100 if monthly_revenue > 0 else 0
     
-    # Последние активности
+    # SUMMARY: Получение последних активностей для ленты событий
     recent_payments = Payments.objects.select_related(
         'subscription__subscriptiontype',
         'classclient__class_id'
@@ -152,7 +187,7 @@ def admin_dashboard(request):
             'amount': payment.price
         })
     
-    # Статистика за 30 дней
+    # SUMMARY: Дополнительная статистика за 30-дневный период
     new_users_30d = User.objects.filter(
         date_joined__gte=month_ago,
         is_active=True
@@ -178,10 +213,10 @@ def admin_dashboard(request):
     if total_payments_30d > 0:
         avg_receipt = round(monthly_revenue / total_payments_30d, 2)
     
-    # Статистика БД
-    db_stats = get_database_stats()
+    # SUMMARY: Получение статистики базы данных
+    db_stats = get_database_stats(request)
     
-    # Популярные абонементы (исправленный запрос)
+    # SUMMARY: Анализ популярных типов абонементов
     popular_subscriptions = []
     subscription_types = SubscriptionTypes.objects.all()
     for sub_type in subscription_types:
@@ -205,11 +240,9 @@ def admin_dashboard(request):
     # Сортируем по количеству продаж
     popular_subscriptions = sorted(popular_subscriptions, key=lambda x: x['sales_count'], reverse=True)[:3]
     
-    # Дополнительные данные для мониторинга
+    # SUMMARY: Дополнительные метрики для мониторинга
     payments_today = Payments.objects.filter(paymentdate__date=today).count()
-    
-    # Ошибки системы (заглушка)
-    system_errors = 0
+    system_errors = 0  # Заглушка для будущей реализации
     
     context = {
         # Основная статистика
@@ -243,17 +276,31 @@ def admin_dashboard(request):
     
     return render(request, 'admin-home.html', context)
 
-
-
-
-from django.core.paginator import Paginator
-
+@admin_required
 @login_required
 def action_logs(request):
-    """Страница логов действий пользователей"""
+    """
+    SUMMARY: Страница просмотра и фильтрации логов действий пользователей
+    
+    ОСНОВНОЕ НАЗНАЧЕНИЕ:
+    - Отображение журнала действий пользователей с фильтрацией
+    - Статистика действий по типам с визуализацией
+    - Поиск и сортировка записей логов
+    
+    ФИЛЬТРЫ:
+    - По периоду времени (7, 30, 90 дней, год, все время)
+    - По роли пользователя
+    - По конкретному пользователю
+    - По типу действия
+    - Поиск по тексту действия
+    
+    ВИЗУАЛИЗАЦИЯ:
+    - Круговая диаграмма распределения действий по типам
+    - Статистика по частоте действий
+    """
     logs = UserActionsLog.objects.all()
     
-    # Фильтрация по периоду для диаграммы
+    # SUMMARY: Фильтрация по периоду для диаграммы
     chart_period = request.GET.get('chart_period', '30')
     try:
         if chart_period != 'all':
@@ -263,41 +310,38 @@ def action_logs(request):
     except ValueError:
         pass
     
-    # Фильтрация по роли пользователя
+    # SUMMARY: Фильтрация по различным параметрам
     role_filter = request.GET.get('role')
     if role_filter:
         logs = logs.filter(user__groups__name=role_filter)
     
-    # Фильтрация по конкретному пользователю
     user_filter = request.GET.get('user')
     if user_filter:
         logs = logs.filter(user_id=user_filter)
     
-    # Фильтрация по типу действия
     action_type_filter = request.GET.get('action_type')
     if action_type_filter:
         logs = logs.filter(action_type=action_type_filter)
     
-    # Поиск по названию действия
     search_query = request.GET.get('search')
     if search_query:
         logs = logs.filter(action__icontains=search_query)
     
-    # Сортировка
+    # SUMMARY: Сортировка результатов
     sort_by = request.GET.get('sort', '-actiondate')
     if sort_by in ['actiondate', '-actiondate', 'user_full_name', '-user_full_name', 'action_type', '-action_type']:
         logs = logs.order_by(sort_by)
     
-    # Пагинация - 10 записей на страницу
+    # SUMMARY: Пагинация для удобства просмотра
     paginator = Paginator(logs, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    # Получаем списки для фильтров
+    # SUMMARY: Получение данных для фильтров
     users = User.objects.filter(is_active=True).select_related('userprofile')
     roles = Group.objects.all()
     
-    # СТАТИСТИКА ДЛЯ ДИАГРАММЫ - получаем с сервера
+    # SUMMARY: Подготовка данных для круговой диаграммы
     chart_logs = UserActionsLog.objects.all()
     if chart_period != 'all':
         try:
@@ -335,27 +379,25 @@ def action_logs(request):
     
     return render(request, 'action_logs.html', context)
 
-
-
-# adminservice/views.py
-import os
-import json
-import csv
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
-from django.contrib import messages
-from django.utils import timezone
-from datetime import datetime
-from django.db import connection
-import subprocess
-from django.conf import settings
-from django.views.decorators.csrf import csrf_exempt
-
+@admin_required
 @login_required
 def backup_management(request):
-    """Страница управления бэкапами, импортом и экспортом"""
+    """
+    SUMMARY: Страница управления резервным копированием базы данных
     
-    # Получаем список существующих бэкапов из папки Загрузки
+    ОСНОВНОЕ НАЗНАЧЕНИЕ:
+    - Создание резервных копий базы данных
+    - Восстановление из бэкапов
+    - Просмотр существующих бэкапов
+    - Экспорт данных в CSV
+    
+    ФУНКЦИОНАЛ:
+    - Автоматическое создание бэкапов с timestamp
+    - Восстановление с полной очисткой текущих данных
+    - Скачивание экспортированных данных
+    """
+    
+    # SUMMARY: Поиск существующих бэкапов в папке Загрузки
     downloads_dir = os.path.join(os.path.expanduser('~'), 'Downloads')
     backup_dir = os.path.join(downloads_dir, 'fitzone_backups')
     backups = []
@@ -381,15 +423,24 @@ def backup_management(request):
     }
     return render(request, 'backup_management.html', context)
 
-
-
-
+@admin_required
 @login_required
 def create_backup(request):
-    """Создание бэкапа базы данных"""
+    """
+    SUMMARY: Создание резервной копии базы данных PostgreSQL
+    
+    ТЕХНИЧЕСКИЕ ДЕТАЛИ:
+    - Использует pg_dump для создания SQL-дампа
+    - Сохраняет бэкапы в папку ~/Downloads/fitzone_backups/
+    - Генерирует уникальные имена файлов с timestamp
+    - Обрабатывает ошибки выполнения команды
+    
+    ВОЗВРАЩАЕМЫЙ РЕЗУЛЬТАТ:
+    - JSON с статусом операции и информацией о созданном файле
+    """
     if request.method == 'POST':
         try:
-            # Сохраняем в папку Загрузки пользователя
+            # SUMMARY: Подготовка пути для сохранения бэкапа
             downloads_dir = os.path.join(os.path.expanduser('~'), 'Downloads')
             backup_dir = os.path.join(downloads_dir, 'fitzone_backups')
             os.makedirs(backup_dir, exist_ok=True)
@@ -403,9 +454,9 @@ def create_backup(request):
             print(f"Создаем бэкап: {backup_file}")  # Для отладки
             
             # Для Windows используем полный путь к pg_dump
-            pg_dump_path = r'C:\Program Files\PostgreSQL\16\bin\pg_dump.exe'  # Измените путь если нужно
+            pg_dump_path = r'C:\Program Files\PostgreSQL\16\bin\pg_dump.exe'
             
-            # Команда для создания бэкапа PostgreSQL
+            # SUMMARY: Формирование команды создания бэкапа
             cmd = [
                 pg_dump_path,
                 '-h', settings.DATABASES['default']['HOST'],
@@ -416,7 +467,7 @@ def create_backup(request):
             
             print(f"Выполняем команду: {' '.join(cmd)}")  # Для отладки
             
-            # Выполняем команду
+            # SUMMARY: Выполнение команды с передачей пароля
             env = os.environ.copy()
             env['PGPASSWORD'] = settings.DATABASES['default']['PASSWORD']
             result = subprocess.run(cmd, env=env, capture_output=True, text=True)
@@ -427,7 +478,7 @@ def create_backup(request):
             if result.stderr:
                 print(f"STDERR: {result.stderr}")  # Для отладки
             
-            # Проверяем создался ли файл
+            # SUMMARY: Проверка успешности операции
             file_exists = os.path.exists(backup_file)
             file_size = os.path.getsize(backup_file) if file_exists else 0
             
@@ -463,12 +514,22 @@ def create_backup(request):
     
     return JsonResponse({'success': False, 'message': 'Неверный метод запроса'})
 
-
-
-
+@admin_required
 @login_required
 def restore_backup(request):
-    """Восстановление базы данных из бэкапа с полной очисткой"""
+    """
+    SUMMARY: Восстановление базы данных из резервной копии
+    
+    ВАЖНОЕ ПРЕДУПРЕЖДЕНИЕ:
+    - Операция ВОССТАНОВЛЕНИЯ УДАЛЯЕТ ВСЕ ТЕКУЩИЕ ДАННЫЕ
+    - Использует DROP SCHEMA public CASCADE для полной очистки
+    - Требует подтверждения действия
+    
+    ПРОЦЕСС ВОССТАНОВЛЕНИЯ:
+    1. Полная очистка текущей базы данных
+    2. Восстановление схемы и данных из бэкапа
+    3. Проверка успешности операции
+    """
     if request.method == 'POST':
         backup_file = request.POST.get('backup_file')
         if not backup_file:
@@ -486,7 +547,7 @@ def restore_backup(request):
             
             psql_path = r'C:\Program Files\PostgreSQL\16\bin\psql.exe'
             
-            # Шаг 1: Очищаем базу данных (ОПАСНО!)
+            # SUMMARY: Шаг 1 - Полная очистка базы данных
             print("Очищаем базу данных...")
             cleanup_cmd = [
                 psql_path,
@@ -517,7 +578,7 @@ def restore_backup(request):
                     'message': f'Ошибка очистки базы: {cleanup_result.stderr[:500] if cleanup_result.stderr else "Неизвестная ошибка"}'
                 })
             
-            # Шаг 2: Восстанавливаем из бэкапа
+            # SUMMARY: Шаг 2 - Восстановление данных из бэкапа
             print("Восстанавливаем данные...")
             restore_cmd = [
                 psql_path,
@@ -565,14 +626,22 @@ def restore_backup(request):
     
     return JsonResponse({'success': False, 'message': 'Неверный метод запроса'})
 
-
-
-
-
-
+@admin_required
 @login_required
 def export_payments(request):
-    """Экспорт платежей в CSV с улучшенной обработкой данных"""
+    """
+    SUMMARY: Экспорт данных о платежах в CSV формат
+    
+    ОСНОВНОЕ НАЗНАЧЕНИЕ:
+    - Создание отчетов по финансовым операциям
+    - Экспорт данных для внешнего анализа
+    - Архивирование финансовой информации
+    
+    СТРУКТУРА ЭКСПОРТА:
+    - ID платежа, тип, сумма, дата
+    - Данные пользователя (ФИО, логин, email)
+    - Детали платежа (абонемент/тренировка)
+    """
     try:
         from clientservice.models import Payments, UserProfiles
         
@@ -592,6 +661,7 @@ def export_payments(request):
             'Детали платежа'
         ])
         
+        # SUMMARY: Оптимизированный запрос с предзагрузкой связанных данных
         payments = Payments.objects.select_related(
             'subscription__user',
             'subscription__subscriptiontype',
@@ -599,7 +669,7 @@ def export_payments(request):
             'classclient__class_id'
         ).order_by('-paymentdate')[:1000]
         
-        # Предзагружаем профили пользователей для оптимизации
+        # SUMMARY: Предзагрузка профилей пользователей для оптимизации
         user_ids = set()
         for payment in payments:
             if payment.subscription:
@@ -607,10 +677,10 @@ def export_payments(request):
             else:
                 user_ids.add(payment.classclient.user_id)
         
-        # Получаем все профили одним запросом
         profiles = UserProfiles.objects.filter(user_id__in=user_ids)
         profiles_dict = {profile.user_id: profile for profile in profiles}
         
+        # SUMMARY: Формирование строк CSV
         for payment in payments:
             if payment.subscription:
                 user = payment.subscription.user
@@ -657,11 +727,24 @@ def export_payments(request):
             'success': False,
             'message': f'Ошибка экспорта: {str(e)}'
         })
-    
 
+@admin_required
 @login_required
 def import_trainers(request):
-    """Импорт тренеров из CSV"""
+    """
+    SUMMARY: Импорт данных тренеров из CSV файла
+    
+    ОСНОВНОЕ НАЗНАЧЕНИЕ:
+    - Массовое добавление тренеров в систему
+    - Автоматическое создание учетных записей и профилей
+    - Назначение специализаций тренерам
+    
+    ТРЕБОВАНИЯ К ФАЙЛУ:
+    - Формат CSV с разделителем запятой или точки с запятой
+    - Обязательные поля: email, password
+    - Опциональные поля: first_name, last_name, specialization
+    - Поддержка различных кодировок (UTF-8, Windows-1251)
+    """
     if request.method == 'POST' and request.FILES.get('trainers_file'):
         try:
             from django.contrib.auth.models import User, Group
@@ -670,14 +753,14 @@ def import_trainers(request):
             file = request.FILES['trainers_file']
             print(f"Получен файл: {file.name}, размер: {file.size}")
             
-            # Проверяем что это CSV, а не Excel
+            # SUMMARY: Проверка формата файла
             if not file.name.endswith('.csv'):
                 return JsonResponse({
                     'success': False, 
                     'message': 'Файл должен быть в формате CSV, а не Excel'
                 })
             
-            # Пробуем разные кодировки
+            # SUMMARY: Автоопределение кодировки файла
             encodings = ['utf-8', 'utf-8-sig', 'cp1251', 'windows-1251', 'iso-8859-1']
             decoded_content = None
             used_encoding = None
@@ -703,21 +786,19 @@ def import_trainers(request):
             decoded_file = decoded_content.splitlines()
             print(f"Количество строк: {len(decoded_file)}")
             
-            # Пробуем разные разделители с правильной кодировкой
+            # SUMMARY: Автоопределение разделителя
             possible_delimiters = [',', ';', '\t']
             reader = None
             used_delimiter = None
             
             for delimiter in possible_delimiters:
                 try:
-                    # Используем уже декодированное содержимое
                     test_reader = csv.DictReader(decoded_file, delimiter=delimiter)
                     first_row = next(test_reader)
                     
                     # Проверяем, есть ли нужные поля
                     fieldnames_lower = [f.lower() for f in test_reader.fieldnames]
                     if 'email' in fieldnames_lower:
-                        # Возвращаемся к началу
                         decoded_file = decoded_content.splitlines()
                         reader = csv.DictReader(decoded_file, delimiter=delimiter)
                         used_delimiter = delimiter
@@ -742,7 +823,7 @@ def import_trainers(request):
                         'message': f'Не удалось прочитать CSV файл. Убедитесь, что файл в формате CSV с разделителем запятой или точки с запятой'
                     })
             
-            # Проверяем наличие обязательных полей
+            # SUMMARY: Поиск обязательных полей в заголовках
             fieldnames_lower = [f.lower() for f in reader.fieldnames]
             print(f"Поля в нижнем регистре: {fieldnames_lower}")
             
@@ -772,6 +853,7 @@ def import_trainers(request):
                     'message': f'В файле отсутствует поле password. Найдены поля: {", ".join(reader.fieldnames)}'
                 })
             
+            # SUMMARY: Обработка строк CSV
             imported_count = 0
             errors = []
             
@@ -799,7 +881,7 @@ def import_trainers(request):
                         errors.append(f'Строка {row_num}: Пользователь с email {email} уже существует')
                         continue
                     
-                    # Создаем пользователя
+                    # SUMMARY: Создание пользователя и профиля
                     username = email
                     user = User.objects.create(
                         username=username,
@@ -860,18 +942,26 @@ def import_trainers(request):
     
     return JsonResponse({'success': False, 'message': '❌ Файл не загружен'})
 
-
-# adminservice/views.py
-from django.contrib.auth.models import User, Group
-from django.db.models import Q
-
+@admin_required
 @login_required
 def staff_management(request):
-    """Страница управления сотрудниками"""
+    """
+    SUMMARY: Страница управления сотрудниками (тренеры и менеджеры)
+    
+    ОСНОВНОЕ НАЗНАЧЕНИЕ:
+    - Просмотр списка сотрудников с фильтрацией по активности
+    - Создание, редактирование и деактивация сотрудников
+    - Назначение ролей и специализаций
+    
+    ФИЛЬТРАЦИЯ:
+    - Исключение администраторов и админов БД
+    - Разделение на активных и неактивных сотрудников
+    - Группировка по ролям (тренеры, менеджеры)
+    """
     # Исключаем админов БД и администраторов
     excluded_groups = ['Админ БД', 'Администратор']
     
-    # Получаем всех сотрудников (тренеров и менеджеров) - ВКЛЮЧАЯ НЕАКТИВНЫХ
+    # SUMMARY: Получение сотрудников с оптимизацией запросов
     staff_users = User.objects.filter(
         Q(groups__name='Тренер') | Q(groups__name='Менеджер по продажам')
     ).exclude(
@@ -895,124 +985,26 @@ def staff_management(request):
     }
     return render(request, 'staff_management.html', context)
 
-
-
-
-@login_required
-def create_staff(request):
-    """Создание нового сотрудника"""
-    if request.method == 'POST':
-        try:
-            email = request.POST.get('email')
-            password = request.POST.get('password')
-            first_name = request.POST.get('first_name')
-            last_name = request.POST.get('last_name')
-            group_id = request.POST.get('group_id')
-            
-            # Валидация
-            if not email or not password:
-                return JsonResponse({'success': False, 'message': 'Email и пароль обязательны'})
-            
-            if User.objects.filter(email=email).exists():
-                return JsonResponse({'success': False, 'message': 'Пользователь с таким email уже существует'})
-            
-            # Создаем пользователя
-            user = User.objects.create(
-                username=email,
-                email=email,
-                first_name=first_name or '',
-                last_name=last_name or '',
-                is_active=True
-            )
-            user.set_password(password)
-            user.save()
-            
-            # Добавляем в группу
-            if group_id:
-                group = Group.objects.get(id=group_id)
-                user.groups.add(group)
-            
-            # Создаем профиль
-            from clientservice.models import UserProfiles
-            UserProfiles.objects.create(
-                user=user,
-                firstname=first_name,
-                lastname=last_name
-            )
-            
-            return JsonResponse({
-                'success': True,
-                'message': 'Сотрудник успешно создан'
-            })
-            
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'message': f'Ошибка при создании сотрудника: {str(e)}'
-            })
-    
-    return JsonResponse({'success': False, 'message': 'Неверный метод запроса'})
-
-@login_required
-def update_staff(request, user_id):
-    """Обновление данных сотрудника"""
-    if request.method == 'POST':
-        try:
-            user = User.objects.get(id=user_id, is_active=True)
-            
-            # Проверяем что это не админ
-            excluded_groups = ['Админ БД', 'Администратор']
-            if user.groups.filter(name__in=excluded_groups).exists():
-                return JsonResponse({'success': False, 'message': 'Нельзя редактировать администраторов'})
-            
-            first_name = request.POST.get('first_name')
-            last_name = request.POST.get('last_name')
-            group_id = request.POST.get('group_id')
-            is_active = request.POST.get('is_active') == 'true'
-            
-            # Обновляем данные
-            user.first_name = first_name or ''
-            user.last_name = last_name or ''
-            user.is_active = is_active
-            user.save()
-            
-            # Обновляем группу
-            if group_id:
-                user.groups.clear()
-                group = Group.objects.get(id=group_id)
-                user.groups.add(group)
-            
-            # Обновляем профиль
-            from clientservice.models import UserProfiles
-            profile, created = UserProfiles.objects.get_or_create(user=user)
-            profile.firstname = first_name
-            profile.lastname = last_name
-            profile.save()
-            
-            return JsonResponse({
-                'success': True,
-                'message': 'Данные сотрудника обновлены'
-            })
-            
-        except User.DoesNotExist:
-            return JsonResponse({'success': False, 'message': 'Сотрудник не найден'})
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'message': f'Ошибка при обновлении: {str(e)}'
-            })
-    
-    return JsonResponse({'success': False, 'message': 'Неверный метод запроса'})
-
-
+@admin_required
 @login_required
 def delete_staff(request, user_id):
-    """Деактивация сотрудника"""
+    """
+    SUMMARY: Деактивация сотрудника (мягкое удаление)
+    
+    ОСНОВНОЕ НАЗНАЧЕНИЕ:
+    - Установка флага is_active = False вместо физического удаления
+    - Защита от деактивации администраторов
+    - Сохранение исторических данных сотрудника
+    
+    ОГРАНИЧЕНИЯ:
+    - Нельзя деактивировать пользователей с ролями 'Админ БД', 'Администратор'
+    - Операция требует подтверждения
+    """
     if request.method == 'POST':
         try:
             user = User.objects.get(id=user_id)
             
-            # Проверяем что это не админ
+            # SUMMARY: Проверка прав доступа - защита администраторов
             excluded_groups = ['Админ БД', 'Администратор']
             if user.groups.filter(name__in=excluded_groups).exists():
                 return JsonResponse({'success': False, 'message': 'Нельзя деактивировать администраторов'})
@@ -1036,14 +1028,26 @@ def delete_staff(request, user_id):
     
     return JsonResponse({'success': False, 'message': 'Неверный метод запроса'})
 
-
+@admin_required
 @login_required
 def get_staff_data(request, user_id):
-    """Получение данных сотрудника для редактирования"""
+    """
+    SUMMARY: Получение данных сотрудника для формы редактирования
+    
+    ОСНОВНОЕ НАЗНАЧЕНИЕ:
+    - Предоставление данных для AJAX-запроса при редактировании
+    - Извлечение данных из UserProfiles (ФИО) а не из стандартной модели User
+    - Проверка прав доступа к редактированию
+    
+    ИСТОЧНИКИ ДАННЫХ:
+    - Основные данные: модель User (email, активность)
+    - Профильные данные: UserProfiles (ФИО)
+    - Роль: группы пользователя
+    """
     try:
-        user = User.objects.get(id=user_id, is_active=True)
+        user = User.objects.get(id=user_id)
         
-        # Проверяем что это не админ
+        # SUMMARY: Защита от редактирования администраторов
         excluded_groups = ['Админ БД', 'Администратор']
         if user.groups.filter(name__in=excluded_groups).exists():
             return JsonResponse({'success': False, 'message': 'Нельзя редактировать администраторов'})
@@ -1058,8 +1062,9 @@ def get_staff_data(request, user_id):
             'user': {
                 'id': user.id,
                 'email': user.email,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
+                'firstname': profile.firstname if profile else '',  # Берем из UserProfiles
+                'lastname': profile.lastname if profile else '',    # Берем из UserProfiles
+                'middlename': profile.middlename if profile else '', # Берем из UserProfiles
                 'group_id': group.id if group else None,
                 'is_active': user.is_active
             }
@@ -1072,46 +1077,154 @@ def get_staff_data(request, user_id):
     except Exception as e:
         return JsonResponse({'success': False, 'message': f'Ошибка: {str(e)}'})
 
+@admin_required
 @login_required
+def create_staff(request):
+    """
+    SUMMARY: Создание нового сотрудника с полным профилем
+    
+    ОСНОВНОЕ НАЗНАЧЕНИЕ:
+    - Создание учетной записи пользователя
+    - Заполнение профиля UserProfiles (ФИО)
+    - Назначение роли и специализации (для тренеров)
+    - Автоматическая генерация логина из email
+    
+    ПРОЦЕСС СОЗДАНИЯ:
+    1. Валидация обязательных полей (email, password)
+    2. Создание пользователя с хешированием пароля
+    3. Назначение группы (роли)
+    4. Создание профиля с ФИО
+    5. Добавление специализации для тренеров
+    """
+    if request.method == 'POST':
+        try:
+            email = request.POST.get('email')
+            password = request.POST.get('password')
+            first_name = request.POST.get('first_name')
+            last_name = request.POST.get('last_name')
+            middlename = request.POST.get('middlename', '')
+            group_id = request.POST.get('group_id')
+            specialization = request.POST.get('specialization', '')
+            
+            # SUMMARY: Базовая валидация обязательных полей
+            if not email or not password:
+                return JsonResponse({'success': False, 'message': 'Email и пароль обязательны'})
+            
+            if User.objects.filter(email=email).exists():
+                return JsonResponse({'success': False, 'message': 'Пользователь с таким email уже существует'})
+            
+            # SUMMARY: Создание пользователя с безопасным хешированием пароля
+            user = User.objects.create(
+                username=email,
+                email=email,
+                is_active=True
+            )
+            user.set_password(password)
+            user.save()
+            
+            # SUMMARY: Назначение роли и специализации
+            if group_id:
+                group = Group.objects.get(id=group_id)
+                user.groups.add(group)
+                
+                # Если это тренер и указана специализация - создаем специализацию
+                if group.name == 'Тренер' and specialization:
+                    from clientservice.models import TrainerSpecializations
+                    TrainerSpecializations.objects.create(
+                        trainer=user,
+                        specialization=specialization
+                    )
+            
+            # SUMMARY: Создание расширенного профиля с ФИО
+            from clientservice.models import UserProfiles
+            UserProfiles.objects.create(
+                user=user,
+                firstname=first_name,
+                lastname=last_name,
+                middlename=middlename
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Сотрудник успешно создан'
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Ошибка при создании сотрудника: {str(e)}'
+            })
+    
+    return JsonResponse({'success': False, 'message': 'Неверный метод запроса'})
+
+@admin_required
+@login_required  
 def update_staff(request, user_id):
-    """Обновление данных сотрудника"""
+    """
+    SUMMARY: Обновление данных существующего сотрудника
+    
+    ОСНОВНОЕ НАЗНАЧЕНИЕ:
+    - Обновление основных данных и статуса активности
+    - Изменение роли пользователя
+    - Обновление профиля UserProfiles (ФИО)
+    - Управление специализацией тренеров
+    
+    ОСОБЕННОСТИ ОБНОВЛЕНИЯ:
+    - При смене роли с "Тренер" на другую - удаляется специализация
+    - Обновление ФИО происходит через модель UserProfiles
+    - Защита от редактирования администраторов
+    """
     if request.method == 'POST':
         try:
             user = User.objects.get(id=user_id)
             
-            # Проверяем что это не админ
+            # SUMMARY: Защита от редактирования администраторов
             excluded_groups = ['Админ БД', 'Администратор']
             if user.groups.filter(name__in=excluded_groups).exists():
                 return JsonResponse({'success': False, 'message': 'Нельзя редактировать администраторов'})
             
             first_name = request.POST.get('first_name', '')
             last_name = request.POST.get('last_name', '')
+            middlename = request.POST.get('middlename', '')
             group_id = request.POST.get('group_id')
             is_active = request.POST.get('is_active') == 'true'
+            specialization = request.POST.get('specialization', '')
             
-            print(f"Обновление пользователя {user_id}:")
-            print(f"first_name: {first_name}")
-            print(f"last_name: {last_name}")
-            print(f"group_id: {group_id}")
-            print(f"is_active: {is_active}")
-            
-            # Обновляем данные пользователя
-            user.first_name = first_name
-            user.last_name = last_name
+            # SUMMARY: Обновление базовых данных пользователя
             user.is_active = is_active
             user.save()
             
-            # Обновляем группу
+            # SUMMARY: Обновление роли и связанных данных
             if group_id:
                 user.groups.clear()
                 group = Group.objects.get(id=group_id)
                 user.groups.add(group)
+                
+                # SUMMARY: Управление специализацией тренера
+                from clientservice.models import TrainerSpecializations
+                if group.name == 'Тренер':
+                    trainer_spec = TrainerSpecializations.objects.filter(trainer=user).first()
+                    if specialization:
+                        if trainer_spec:
+                            trainer_spec.specialization = specialization
+                            trainer_spec.save()
+                        else:
+                            TrainerSpecializations.objects.create(
+                                trainer=user,
+                                specialization=specialization
+                            )
+                    elif trainer_spec:
+                        trainer_spec.delete()
+                else:
+                    # Удаляем специализацию если это не тренер
+                    TrainerSpecializations.objects.filter(trainer=user).delete()
             
-            # Обновляем профиль
+            # SUMMARY: Обновление профиля с ФИО
             from clientservice.models import UserProfiles
             profile, created = UserProfiles.objects.get_or_create(user=user)
             profile.firstname = first_name
             profile.lastname = last_name
+            profile.middlename = middlename
             profile.save()
             
             return JsonResponse({
@@ -1122,10 +1235,35 @@ def update_staff(request, user_id):
         except User.DoesNotExist:
             return JsonResponse({'success': False, 'message': 'Сотрудник не найден'})
         except Exception as e:
-            print(f"Ошибка при обновлении: {str(e)}")
             return JsonResponse({
                 'success': False,
                 'message': f'Ошибка при обновлении: {str(e)}'
             })
     
     return JsonResponse({'success': False, 'message': 'Неверный метод запроса'})
+
+@admin_required
+@login_required
+def get_trainer_specialization(request, user_id):
+    """
+    SUMMARY: Получение специализации тренера для AJAX-запросов
+    
+    ОСНОВНОЕ НАЗНАЧЕНИЕ:
+    - Предоставление данных о специализации при редактировании тренера
+    - Используется для динамического обновления интерфейса
+    - Интеграция с формами редактирования сотрудников
+    """
+    try:
+        from clientservice.models import TrainerSpecializations
+        
+        specialization = TrainerSpecializations.objects.filter(trainer_id=user_id).first()
+        
+        data = {
+            'success': True,
+            'specialization': specialization.specialization if specialization else ''
+        }
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Ошибка: {str(e)}'})

@@ -229,33 +229,33 @@ FITZONE - Профиль
     {% if user_subscriptions %}
         <div class="subscriptions-container">
             {% for subscription in user_subscriptions %}
-            <div class="subscription-card {{ subscription|subscription_status_class }}">
+            <div class="subs-card {{ subscription|subscription_status_class }}">
                 <!-- Header -->
-                <div class="subscription-header">
-                    <h3 class="subscription-title">{{ subscription.subscriptiontype.name }}</h3>
-                    <div class="status-badge {% if subscription.is_active %}active-status{% else %}inactive-status{% endif %}">
+                <div class="subs-header">
+                    <h3 class="subs-title">{{ subscription.subscriptiontype.name }}</h3>
+                    <div class="subs-badge {% if subscription.is_active %}active{% else %}inactive{% endif %}">
                         {{ subscription|subscription_status_text }}
                     </div>
                 </div>
 
                 <!-- Price -->
-                <div class="price-section">
-                    <div class="price-wrapper">
-                        <span class="price-amount">{{ subscription.subscriptiontype.price|floatformat:0 }}</span>
-                        <span class="currency">₽</span>
+                <div class="subs-price-section">
+                    <div class="subs-price-wrapper">
+                        <span class="subs-price">{{ subscription.subscriptiontype.price|floatformat:0 }}</span>
+                        <span class="subs-currency">₽</span>
                     </div>
-                    <div class="duration">{% duration_display subscription.subscriptiontype.durationdays %}</div>
+                    <div class="subs-duration">{% duration_display subscription.subscriptiontype.durationdays %}</div>
                 </div>
 
                 <!-- Dates -->
-                <div class="dates-container">
-                    <div class="date-row">
-                        <span class="date-label">Начало</span>
-                        <span class="date-value">{{ subscription.startdate|date:"d.m.Y" }}</span>
+                <div class="subs-dates">
+                    <div class="subs-date-row">
+                        <span class="subs-date-label">Начало</span>
+                        <span class="subs-date-value">{{ subscription.startdate|date:"d.m.Y" }}</span>
                     </div>
-                    <div class="date-row">
-                        <span class="date-label">Окончание</span>
-                        <span class="date-value">
+                    <div class="subs-date-row">
+                        <span class="subs-date-label">Окончание</span>
+                        <span class="subs-date-value">
                             {% with end_date=subscription.startdate|add_days:subscription.subscriptiontype.durationdays %}
                                 {{ end_date|date:"d.m.Y" }}
                             {% endwith %}
@@ -265,31 +265,31 @@ FITZONE - Профиль
 
                 <!-- Progress -->
                 {% if subscription.is_active %}
-                <div class="subscription-progress">
-                    <div class="progress-info">
+                <div class="subs-progress">
+                    <div class="subs-progress-info">
                         <span>Прогресс</span>
                         <span>{{ subscription|subscription_days_used }}/{{ subscription.subscriptiontype.durationdays }} дней</span>
                     </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: {{ subscription|subscription_progress_percentage }}%"></div>
+                    <div class="subs-progress-bar">
+                        <div class="subs-progress-fill" style="width: {{ subscription|subscription_progress_percentage }}%"></div>
                     </div>
                 </div>
                 {% endif %}
 
                 <!-- Warning -->
                 {% if subscription|is_expiring_soon %}
-                <div class="warning-banner">
+                <div class="subs-warning">
                     <i class="fas fa-exclamation-circle"></i>
                     <span>Истекает через {{ subscription|days_remaining }} д.</span>
                 </div>
                 {% endif %}
 
                 <!-- Services -->
-                <div class="services-section">
-                    <div class="services-title">Включено:</div>
-                    <div class="services-grid">
+                <div class="subs-services">
+                    <div class="subs-services-title">Включено:</div>
+                    <div class="subs-services-grid">
                         {% for service in subscription.subscriptiontype.get_included_services|slice:":4" %}
-                        <div class="service-item">
+                        <div class="subs-service-item">
                             <i class="fas fa-check"></i>
                             <span>{{ service }}</span>
                         </div>
@@ -298,10 +298,10 @@ FITZONE - Профиль
                 </div>
 
                 <!-- Actions -->
-                <div class="actions-container">
+                <div class="subs-actions">
                     {% if subscription.is_active %}
                         {% if subscription|should_show_renewal %}
-                        <a href="{% url 'subscription_payment' subscription.subscriptiontype.id %}" class="action-btn primary">
+                        <a href="{% url 'subscription_payment' subscription.subscriptiontype.id %}" class="subs-btn primary">
                             <i class="fas fa-sync-alt"></i>
                             Продлить
                         </a>
@@ -310,7 +310,7 @@ FITZONE - Профиль
                         {% if subscription|can_cancel_subscription %}
                         <form method="POST" action="{% url 'cancel_subscription' subscription.id %}" style="display: contents;">
                             {% csrf_token %}
-                            <button type="submit" class="action-btn secondary" 
+                            <button type="submit" class="subs-btn secondary" 
                                     onclick="return confirm('Вы уверены, что хотите отменить этот абонемент?')">
                                 <i class="fas fa-times"></i>
                                 Отменить
@@ -318,7 +318,7 @@ FITZONE - Профиль
                         </form>
                         {% endif %}
                     {% else %}
-                        <a href="{% url 'subscription_payment' subscription.subscriptiontype.id %}" class="action-btn primary">
+                        <a href="{% url 'subscription_payment' subscription.subscriptiontype.id %}" class="subs-btn primary">
                             <i class="fas fa-sync-alt"></i>
                             Продлить
                         </a>
@@ -1609,10 +1609,7 @@ document.addEventListener('keydown', function(e) {
     overflow: hidden;
 }
 
-.dark-theme .subscription-card {
-    background: linear-gradient(145deg, var(--dark-card) 0%, var(--dark-bg) 100%);
-    border-color: var(--dark-border);
-}
+
 
 .subscription-card::before {
     content: '';
@@ -1797,10 +1794,7 @@ document.addEventListener('keydown', function(e) {
     overflow: hidden;
 }
 
-.dark-theme .subscription-card {
-    background: var(--dark-card);
-    border-color: var(--dark-border);
-}
+
 
 .subscription-card::before {
     content: '';
@@ -2121,6 +2115,7 @@ document.addEventListener('keydown', function(e) {
     font-size: 0.95rem;
 }
 
+
 .cta-button {
     display: inline-flex;
     align-items: center;
@@ -2134,7 +2129,390 @@ document.addEventListener('keydown', function(e) {
     font-size: 0.9rem;
     transition: all 0.3s ease;
 }
+/* СОВРЕМЕННЫЕ КАРТОЧКИ АБОНЕМЕНТОВ */
+.subscriptions-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 30px;
+    margin-top: 20px;
+}
 
+.subs-card {
+    background: linear-gradient(145deg, var(--light-card) 0%, rgba(255, 255, 255, 0.95) 100%);
+    border-radius: 24px;
+    padding: 30px;
+    border: 1px solid rgba(139, 92, 246, 0.15);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.dark-theme .subs-card {
+    background: linear-gradient(145deg, var(--dark-card) 0%, rgba(30, 41, 59, 0.95) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Акцентная полоска сверху */
+.subs-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #06b6d4 100%);
+    opacity: 0.9;
+}
+
+/* Эффект при наведении */
+.subs-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 
+        0 25px 60px rgba(139, 92, 246, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.dark-theme .subs-card:hover {
+    box-shadow: 
+        0 25px 60px rgba(139, 92, 246, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Заголовок карточки */
+.subs-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.subs-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    line-height: 1.2;
+    margin: 0;
+}
+
+.dark-theme .subs-title {
+    color: var(--dark-text);
+}
+
+/* Бейдж статуса */
+.subs-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(10px);
+    border: 1px solid;
+}
+
+.subs-badge.active {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.1));
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.subs-badge.inactive {
+    background: linear-gradient(135deg, rgba(107, 114, 128, 0.15), rgba(75, 85, 99, 0.1));
+    color: #6b7280;
+    border-color: rgba(107, 114, 128, 0.3);
+}
+
+/* Секция цены */
+.subs-price-section {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 25px;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(99, 102, 241, 0.03));
+    border-radius: 20px;
+    border: 1px solid rgba(139, 92, 246, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.subs-price-wrapper {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.subs-price {
+    font-size: 3rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+}
+
+.subs-currency {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-gray);
+}
+
+.dark-theme .subs-currency {
+    color: var(--dark-text-light);
+}
+
+.subs-duration {
+    color: var(--text-gray);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Даты */
+.subs-dates {
+    margin-bottom: 25px;
+}
+
+.subs-date-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.subs-date-row:last-child {
+    border-bottom: none;
+}
+
+.subs-date-label {
+    color: var(--text-gray);
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.subs-date-label::before {
+    content: '•';
+    color: var(--neon-purple);
+    font-size: 1.2rem;
+}
+
+.dark-theme .subs-date-label {
+    color: var(--dark-text-light);
+}
+
+.subs-date-value {
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.dark-theme .subs-date-value {
+    color: var(--dark-text);
+}
+
+/* Прогресс-бар */
+.subs-progress {
+    margin-bottom: 25px;
+}
+
+.subs-progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.8rem;
+    color: var(--text-gray);
+}
+
+.subs-progress-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(139, 92, 246, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.subs-progress-fill {
+    height: 100%;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    border-radius: 3px;
+    transition: width 0.8s ease;
+}
+
+/* Услуги */
+.subs-services {
+    margin-bottom: 25px;
+}
+
+.subs-services-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-gray);
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.subs-services-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.subs-service-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--text-gray);
+    padding: 6px 0;
+}
+
+.dark-theme .subs-service-item {
+    color: var(--dark-text-light);
+}
+
+.subs-service-item i {
+    color: var(--neon-purple);
+    font-size: 0.7rem;
+}
+
+/* Предупреждение об истечении */
+.subs-warning {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.05));
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 10px;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #92400e;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.dark-theme .subs-warning {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05));
+    border-color: rgba(251, 191, 36, 0.3);
+    color: #fbbf24;
+}
+
+.subs-warning i {
+    color: #d97706;
+}
+
+.dark-theme .subs-warning i {
+    color: #fbbf24;
+}
+
+/* Кнопки действий */
+.subs-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.subs-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    backdrop-filter: blur(10px);
+}
+
+.subs-btn.primary {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+
+.subs-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+    color: white;
+}
+
+.subs-btn.secondary {
+    background: transparent;
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.subs-btn.secondary:hover {
+    background: #ef4444;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .subscriptions-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .subs-card {
+        padding: 25px;
+    }
+    
+    .subs-services-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .subs-actions {
+        flex-direction: column;
+    }
+    
+    .subs-price {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .subs-card {
+        padding: 20px;
+    }
+    
+    .subs-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .subs-price {
+        font-size: 2.2rem;
+    }
+    
+    .subs-currency {
+        font-size: 1.5rem;
+    }
+}
 .cta-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);

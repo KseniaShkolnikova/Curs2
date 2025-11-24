@@ -3,6 +3,10 @@ from django.contrib.auth.models import User
 from clientservice.models import *
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для профилей пользователей.
+    Включает вычисляемое поле full_name и связанного пользователя.
+    """
     user = serializers.StringRelatedField(read_only=True)
     full_name = serializers.ReadOnlyField()
     
@@ -14,6 +18,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
         ]
 
 class SubscriptionTypesSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для типов подписок.
+    Включает вычисляемые поля для включенных услуг и их иконок.
+    """
     included_services = serializers.SerializerMethodField()
     service_icons = serializers.SerializerMethodField()
     
@@ -21,19 +29,25 @@ class SubscriptionTypesSerializer(serializers.ModelSerializer):
         model = SubscriptionTypes
         fields = [
             'id', 'name', 'description', 'price', 'durationdays',
-            'gym_access', 'group_classes', 'pool_access', 'spa_access',
-            'personal_training', 'locker_room', 'towel_service',
-            'fitness_consultation', 'nutrition_consultation',
-            'guest_visits', 'freeze_days', 'included_services', 'service_icons'
+            'gym_access',  'pool_access', 'spa_access',
+             'locker_room', 'towel_service',
+             'nutrition_consultation',
+             'included_services', 'service_icons'
         ]
     
     def get_included_services(self, obj):
+        """Получает список включенных услуг для типа подписки"""
         return obj.get_included_services()
     
     def get_service_icons(self, obj):
+        """Получает список иконок для услуг типа подписки"""
         return obj.get_service_icons()
 
 class SubscriptionsSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для подписок пользователей.
+    Поддерживает чтение полного объекта subscriptiontype и запись по ID.
+    """
     user = serializers.StringRelatedField(read_only=True)
     subscriptiontype = SubscriptionTypesSerializer(read_only=True)
     subscriptiontype_id = serializers.PrimaryKeyRelatedField(
@@ -41,15 +55,25 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
         source='subscriptiontype',
         write_only=True
     )
+    # ДОБАВЬТЕ ЭТО ПОЛЕ:
+    user_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), 
+        source='user', 
+        write_only=True
+    )
     
     class Meta:
         model = Subscriptions
         fields = [
-            'id', 'user', 'subscriptiontype', 'subscriptiontype_id',
+            'id', 'user', 'user_id', 'subscriptiontype', 'subscriptiontype_id',  # Добавлен user_id
             'startdate', 'is_active'
         ]
 
 class TrainingPlansSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для тренировочных планов.
+    Включает связанных тренера и клиента с поддержкой записи по ID.
+    """
     trainer = serializers.StringRelatedField(read_only=True)
     client = serializers.StringRelatedField(read_only=True)
     trainer_id = serializers.PrimaryKeyRelatedField(
@@ -71,6 +95,9 @@ class TrainingPlansSerializer(serializers.ModelSerializer):
         ]
 
 class TrainerSpecializationsSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для специализаций тренеров.
+    """
     trainer = serializers.StringRelatedField(read_only=True)
     trainer_id = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(), 
@@ -83,6 +110,9 @@ class TrainerSpecializationsSerializer(serializers.ModelSerializer):
         fields = ['id', 'trainer', 'trainer_id', 'specialization']
 
 class ClassesSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для групповых занятий.
+    """
     trainer = serializers.StringRelatedField(read_only=True)
     trainer_id = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(), 
@@ -98,6 +128,9 @@ class ClassesSerializer(serializers.ModelSerializer):
         ]
 
 class ClassClientSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для связи клиентов с групповыми занятиями.
+    """
     class_id = ClassesSerializer(read_only=True)
     user = serializers.StringRelatedField(read_only=True)
     class_id_id = serializers.PrimaryKeyRelatedField(
@@ -119,6 +152,10 @@ class ClassClientSerializer(serializers.ModelSerializer):
         ]
 
 class UserActionsLogSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для логов действий пользователей.
+    Включает вычисляемое поле с полным именем пользователя.
+    """
     user = serializers.StringRelatedField(read_only=True)
     user_full_name = serializers.ReadOnlyField()
     
@@ -130,6 +167,11 @@ class UserActionsLogSerializer(serializers.ModelSerializer):
         ]
 
 class PaymentsSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для платежей.
+    Поддерживает два типа платежей: за подписки и за групповые занятия.
+    Включает валидацию для обеспечения только одного типа платежа.
+    """
     subscription = SubscriptionsSerializer(read_only=True)
     classclient = ClassClientSerializer(read_only=True)
     subscription_id = serializers.PrimaryKeyRelatedField(
@@ -156,16 +198,19 @@ class PaymentsSerializer(serializers.ModelSerializer):
     
     def validate(self, data):
         """
-        Проверяем, что указан только один из типов платежа
+        Проверяет, что указан только один из типов платежа: подписка ИЛИ групповое занятие.
+        Вызывает ValidationError если оба типа указаны или ни один не указан.
         """
         subscription = data.get('subscription')
         classclient = data.get('classclient')
         
+        # Проверка что указан хотя бы один тип платежа
         if not subscription and not classclient:
             raise serializers.ValidationError(
                 "Должен быть указан либо subscription, либо classclient"
             )
         
+        # Проверка что не указаны оба типа одновременно
         if subscription and classclient:
             raise serializers.ValidationError(
                 "Может быть указан только один тип платежа: subscription ИЛИ classclient"

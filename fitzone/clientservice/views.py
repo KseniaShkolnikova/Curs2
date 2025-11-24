@@ -13,6 +13,8 @@ from datetime import time  # Добавьте этот импорт
 from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime, timedelta
 from django.db import transaction
+from utils.decorators import client_required
+
 
 
 
@@ -120,6 +122,7 @@ def classes_view(request):
 
 
 
+@client_required
 @login_required
 def class_booking(request, class_id):
     """Страница записи на конкретную тренировку"""
@@ -200,6 +203,7 @@ def class_booking(request, class_id):
     return render(request, 'class_booking.html', context)
 
 
+@client_required
 @login_required
 @require_http_methods(["POST"])
 def process_class_payment(request, class_id):
@@ -302,9 +306,7 @@ def register_view(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            # Создаем профиль пользователя с темой по умолчанию
-            UserProfiles.objects.create(user=user, theme=False)
+            user = form.save()  # Профиль уже создается в форме!
             login(request, user)
             messages.success(request, 'Регистрация прошла успешно! Добро пожаловать в FITZONE.')
             return redirect('home')
@@ -319,7 +321,6 @@ def register_view(request):
 
 
 def login_view(request):
-    # Если пользователь уже авторизован, перенаправляем по роли
     if request.user.is_authenticated:
         return redirect_by_role(request.user)
     
@@ -328,32 +329,20 @@ def login_view(request):
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
-            
-            print(f"=== DEBUG LOGIN ===")
-            print(f"Username from form: {username}")
-            print(f"Password length: {len(password)}")
-            
-            # Аутентифицируем пользователя
             user = authenticate(request, username=username, password=password)
-            print(f"Authenticated user: {user}")
             
             if user is not None:
                 login(request, user)
                 messages.success(request, f'Добро пожаловать, {user.username}!')
                 return redirect_by_role(user)
             else:
-                print("=== DEBUG: Authentication failed ===")
-                # Проверим, существует ли пользователь
                 try:
                     user_by_email = User.objects.get(email=username)
-                    print(f"User exists by email: {user_by_email}")
-                    print(f"Real username: {user_by_email.username}")
                 except User.DoesNotExist:
-                    print("No user found with this email")
+                    print("Нет пользователя с этой почтой")
                     
                 messages.error(request, 'Неверный email или пароль.')
         else:
-            print(f"=== DEBUG: Form errors: {form.errors} ===")
             messages.error(request, 'Пожалуйста, исправьте ошибки в форме.')
     else:
         form = LoginForm()
@@ -365,19 +354,24 @@ def login_view(request):
 
 
 def redirect_by_role(user):
-    """Перенаправляет пользователя в зависимости от его роли"""
+    ROLE_REDIRECTS = {
+        'superuser': '/admin/',
+        'Тренер': '/trainer/', 
+        'Клиент': 'home',
+        'Администратор': 'adminservice:admin_dashboard',
+        'Менеджер по продажам': 'menegerservice:manager_home'
+    }
+    
     if user.is_superuser:
-        return redirect('/admin/')
-    elif user.groups.filter(name='Тренер').exists():
-        return redirect('/trainer/')
-    elif user.groups.filter(name='Клиент').exists():
-        return redirect('home')
-    elif user.groups.filter(name='Администратор').exists():
-        return redirect('adminservice:admin_dashboard')  # ИСПРАВЛЕНО название
-    elif user.groups.filter(name='Менеджер по продажам').exists():
-        return redirect('menegerservice:manager_home')
-    else:
-        return redirect('home')
+        return redirect(ROLE_REDIRECTS['superuser'])
+    
+    user_roles = [group.name for group in user.groups.all()]
+    
+    for role, redirect_url in ROLE_REDIRECTS.items():
+        if role in user_roles:
+            return redirect(redirect_url)
+    
+    return redirect('home')
     
 
 
@@ -481,6 +475,7 @@ def subscription_detail(request, subscription_id):
     
     return render(request, 'detail_subscription.html', context)
 
+@client_required
 @login_required
 def subscription_payment(request, subscription_id):
     # Используй правильную модель - SubscriptionTypes вместо Subscriptions
@@ -497,6 +492,7 @@ def subscription_payment(request, subscription_id):
     
     return render(request, 'subscription_payment.html', context)
 
+@client_required
 @login_required
 def process_payment(request, subscription_id):
     if request.method == 'POST':
@@ -775,6 +771,7 @@ from reportlab.lib import colors
 import io
 from datetime import datetime
 
+@client_required
 @login_required
 def generate_payment_document(request, payment_id):
     """Генерация официального документа об оплате абонемента"""
@@ -958,9 +955,11 @@ def personal_training(request):
         try:
             profile = UserProfiles.objects.get(user=trainer)
             full_name = profile.full_name
-            print(f"✓ Trainer found: {full_name}")
+            avatar_url = profile.avatar.url if profile.avatar else None  # Получаем URL аватарки
+            print(f"✓ Trainer found: {full_name}, Avatar: {avatar_url}")
         except UserProfiles.DoesNotExist:
             full_name = trainer.get_full_name() or trainer.username
+            avatar_url = None
             print(f"✗ Profile not found, using: {full_name}")
         
         # Получаем специализации тренера
@@ -971,6 +970,7 @@ def personal_training(request):
         trainers_data.append({
             'id': trainer.id,
             'full_name': full_name,
+            'avatar_url': avatar_url,  # Добавляем URL аватарки
             'specializations': specialization_list,
             'bio': "Профессиональный тренер с индивидуальным подходом",
             'rating': 4.8,
@@ -986,6 +986,7 @@ def personal_training(request):
 
 
 
+@client_required
 @login_required
 def book_personal_training(request, trainer_id):
     """Страница для записи к тренеру"""
@@ -1100,6 +1101,7 @@ def generate_available_slots(trainer):
     
     return slots
 
+@client_required
 @login_required
 def create_personal_training(request, trainer_id):
     """Создание персональной тренировки"""
@@ -1246,6 +1248,7 @@ def create_personal_training(request, trainer_id):
     print("=== DEBUG: Not POST method, redirecting ===")
     return redirect('personal_training')
 
+@client_required
 @login_required
 def cancel_training(request, class_id):
     """Отмена тренировки"""
@@ -1323,6 +1326,7 @@ def cancel_training(request, class_id):
     
     return redirect('profile')
 
+@client_required
 @login_required
 @require_http_methods(["POST"])
 def cancel_subscription(request, subscription_id):
@@ -1364,6 +1368,7 @@ def cancel_subscription(request, subscription_id):
     return redirect('profile')
 
 
+@client_required
 @login_required
 @require_http_methods(["POST"])
 def buy_personal_package(request, trainer_id):
@@ -1462,6 +1467,7 @@ def buy_personal_package(request, trainer_id):
             'message': f'Ошибка при покупке пакета: {str(e)}'
         })
 
+@client_required
 @login_required
 @require_http_methods(["POST"])
 def delete_account(request):
@@ -1529,6 +1535,7 @@ def delete_account(request):
         })
 
 
+@client_required
 @login_required
 @require_http_methods(["POST"])
 def deactivate_account(request):
@@ -1605,6 +1612,7 @@ def deactivate_account(request):
             'message': f'Ошибка при деактивации аккаунта: {str(e)}'
         })
 
+@client_required
 @login_required
 @require_http_methods(["POST"])
 def process_personal_payment(request, trainer_id):

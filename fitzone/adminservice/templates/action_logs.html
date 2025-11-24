@@ -6,6 +6,9 @@ FITZONE - Логи действий
 {% endblock %}
 
 {% block content %}
+<!-- SUMMARY: Основная страница просмотра логов действий пользователей -->
+<!-- Включает фильтры, таблицу логов, пагинацию и статистику с круговой диаграммой -->
+
 <div class="particles-container" id="particles"></div>
 
 <section class="hero-section" style="margin: 60px 40px 40px; min-height: auto; padding-top: 20px;">
@@ -15,7 +18,7 @@ FITZONE - Логи действий
             ЛОГИ ДЕЙСТВИЙ ПОЛЬЗОВАТЕЛЕЙ
         </h1>
 
-        <!-- Фильтры и поиск -->
+        <!-- SUMMARY: Карточка с фильтрами и поиском -->
         <div class="admin-logs-filters-card">
             <div class="admin-logs-card-header">
                 <h2><i class="fas fa-filter"></i> ФИЛЬТРЫ И ПОИСК</h2>
@@ -24,14 +27,14 @@ FITZONE - Логи действий
             
             <form method="get" class="admin-logs-filters-form">
                 <div class="admin-logs-filters-grid">
-                    <!-- Поиск по действию -->
+                    <!-- SUMMARY: Поле поиска по названию действия -->
                     <div class="admin-logs-filter-group">
                         <label>Поиск по названию:</label>
                         <input type="text" name="search" value="{{ request.GET.search }}" 
                                placeholder="Введите название действия..." class="admin-logs-form-control">
                     </div>
 
-                    <!-- Фильтр по роли -->
+                    <!-- SUMMARY: Фильтр по роли пользователя -->
                     <div class="admin-logs-filter-group">
                         <label>Роль пользователя:</label>
                         <select name="role" class="admin-logs-form-control">
@@ -44,7 +47,7 @@ FITZONE - Логи действий
                         </select>
                     </div>
 
-                    <!-- Фильтр по пользователю -->
+                    <!-- SUMMARY: Фильтр по конкретному пользователю -->
                     <div class="admin-logs-filter-group">
                         <label>Пользователь:</label>
                         <select name="user" class="admin-logs-form-control">
@@ -57,7 +60,7 @@ FITZONE - Логи действий
                         </select>
                     </div>
 
-                    <!-- Фильтр по типу действия -->
+                    <!-- SUMMARY: Фильтр по типу действия -->
                     <div class="admin-logs-filter-group">
                         <label>Тип действия:</label>
                         <select name="action_type" class="admin-logs-form-control">
@@ -71,6 +74,7 @@ FITZONE - Логи действий
                     </div>
                 </div>
 
+                <!-- SUMMARY: Кнопки применения и сброса фильтров -->
                 <div class="admin-logs-filter-actions">
                     <button type="submit" class="admin-logs-btn admin-logs-btn-primary">
                         <i class="fas fa-search"></i> Применить фильтры
@@ -82,10 +86,11 @@ FITZONE - Логи действий
             </form>
         </div>
 
-        <!-- Таблица логов -->
+        <!-- SUMMARY: Основная карточка с таблицей логов -->
         <div class="admin-logs-dashboard-card">
             <div class="admin-logs-card-header">
                 <h2><i class="fas fa-list-alt"></i> ЖУРНАЛ ДЕЙСТВИЙ</h2>
+                <!-- SUMMARY: Элементы управления сортировкой -->
                 <div class="admin-logs-sort-controls">
                     <span>Сортировка:</span>
                     <select onchange="location = this.value;" class="admin-logs-sort-select">
@@ -114,6 +119,7 @@ FITZONE - Логи действий
             </div>
 
             {% if logs %}
+            <!-- SUMMARY: Контейнер таблицы с логами -->
             <div class="admin-logs-table-container">
                 <table class="admin-logs-data-table">
                     <thead>
@@ -126,6 +132,7 @@ FITZONE - Логи действий
                         </tr>
                     </thead>
                     <tbody>
+                        <!-- SUMMARY: Цикл отображения записей логов -->
                         {% for log in logs %}
                         <tr class="admin-logs-row">
                             <td class="admin-logs-date">
@@ -150,6 +157,7 @@ FITZONE - Логи действий
                                 <div class="admin-logs-action-text">{{ log.action }}</div>
                             </td>
                             <td class="admin-logs-type">
+                                <!-- SUMMARY: Бейдж с цветовым кодированием типа действия -->
                                 <span class="admin-logs-action-badge admin-logs-action-{{ log.action_type|lower }}">
                                     {{ log.get_action_type_display }}
                                 </span>
@@ -172,7 +180,7 @@ FITZONE - Логи действий
                 </table>
             </div>
 
-            <!-- Пагинация -->
+            <!-- SUMMARY: Пагинация для большого количества записей -->
             {% if logs.has_other_pages %}
             <div class="admin-logs-pagination">
                 <div class="admin-logs-pagination-info">
@@ -208,10 +216,11 @@ FITZONE - Логи действий
             </div>
             {% endif %}
 
-            <!-- Круговая диаграмма статистики логов -->
+            <!-- SUMMARY: Карточка с визуализацией статистики логов -->
             <div class="admin-logs-dashboard-card">
                 <div class="admin-logs-card-header">
                     <h2><i class="fas fa-chart-pie"></i> СТАТИСТИКА ЛОГОВ ПО ТИПАМ</h2>
+                    <!-- SUMMARY: Управление периодом для статистики -->
                     <div class="admin-logs-chart-controls">
                         <form method="get" id="chartPeriodForm" class="admin-logs-period-form">
                             <div class="period-controls">
@@ -228,7 +237,7 @@ FITZONE - Логи действий
                                 </button>
                             </div>
                             
-                            <!-- Сохраняем другие параметры фильтрации -->
+                            <!-- SUMMARY: Скрытые поля для сохранения параметров фильтрации -->
                             {% if request.GET.search %}
                                 <input type="hidden" name="search" value="{{ request.GET.search }}">
                             {% endif %}
@@ -251,6 +260,7 @@ FITZONE - Логи действий
                     </div>
                 </div>
                 
+                <!-- SUMMARY: Контейнер для круговой диаграммы -->
                 <div class="admin-logs-chart-container">
                     <div class="admin-logs-chart-wrapper">
                         <canvas id="logsChart" width="400" height="400"></canvas>
@@ -258,6 +268,7 @@ FITZONE - Логи действий
                     <div class="admin-logs-chart-legend" id="chartLegend"></div>
                 </div>
                 
+                <!-- SUMMARY: Статистические показатели -->
                 <div class="admin-logs-chart-stats">
                     <div class="admin-logs-chart-stat">
                         <span class="admin-logs-stat-value" id="totalLogsCount">0</span>
@@ -275,6 +286,7 @@ FITZONE - Логи действий
             </div>
 
             {% else %}
+            <!-- SUMMARY: Состояние при отсутствии записей -->
             <div class="admin-logs-empty-state">
                 <i class="fas fa-clipboard-list"></i>
                 <h3>Записи не найдены</h3>
@@ -286,7 +298,7 @@ FITZONE - Логи действий
 </section>
 
 <style>
-<style>
+/* SUMMARY: Стили для круговой диаграммы и ее элементов */
 /* Стили для круговой диаграммы */
 .admin-logs-chart-container {
     display: flex;
@@ -421,6 +433,7 @@ FITZONE - Логи действий
     color: var(--dark-text-light);
 }
 
+/* SUMMARY: Цветовая схема для типов действий в диаграмме */
 /* Цвета для типов действий в диаграмме */
 .admin-logs-chart-create { background-color: #2ecc71; }
 .admin-logs-chart-update { background-color: #3498db; }
@@ -429,6 +442,8 @@ FITZONE - Логи действий
 .admin-logs-chart-logout { background-color: #95a5a6; }
 .admin-logs-chart-system { background-color: #f39c12; }
 .admin-logs-chart-other { background-color: #34495e; }
+
+/* SUMMARY: Стили карточки фильтров */
 .admin-logs-filters-card {
     background: var(--light-card);
     border-radius: 16px;
@@ -522,6 +537,8 @@ FITZONE - Логи действий
     gap: 12px;
     align-items: center;
 }
+
+/* SUMMARY: Корректировка отступов для правильного расположения элементов */
 /* Добавь эти стили в конец CSS блока */
 
 /* Отступы для страницы логов */
@@ -565,6 +582,7 @@ FITZONE - Логи действий
     }
 }
 
+/* SUMMARY: Стили кнопок и элементов управления */
 .admin-logs-btn {
     padding: 10px 20px;
     border: none;
@@ -734,6 +752,7 @@ FITZONE - Логи действий
     color: var(--dark-text);
 }
 
+/* SUMMARY: Стили бейджей типов действий с цветовым кодированием */
 .admin-logs-action-badge {
     padding: 4px 8px;
     border-radius: 6px;
@@ -799,6 +818,7 @@ FITZONE - Логи действий
     background: var(--dark-bg);
 }
 
+/* SUMMARY: Стили пагинации */
 /* Пагинация */
 .admin-logs-pagination {
     display: flex;
@@ -864,6 +884,7 @@ FITZONE - Логи действий
     font-size: 12px;
 }
 
+/* SUMMARY: Стили для состояния "нет данных" */
 .admin-logs-empty-state {
     text-align: center;
     padding: 60px 20px;
@@ -888,6 +909,7 @@ FITZONE - Логи действий
     opacity: 0.7;
 }
 
+/* SUMMARY: Адаптивные стили для мобильных устройств */
 @media (max-width: 768px) {
     .admin-logs-filters-grid {
         grid-template-columns: 1fr;
@@ -916,6 +938,8 @@ FITZONE - Логи действий
         justify-content: center;
     }
 }
+
+/* SUMMARY: Стили для формы выбора периода статистики */
 .admin-logs-period-form {
     display: flex;
     align-items: center;
@@ -956,22 +980,20 @@ FITZONE - Логи действий
 {% endblock %}
 
 {% block skripts %}
+<!-- SUMMARY: JavaScript для интерактивных элементов страницы -->
+<!-- Включает обработку горячих клавиш, построение диаграммы и обновление статистики -->
 
-    <!-- Chart.js для диаграмм -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script>
-    // Глобальные сочетания клавиш для страницы логов
+// SUMMARY: Обработка горячей клавиши Ctrl+Delete для быстрого сброса фильтров
 document.addEventListener('keydown', function(e) {
-    // Ctrl + Delete для сброса фильтров
     if (e.ctrlKey && e.key === 'Delete') {
         e.preventDefault();
         console.log('Ctrl+Delete pressed - resetting filters');
         
-        // Находим кнопку сброса
         const resetButton = document.querySelector('a[href*="action-logs"]');
         if (resetButton) {
-            // Добавляем визуальную обратную связь
             resetButton.style.transform = 'scale(0.95)';
             resetButton.style.boxShadow = '0 0 15px rgba(139, 92, 246, 0.5)';
             setTimeout(() => {
@@ -979,7 +1001,6 @@ document.addEventListener('keydown', function(e) {
                 resetButton.style.boxShadow = '';
             }, 500);
             
-            // Переходим по ссылке сброса
             setTimeout(() => {
                 window.location.href = resetButton.href;
             }, 300);
@@ -988,10 +1009,12 @@ document.addEventListener('keydown', function(e) {
         }
     }
 });
+
+    // SUMMARY: Инициализация круговой диаграммы и статистики при загрузке страницы
     document.addEventListener('DOMContentLoaded', function() {
         let logsChart = null;
         
-        // Цвета для типов действий
+        // SUMMARY: Цветовая схема для типов действий
         const typeColors = {
             'create': '#2ecc71',
             'update': '#3498db', 
@@ -1002,11 +1025,11 @@ document.addEventListener('keydown', function(e) {
             'other': '#34495e'
         };
         
-        // Данные с сервера
+        // SUMMARY: Получение данных для диаграммы из Django-контекста
         const chartData = {{ chart_stats|safe }};
         console.log('Данные для диаграммы с сервера:', chartData);
         
-        // Функция обновления диаграммы
+        // SUMMARY: Функция обновления круговой диаграммы
         function updateChart(data) {
             const ctx = document.getElementById('logsChart');
             
@@ -1017,7 +1040,6 @@ document.addEventListener('keydown', function(e) {
             
             const ctx2d = ctx.getContext('2d');
             
-            // Удаляем старую диаграмму если есть
             if (logsChart) {
                 logsChart.destroy();
             }
@@ -1028,7 +1050,7 @@ document.addEventListener('keydown', function(e) {
             
             console.log('Данные для диаграммы:', { labels, counts, backgroundColors });
             
-            // Если нет данных, показываем сообщение
+            // SUMMARY: Обработка случая отсутствия данных
             if (labels.length === 0) {
                 ctx2d.clearRect(0, 0, ctx.width, ctx.height);
                 ctx2d.font = '16px Arial';
@@ -1038,6 +1060,7 @@ document.addEventListener('keydown', function(e) {
                 return;
             }
             
+            // SUMMARY: Создание новой круговой диаграммы с использованием Chart.js
             logsChart = new Chart(ctx2d, {
                 type: 'pie',
                 data: {
@@ -1080,13 +1103,11 @@ document.addEventListener('keydown', function(e) {
                 }
             });
             
-            // Обновляем легенду
             updateLegend(data.types);
-            // Обновляем статистику
             updateStats(data);
         }
         
-        // Функция обновления легенды
+        // SUMMARY: Функция обновления легенды диаграммы
         function updateLegend(types) {
             const legendContainer = document.getElementById('chartLegend');
             if (!legendContainer) {
@@ -1119,7 +1140,7 @@ document.addEventListener('keydown', function(e) {
             });
         }
         
-        // Функция обновления статистики
+        // SUMMARY: Функция обновления статистических показателей
         function updateStats(data) {
             const totalLogsElement = document.getElementById('totalLogsCount');
             const mostCommonElement = document.getElementById('mostCommonType');
@@ -1131,7 +1152,6 @@ document.addEventListener('keydown', function(e) {
             const entries = Object.entries(types);
             
             if (entries.length > 0) {
-                // Самый частый тип
                 const mostCommon = entries.reduce((a, b) => a[1] > b[1] ? a : b);
                 if (mostCommonElement) {
                     mostCommonElement.textContent = 
@@ -1141,7 +1161,6 @@ document.addEventListener('keydown', function(e) {
                         mostCommon[0] === 'system' ? 'Система' : 'Другие';
                 }
                 
-                // Самый редкий тип  
                 const leastCommon = entries.reduce((a, b) => a[1] < b[1] ? a : b);
                 if (leastCommonElement) {
                     leastCommonElement.textContent =
@@ -1156,7 +1175,7 @@ document.addEventListener('keydown', function(e) {
             }
         }
         
-        // Загружаем данные при загрузке страницы
+        // SUMMARY: Первоначальное построение диаграммы при загрузке страницы
         updateChart(chartData);
     });
     </script>

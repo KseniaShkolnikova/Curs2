@@ -433,6 +433,34 @@ body.light-theme .subscription-card .card-button:hover {
 .subscription-card .card-button i {
     color: white !important;
 }
+/* Стили для выпадающего списка в светлой теме */
+.sort-select {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    color: #1f2937;
+}
+
+.dark-theme .sort-select {
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(139, 92, 246, 0.3);
+    color: #f9fafb;
+}
+
+/* Стили для опций выпадающего списка */
+.sort-select option {
+    background: white;
+    color: #1f2937;
+    padding: 10px;
+}
+.sort-select option {
+    background: white;
+    color: #000000 !important; /* Черный текст */
+    padding: 10px;
+}
+.dark-theme .sort-select option {
+    background: #1f2937;
+    color: #f9fafb;
+}
 
 .subscription-card .card-button:hover span,
 .subscription-card .card-button:hover i {

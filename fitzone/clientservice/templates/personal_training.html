@@ -37,12 +37,16 @@ FITZONE - Персональные тренировки
         <div class="pt-grid">
             {% for trainer in trainers %}
             <div class="pt-card">
-                <div class="pt-image">
-                    <div class="pt-avatar">
-                        <i class="fas fa-user-tie"></i>
-                    </div>
-                    
-                </div>
+                <!-- В разделе .pt-image замените текущий код на этот: -->
+<div class="pt-image">
+    {% if trainer.avatar_url %}
+        <img src="{{ trainer.avatar_url }}" alt="{{ trainer.full_name }}" class="pt-avatar-img">
+    {% else %}
+        <div class="pt-avatar">
+            <i class="fas fa-user-tie"></i>
+        </div>
+    {% endif %}
+</div>
                 
                 <div class="pt-info">
                     <h3 class="pt-name">{{ trainer.full_name }}</h3>
@@ -89,6 +93,35 @@ FITZONE - Персональные тренировки
 
 <style>
 /* PT HERO SECTION - Matching your site colors */
+/* Стили для аватарок тренеров */
+.pt-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.pt-avatar {
+    font-size: 4rem;
+    color: white;
+    opacity: 0.9;
+}
+
+/* Убедитесь, что контейнер для изображения правильно настроен */
+.pt-image {
+    position: relative;
+    height: 250px;
+    overflow: hidden;
+    background: var(--accent-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Если аватарка не загружается, показываем градиентный фон */
+.pt-image:has(.pt-avatar) {
+    background: var(--accent-gradient);
+}
 .pt-hero {
     background: var(--light-bg);
     padding: 120px 0 80px;
@@ -214,7 +247,7 @@ FITZONE - Персональные тренировки
 
 .pt-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); /* auto-fill вместо auto-fit */
     gap: 30px;
     margin-bottom: 60px;
 }
@@ -227,6 +260,8 @@ FITZONE - Персональные тренировки
     border: 1px solid var(--light-border);
     box-shadow: var(--shadow-medium);
     transition: all 0.3s ease;
+     width: 400px; 
+
 }
 
 .dark-theme .pt-card {

@@ -7,10 +7,13 @@ FITZONE - Административная панель
 {% endblock %}
 
 {% block content %}
+<!-- Основной контейнер для частиц -->
 <div class="particles-container" id="particles"></div>
 
+<!-- Секция админ-панели -->
 <section class="hero-section" style="margin: 50px 40px 40px; min-height: auto; padding-top: 20px;">
     <div class="hero-content">
+        <!-- Заголовок с именем администратора -->
         <h1 class="hero-title">
             АДМИН ПАНЕЛЬ<br>
             {% if user.userprofile.full_name %}
@@ -20,16 +23,18 @@ FITZONE - Административная панель
             {% endif %}
         </h1>
         
+        <!-- Основная панель управления -->
         <div class="admin-dashboard">
-            <!-- Левая колонка -->
-            <div class="dashboard-column">
-                <!-- Блок общей статистики -->
-                <div class="dashboard-card system-stats">
+           <!-- Левый столбец: статистика и активность -->
+           <div class="dashboard-column">
+              <!-- Карточка системной статистики -->
+              <div class="dashboard-card system-stats">
                     <div class="card-header">
                         <h2><i class="fas fa-chart-network"></i> СИСТЕМНАЯ СТАТИСТИКА</h2>
                         <span class="date-badge">Все время</span>
                     </div>
                     
+                    <!-- Сетка статистических показателей -->
                     <div class="stats-grid">
                         <div class="stat-item">
                             <div class="stat-content">
@@ -64,13 +69,14 @@ FITZONE - Административная панель
                     </div>
                 </div>
 
-                <!-- Блок последних действий -->
+                <!-- Карточка последних действий -->
                 <div class="dashboard-card recent-activity">
                     <div class="card-header">
                         <h2><i class="fas fa-history"></i> ПОСЛЕДНИЕ ДЕЙСТВИЯ</h2>
                         <span class="date-badge">Сегодня</span>
                     </div>
                     
+                    <!-- Список активностей -->
                     {% if recent_activities %}
                     <div class="activity-list">
                         {% for activity in recent_activities %}
@@ -100,6 +106,7 @@ FITZONE - Административная панель
                         {% endfor %}
                     </div>
                     {% else %}
+                    <!-- Состояние при отсутствии активностей -->
                     <div class="empty-state">
                         <i class="fas fa-history"></i>
                         <h3>Нет активностей за сегодня</h3>
@@ -109,109 +116,110 @@ FITZONE - Административная панель
                 </div>
             </div>
 
-            <!-- Правая колонка -->
+            <!-- Правый столбец: управление и мониторинг -->
             <div class="dashboard-column">
-                <!-- Блок управления системой -->
-<div class="dashboard-card system-management">
-    <div class="card-header">
-        <h2><i class="fas fa-cogs"></i> УПРАВЛЕНИЕ СИСТЕМОЙ</h2>
-    </div>
-    <div class="management-grid">
-        <a href="{% url 'adminservice:staff_management' %}" class="management-card">
-            <div class="management-icon">
-                <i class="fas fa-users-cog"></i>
-            </div>
-            <div class="management-content">
-                <h3>Управление пользователями</h3>
-                <p>Просмотр и редактирование пользователей</p>
-            </div>
-        </a>
-        
-        <a href="{% url 'adminservice:action_logs' %}" class="management-card">
-            <div class="management-icon">
-                <i class="fas fa-user-tie"></i>
-            </div>
-            <div class="management-content">
-                <h3>Логи</h3>
-                <p>Отслеживание действий пользователей</p>
-            </div>
-        </a>
-        
-        
-        <a href="{% url 'adminservice:backup_management' %}" class="management-card">
-            <div class="management-icon">
-                <i class="fas fa-database"></i>
-            </div>
-            <div class="management-content">
-                <h3>Резервные копии</h3>
-                <p>Управление backup системы</p>
-            </div>
-        </a>
-    </div>
-</div>
+                <!-- Карточка управления системой -->
+                <div class="dashboard-card system-management">
+                    <div class="card-header">
+                        <h2><i class="fas fa-cogs"></i> УПРАВЛЕНИЕ СИСТЕМОЙ</h2>
+                    </div>
+                    <div class="management-grid">
+                        <!-- Ссылки на разделы управления -->
+                        <a href="{% url 'adminservice:staff_management' %}" class="management-card">
+                            <div class="management-icon">
+                                <i class="fas fa-users-cog"></i>
+                            </div>
+                            <div class="management-content">
+                                <h3>Управление пользователями</h3>
+                                <p>Просмотр и редактирование пользователей</p>
+                            </div>
+                        </a>
+                        
+                        <a href="{% url 'adminservice:action_logs' %}" class="management-card">
+                            <div class="management-icon">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div class="management-content">
+                                <h3>Логи</h3>
+                                <p>Отслеживание действий пользователей</p>
+                            </div>
+                        </a>
+                        
+                        
+                        <a href="{% url 'adminservice:backup_management' %}" class="management-card">
+                            <div class="management-icon">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <div class="management-content">
+                                <h3>Резервные копии</h3>
+                                <p>Управление backup системы</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
 
-                <!-- Блок мониторинга -->
-                <!-- Блок мониторинга -->
-<div class="dashboard-card system-monitoring">
-    <div class="card-header">
-        <h2><i class="fas fa-heartbeat"></i> МОНИТОРИНГ СИСТЕМЫ</h2>
-        <span class="status-badge {{ db_status }}">{{ db_status_text }}</span>
-    </div>
-    
-    <div class="monitoring-list">
-        <div class="monitoring-item">
-            <div class="monitoring-info">
-                <h4>База данных</h4>
-                <div class="monitoring-meta">
-                    <span class="monitoring-status {{ db_status }}">{{ db_status_text }}</span>
-                    <span class="monitoring-value">{{ db_size }}</span>
+                <!-- Карточка мониторинга системы -->
+                <div class="dashboard-card system-monitoring">
+                    <div class="card-header">
+                        <h2><i class="fas fa-heartbeat"></i> МОНИТОРИНГ СИСТЕМЫ</h2>
+                        <span class="status-badge {{ db_status }}">{{ db_status_text }}</span>
+                    </div>
+                    
+                    <!-- Список показателей мониторинга -->
+                    <div class="monitoring-list">
+                        <div class="monitoring-item">
+                            <div class="monitoring-info">
+                                <h4>База данных</h4>
+                                <div class="monitoring-meta">
+                                    <span class="monitoring-status {{ db_status }}">{{ db_status_text }}</span>
+                                    <span class="monitoring-value">{{ db_size }}</span>
+                                </div>
+                            </div>
+                            <div class="monitoring-indicator">
+                                <div class="indicator-dot {{ db_status }}"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="monitoring-item">
+                            <div class="monitoring-info">
+                                <h4>Таблицы БД</h4>
+                                <div class="monitoring-meta">
+                                    <span class="monitoring-status status-ok">Активно</span>
+                                    <span class="monitoring-value">{{ table_count }} таблиц</span>
+                                </div>
+                            </div>
+                            <div class="monitoring-indicator">
+                                <div class="indicator-dot status-ok"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="monitoring-item">
+                            <div class="monitoring-info">
+                                <h4>Платежи сегодня</h4>
+                                <div class="monitoring-meta">
+                                    <span class="monitoring-status status-ok">Обработано</span>
+                                    <span class="monitoring-value">{{ payments_today }}</span>
+                                </div>
+                            </div>
+                            <div class="monitoring-indicator">
+                                <div class="indicator-dot status-ok"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="monitoring-item">
+                            <div class="monitoring-info">
+                                <h4>Активные абонементы</h4>
+                                <div class="monitoring-meta">
+                                    <span class="monitoring-status status-ok">Активно</span>
+                                    <span class="monitoring-value">{{ active_subscriptions }}</span>
+                                </div>
+                            </div>
+                            <div class="monitoring-indicator">
+                                <div class="indicator-dot status-ok"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="monitoring-indicator">
-                <div class="indicator-dot {{ db_status }}"></div>
-            </div>
-        </div>
-        
-        <div class="monitoring-item">
-            <div class="monitoring-info">
-                <h4>Таблицы БД</h4>
-                <div class="monitoring-meta">
-                    <span class="monitoring-status status-ok">Активно</span>
-                    <span class="monitoring-value">{{ table_count }} таблиц</span>
-                </div>
-            </div>
-            <div class="monitoring-indicator">
-                <div class="indicator-dot status-ok"></div>
-            </div>
-        </div>
-        
-        <div class="monitoring-item">
-            <div class="monitoring-info">
-                <h4>Платежи сегодня</h4>
-                <div class="monitoring-meta">
-                    <span class="monitoring-status status-ok">Обработано</span>
-                    <span class="monitoring-value">{{ payments_today }}</span>
-                </div>
-            </div>
-            <div class="monitoring-indicator">
-                <div class="indicator-dot status-ok"></div>
-            </div>
-        </div>
-        
-        <div class="monitoring-item">
-            <div class="monitoring-info">
-                <h4>Активные абонементы</h4>
-                <div class="monitoring-meta">
-                    <span class="monitoring-status status-ok">Активно</span>
-                    <span class="monitoring-value">{{ active_subscriptions }}</span>
-                </div>
-            </div>
-            <div class="monitoring-indicator">
-                <div class="indicator-dot status-ok"></div>
-            </div>
-        </div>
-    </div>
-</div>
             </div>
         </div>
 
@@ -223,6 +231,7 @@ FITZONE - Административная панель
                     <span class="date-badge">За 30 дней</span>
                 </div>
                 
+                <!-- Сетка расширенных показателей -->
                 <div class="extended-grid">
                     <div class="extended-stat">
                         <div class="extended-value">{{ new_users_30d|default:"0" }}</div>
@@ -253,7 +262,9 @@ FITZONE - Административная панель
     </div>
 </section>
 
+<!-- Стили для админ-панели -->
 <style>
+/* Основная сетка панели управления */
 .admin-dashboard {
     display: grid;
     grid-template-columns: 1fr 400px;
@@ -268,6 +279,7 @@ FITZONE - Административная панель
     gap: 24px;
 }
 
+/* Стили карточек */
 .dashboard-card {
     background: var(--light-card);
     border-radius: 16px;
@@ -287,6 +299,7 @@ FITZONE - Административная панель
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 }
 
+/* Заголовок карточки */
 .card-header {
     display: flex;
     justify-content: space-between;
@@ -851,9 +864,10 @@ FITZONE - Административная панель
 {% endblock %}
 
 {% block skripts %}
+<!-- Скрипты для анимации и обновления статуса -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Анимация появления карточек
+    // Настройка Intersection Observer для анимации появления карточек
     const observerOptions = {
         threshold: 0.1,
         rootMargin: '0px 0px -30px 0px'
@@ -868,6 +882,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }, observerOptions);
     
+    // Применение анимации ко всем карточкам
     document.querySelectorAll('.dashboard-card').forEach(card => {
         card.style.opacity = '0';
         card.style.transform = 'translateY(20px)';
@@ -875,13 +890,12 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(card);
     });
     
-    // Обновление статуса системы в реальном времени
+    // Функция обновления статуса системы
     function updateSystemStatus() {
-        // Здесь можно добавить AJAX запросы для обновления статуса
         console.log('System status updated');
     }
     
-    // Обновляем статус каждые 30 секунд
+    // Периодическое обновление статуса каждые 30 секунд
     setInterval(updateSystemStatus, 30000);
 });
 </script>

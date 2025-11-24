@@ -137,7 +137,6 @@ FITZONE - {{ client.userprofile.full_name|default:client.username }}
                 <h4>Нет тренировочных планов</h4>
                 <p>Создайте первый план тренировок для клиента</p>
                 <a href="{% url 'trainerservice:create_training_plan' client.id %}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
                     Создать план
                 </a>
             </div>

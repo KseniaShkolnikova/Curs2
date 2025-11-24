@@ -117,6 +117,15 @@ FITZONE - Регистрация
                 </div>
                 <div class="password-match" id="password-match"></div>
             </div>
+
+            <!-- Соглашение на обработку данных -->
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="personal_agreement" name="personal_agreement" required>
+                    <span class="checkmark"></span>
+                    Я соглашаюсь с<a href="/static/documents/personal.pdf" target="_blank">обработкой данных</a>
+                </label>
+            </div>
             
             <button type="submit" class="register-button" id="register-button">Зарегистрироваться</button>
         </form>
@@ -167,11 +176,32 @@ FITZONE - Регистрация
         // Проверка надежности пароля
         const password1Field = document.getElementById('id_password1');
         const password2Field = document.getElementById('id_password2');
+        const agreementCheckbox = document.getElementById('personal_agreement');
         const strengthBar = document.getElementById('password-strength-bar');
         const strengthText = document.getElementById('password-strength-text');
         const lengthReq = document.getElementById('length-req');
         const uppercaseReq = document.getElementById('uppercase-req');
         const numberReq = document.getElementById('number-req');
+        const registerButton = document.getElementById('register-button');
+
+        // Функция обновления состояния кнопки регистрации
+        function updateRegisterButton() {
+            const password1 = password1Field ? password1Field.value : '';
+            const password2 = password2Field ? password2Field.value : '';
+            const isAgreed = agreementCheckbox ? agreementCheckbox.checked : false;
+            
+            if (registerButton) {
+                if (password1 && password2 && password1 === password2 && isAgreed) {
+                    registerButton.disabled = false;
+                    registerButton.style.opacity = '1';
+                    registerButton.style.cursor = 'pointer';
+                } else {
+                    registerButton.disabled = true;
+                    registerButton.style.opacity = '0.6';
+                    registerButton.style.cursor = 'not-allowed';
+                }
+            }
+        }
 
         if (password1Field) {
             password1Field.addEventListener('input', function() {
@@ -282,11 +312,20 @@ FITZONE - Регистрация
                 matchElement.textContent = 'Пароли не совпадают';
                 matchElement.style.color = '#ef4444';
             }
+            
+            updateRegisterButton();
         }
 
         if (password2Field) {
             password2Field.addEventListener('input', checkPasswordMatch);
         }
+
+        if (agreementCheckbox) {
+            agreementCheckbox.addEventListener('change', updateRegisterButton);
+        }
+
+        // Инициализация состояния кнопки
+        updateRegisterButton();
 
         // Auto-hide messages
         const messages = document.querySelectorAll('.success-message, .error-message, .info-message');
@@ -306,8 +345,24 @@ FITZONE - Регистрация
     });
 </script>
 
-
 <style>
+/* Фиксация страницы */
+html, body {
+    overflow: hidden;
+    height: 100%;
+    position: fixed;
+    width: 100%;
+}
+
+.register-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+}
+
 /* Registration Page Specific Styles */
 .register-container {
     display: flex;
@@ -445,8 +500,7 @@ FITZONE - Регистрация
 
 .register-title {
     font-size: 2.8rem;
-    font-weight: 800;
-    margin-bottom: 15px;
+    font-weight: 700;
     color: var(--text-dark);
 }
 
@@ -594,6 +648,72 @@ FITZONE - Регистрация
     font-weight: 500;
 }
 
+/* Checkbox Styles */
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    line-height: 1.4;
+}
+
+.dark-theme .checkbox-label {
+    color: var(--dark-text);
+}
+
+.checkbox-label input[type="checkbox"] {
+    display: none;
+}
+
+.checkmark {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--light-border);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+    margin-top: 2px;
+}
+
+.dark-theme .checkmark {
+    border-color: var(--dark-border);
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkmark {
+    background: var(--neon-purple);
+    border-color: var(--neon-purple);
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkmark::after {
+    content: '✓';
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.checkbox-label a {
+    color: var(--neon-purple);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.checkbox-label a:hover {
+    text-decoration: underline;
+}
+
+.checkbox-label input[type="checkbox"]:required + .checkmark {
+    border-color: #ba00dfff;
+}
+
+.checkbox-label input[type="checkbox"]:required:checked + .checkmark {
+    border-color: var(--neon-purple);
+}
+
 .register-button {
     width: 100%;
     background: var(--accent-gradient);
@@ -612,6 +732,13 @@ FITZONE - Регистрация
 .register-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+}
+
+.register-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 .register-footer {

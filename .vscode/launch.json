@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Django Debug",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/fitzone/manage.py",
+            "args": ["runserver", "--noreload"],
+            "django": true,
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/fitzone",
+            "justMyCode": false
+        }
+    ]
+}

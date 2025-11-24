@@ -8,33 +8,28 @@ FITZONE - Редактирование плана
 {% block content %}
 <div class="container">
     <!-- Hero Section -->
-    <section class="page-hero-section">
-        <div class="page-hero-container">
-            <div class="page-hero-content">
-                <div class="page-hero-badge">
-                    <div class="page-badge-icon">
-                        <i class="fas fa-edit"></i>
-                    </div>
-                    <span class="page-badge-text">Редактирование плана</span>
-                </div>
-                
-                <div class="page-hero-main">
-                    <h1 class="page-hero-title">Редактировать тренировочный план</h1>
-                    <p class="page-hero-desc">Внесите изменения в план тренировок</p>
+    <section class="create-plan-hero">
+        <div class="create-plan-hero-container">
+            <div class="create-plan-hero-content">
+                <div class="create-plan-hero-main">
+                    <h1 class="create-plan-hero-title">РЕДАКТИРОВАНИЕ ТРЕНИРОВОЧНОГО ПЛАНА</h1>
+                    <p class="create-plan-hero-desc">
+                        Для клиента: {{ client.userprofile.full_name|default:client.username }}
+                    </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Edit Form Section -->
-    <section class="form-section">
-        <div class="form-container">
-            <div class="form-card">
+    <!-- Edit Plan Section -->
+    <section class="create-plan-section">
+        <div class="create-plan-container">
+            <div class="plan-form-card">
                 <div class="form-header">
                     <h2 class="form-title">{{ plan.name }}</h2>
-                    <p class="form-subtitle">Для клиента: {{ client.userprofile.full_name|default:client.username }}</p>
+                    <p class="form-subtitle">Внесите изменения в тренировочный план</p>
                 </div>
-
+                
                 <form method="post" class="training-plan-form" id="editPlanForm">
                     {% csrf_token %}
                     
@@ -101,137 +96,226 @@ FITZONE - Редактирование плана
                             Активный план будет отображаться у клиента как текущий
                         </div>
                     </div>
-
+                    
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i>
-                            Сохранить изменения
-                        </button>
-                        <a href="{% url 'trainerservice:client_details' client.id %}" class="btn btn-secondary">
-                            <i class="fas fa-times"></i>
-                            Отмена
+                        <a href="{% url 'trainerservice:client_details' client.id %}" class="cancel-btn">
+                            <i class="fas fa-arrow-left"></i>
+                            <span>Отмена</span>
                         </a>
+                        <button type="submit" class="submit-btn">
+                            <i class="fas fa-save"></i>
+                            <span>Сохранить изменения</span>
+                        </button>
                     </div>
                 </form>
+            </div>
+            
+            <div class="plan-info-card">
+                <h3 class="info-title">Информация</h3>
+                <div class="info-content">
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="info-text">
+                            <strong>Клиент:</strong>
+                            <span>{{ client.userprofile.full_name|default:client.username }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="info-text">
+                            <strong>Тренер:</strong>
+                            <span>
+                                {% if current_trainer.userprofile %}
+                                    {{ current_trainer.userprofile.full_name|default:current_trainer.username }}
+                                {% else %}
+                                    {{ current_trainer.username }}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="info-text">
+                            <strong>Создан:</strong>
+                            <span>{{ plan.created_at|date:"d.m.Y" }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-sync-alt"></i>
+                        </div>
+                        <div class="info-text">
+                            <strong>Обновлен:</strong>
+                            <span>{{ plan.updated_at|date:"d.m.Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tips-section">
+                    <h4>Советы по редактированию:</h4>
+                    <ul class="tips-list">
+                        <li>Убедитесь, что название отражает суть плана</li>
+                        <li>Обновите описание при изменении упражнений</li>
+                        <li>Проверьте актуальность всех рекомендаций</li>
+                        <li>Укажите дату последнего обновления</li>
+                        <li>Сохраняйте историю изменений для клиента</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </section>
 </div>
 
 <style>
-/* Page Hero Section */
-.page-hero-section {
-    padding: 40px 0 30px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    position: relative;
-    overflow: hidden;
+.create-plan-section {
+    padding: 40px 0;
 }
 
-.page-hero-container {
+.create-plan-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    align-items: start;
+}
+
+/* Hero Section Styles */
+.create-plan-hero {
+    padding: 50px 0 30px 0;
+    background: transparent;
+    position: relative;
+    margin-top: 100px;
+}
+
+.create-plan-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+    border-radius: 2px;
+}
+
+.create-plan-hero-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
 }
 
-.page-hero-content {
+.create-plan-hero-content {
     text-align: center;
-    max-width: 800px;
-    margin: 0 auto;
 }
 
-.page-hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 8px 16px;
-    border-radius: 50px;
-    margin-bottom: 20px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+.create-plan-hero-main {
+    color: var(--text-dark);
 }
 
-.page-badge-icon {
-    width: 24px;
-    height: 24px;
-    background: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #667eea;
-    font-size: 0.8rem;
+.dark-theme .create-plan-hero-main {
+    color: var(--dark-text);
 }
 
-.page-badge-text {
-    color: white;
-    font-weight: 600;
-    font-size: 0.9rem;
+.create-plan-hero-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 15px;
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
 }
 
-.page-hero-main {
-    color: white;
-}
-
-.page-hero-title {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 8px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.page-hero-desc {
-    font-size: 1.1rem;
-    opacity: 0.9;
+.create-plan-hero-desc {
+    font-size: 1.2rem;
+    color: var(--text-gray);
     margin: 0;
+    font-weight: 500;
+    position: relative;
+    display: inline-block;
 }
 
-/* Form Section */
-.form-section {
-    padding: 30px 0 50px;
+.create-plan-hero-desc::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 4px;
+    background: var(--neon-purple);
+    border-radius: 50%;
+    opacity: 0.7;
 }
 
-.form-container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 0 20px;
+.dark-theme .create-plan-hero-desc {
+    color: var(--dark-text-light);
 }
 
-.form-card {
-    background: white;
-    border-radius: 16px;
+/* Form Card Styles */
+.plan-form-card {
+    background: var(--light-card);
+    border-radius: 20px;
     padding: 30px;
-    border: 1px solid #e1e5e9;
+    border: 1px solid var(--light-border);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
-.dark-theme .form-card {
-    background: #2d3748;
-    border-color: #4a5568;
+.dark-theme .plan-form-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.plan-info-card {
+    background: var(--light-card);
+    border-radius: 20px;
+    padding: 25px;
+    border: 1px solid var(--light-border);
+    position: sticky;
+    top: 100px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.dark-theme .plan-info-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .form-header {
-    text-align: center;
     margin-bottom: 30px;
+    text-align: center;
 }
 
 .form-title {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: 700;
-    color: #2d3748;
+    color: var(--text-dark);
     margin-bottom: 8px;
 }
 
 .dark-theme .form-title {
-    color: #f7fafc;
+    color: var(--dark-text);
 }
 
 .form-subtitle {
-    color: #718096;
+    color: var(--text-gray);
     margin: 0;
 }
 
-/* Form Elements */
+/* Form Styles */
 .training-plan-form {
     display: flex;
     flex-direction: column;
@@ -275,12 +359,12 @@ FITZONE - Редактирование плана
 
 .form-label {
     font-weight: 600;
-    color: #1f2937;
+    color: var(--text-dark);
     font-size: 0.95rem;
 }
 
 .dark-theme .form-label {
-    color: #f9fafb;
+    color: var(--dark-text);
 }
 
 .required {
@@ -289,26 +373,26 @@ FITZONE - Редактирование плана
 
 .form-input, .form-textarea {
     padding: 12px 16px;
-    border: 2px solid #e5e7eb;
+    border: 2px solid var(--light-border);
     border-radius: 10px;
     font-size: 1rem;
     transition: all 0.3s ease;
-    background: white;
-    color: #1f2937;
+    background: var(--light-bg);
+    color: var(--text-dark);
     font-family: inherit;
 }
 
 .dark-theme .form-input,
 .dark-theme .form-textarea {
-    background: #374151;
-    border-color: #4b5563;
-    color: #f9fafb;
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+    color: var(--dark-text);
 }
 
 .form-input:focus, .form-textarea:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: var(--neon-purple);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
 }
 
 .form-textarea {
@@ -316,6 +400,7 @@ FITZONE - Редактирование плана
     min-height: 120px;
 }
 
+/* Checkbox Styles */
 .checkbox-group {
     margin-top: 10px;
 }
@@ -330,20 +415,20 @@ FITZONE - Редактирование плана
     width: 18px;
     height: 18px;
     border-radius: 4px;
-    border: 2px solid #e5e7eb;
-    background: white;
+    border: 2px solid var(--light-border);
+    background: var(--light-bg);
     cursor: pointer;
     position: relative;
 }
 
 .dark-theme .form-checkbox {
-    background: #374151;
-    border-color: #4b5563;
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
 }
 
 .form-checkbox:checked {
-    background: #667eea;
-    border-color: #667eea;
+    background: var(--neon-purple);
+    border-color: var(--neon-purple);
 }
 
 .form-checkbox:checked::after {
@@ -358,17 +443,17 @@ FITZONE - Редактирование плана
 
 .checkbox-label {
     font-weight: 500;
-    color: #1f2937;
+    color: var(--text-dark);
     cursor: pointer;
 }
 
 .dark-theme .checkbox-label {
-    color: #f9fafb;
+    color: var(--dark-text);
 }
 
 .checkbox-help {
     font-size: 0.85rem;
-    color: #6b7280;
+    color: var(--text-gray);
     margin-top: 5px;
     margin-left: 28px;
 }
@@ -377,71 +462,171 @@ FITZONE - Редактирование плана
 .form-actions {
     display: flex;
     gap: 15px;
-    justify-content: flex-end;
     margin-top: 10px;
-    padding-top: 20px;
-    border-top: 1px solid #e5e7eb;
 }
 
-.dark-theme .form-actions {
-    border-top-color: #4b5563;
-}
-
-.btn {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 10px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-flex;
+.cancel-btn {
+    display: flex;
     align-items: center;
     gap: 8px;
+    padding: 12px 24px;
+    background: transparent;
+    color: var(--text-gray);
+    text-decoration: none;
+    border: 2px solid var(--light-border);
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    flex: 1;
+    justify-content: center;
+}
+
+.dark-theme .cancel-btn {
+    color: var(--dark-text-light);
+    border-color: var(--dark-border);
+}
+
+.cancel-btn:hover {
+    background: var(--light-bg);
+    transform: translateY(-2px);
+}
+
+.dark-theme .cancel-btn:hover {
+    background: var(--dark-bg);
+}
+
+.submit-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
+    flex: 2;
+    justify-content: center;
 }
 
-.btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
-
-.btn-primary:hover {
+.submit-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
 }
 
-.btn-secondary {
-    background: #f8f9fa;
-    color: #6b7280;
-    border: 2px solid #e5e7eb;
+/* Info Card Styles */
+.info-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 20px;
+    text-align: center;
 }
 
-.dark-theme .btn-secondary {
-    background: #374151;
-    color: #d1d5db;
-    border-color: #4b5563;
+.dark-theme .info-title {
+    color: var(--dark-text);
 }
 
-.btn-secondary:hover {
-    background: #e5e7eb;
+.info-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 25px;
 }
 
-.dark-theme .btn-secondary:hover {
-    background: #4b5563;
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--light-bg);
+    border-radius: 10px;
+}
+
+.dark-theme .info-item {
+    background: var(--dark-bg);
+}
+
+.info-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.info-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.info-text strong {
+    font-size: 0.85rem;
+    color: var(--text-gray);
+}
+
+.dark-theme .info-text strong {
+    color: var(--dark-text-light);
+}
+
+.info-text span {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.dark-theme .info-text span {
+    color: var(--dark-text);
+}
+
+.tips-section h4 {
+    font-size: 1rem;
+    color: var(--text-dark);
+    margin-bottom: 12px;
+}
+
+.dark-theme .tips-section h4 {
+    color: var(--dark-text);
+}
+
+.tips-list {
+    margin: 0;
+    padding-left: 20px;
+    color: var(--text-gray);
+}
+
+.tips-list li {
+    margin-bottom: 6px;
+    line-height: 1.4;
 }
 
 /* Responsive */
+@media (max-width: 968px) {
+    .create-plan-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .plan-info-card {
+        position: static;
+        order: -1;
+    }
+    
+    .create-plan-hero-title {
+        font-size: 2rem;
+    }
+}
+
 @media (max-width: 768px) {
-    .page-hero-section {
-        padding: 30px 0 20px;
-    }
-    
-    .page-hero-title {
-        font-size: 1.7rem;
-    }
-    
-    .form-card {
+    .plan-form-card,
+    .plan-info-card {
         padding: 20px;
     }
     
@@ -449,8 +634,21 @@ FITZONE - Редактирование плана
         flex-direction: column;
     }
     
-    .btn {
-        justify-content: center;
+    .cancel-btn,
+    .submit-btn {
+        flex: none;
+    }
+    
+    .create-plan-hero {
+        padding: 40px 0 30px 0;
+    }
+    
+    .create-plan-hero-title {
+        font-size: 1.8rem;
+    }
+    
+    .create-plan-hero-desc {
+        font-size: 1.1rem;
     }
 }
 </style>

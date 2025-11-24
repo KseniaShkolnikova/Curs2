@@ -9,7 +9,10 @@ import csv
 import io
 from clientservice.models import Payments, Subscriptions, SubscriptionTypes, ClassClient
 from .forms import SubscriptionTypeForm, ReportFilterForm
+from utils.decorators import manager_required
 
+
+@manager_required
 @login_required
 def manager_home(request):
     """Главная страница менеджера"""
@@ -65,6 +68,7 @@ def manager_home(request):
     
     return render(request, 'manager_home.html', context)
 
+@manager_required
 @login_required
 def create_subscription(request):
     """Создание нового типа абонемента"""
@@ -97,6 +101,7 @@ import json
 from datetime import datetime, timedelta
 from django.db.models.functions import TruncDate
 
+@manager_required
 @login_required
 def reports(request):
     """Страница отчетов с фильтрацией по периодами и графиком"""
@@ -272,6 +277,7 @@ def reports(request):
     return render(request, 'reports.html', context)
 
 
+@manager_required
 @login_required
 def export_reports_csv(request):
     """Экспорт отчетов в CSV"""
@@ -340,6 +346,7 @@ from django.template.loader import render_to_string
 from django.http import HttpResponse
 import io
 
+@manager_required
 @login_required
 def export_reports_pdf(request):
     """Экспорт отчетов в PDF с полным оформлением"""
@@ -685,6 +692,7 @@ def export_reports_pdf(request):
 
     
 
+@manager_required
 @login_required
 def subscriptions_list(request):
     """Список всех типов абонементов"""
@@ -705,6 +713,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.db.models import Count
 
+@manager_required
 @login_required
 @require_http_methods(["GET"])
 def subscription_detail_json(request, subscription_id):
@@ -737,6 +746,7 @@ def subscription_detail_json(request, subscription_id):
     except Exception as e:
         print(f"ERROR in subscription_detail_json: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)})
+@manager_required
 @login_required
 @require_http_methods(["GET"])
 def subscription_stats(request, subscription_id):
@@ -772,6 +782,7 @@ def subscription_stats(request, subscription_id):
 
     
 
+@manager_required
 @login_required
 @require_http_methods(["POST"])
 def edit_subscription(request, subscription_id):
@@ -793,6 +804,7 @@ def edit_subscription(request, subscription_id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
 
+@manager_required
 @login_required
 @require_http_methods(["POST"])
 def delete_subscription(request):

@@ -290,7 +290,7 @@ FITZONE - {{ subscription.name }}
 
                     {% if request.user.is_authenticated %}
 <!-- Правильная ссылка -->
-<a href="{% url 'subscription_payment' subscription.id %}" class="purchase-btn primary">
+<a href="{% url 'subscription_payment' subscription.id %}" class="purchase-btn secondary">
     <i class="fas fa-credit-card"></i>
     <span>Оформить онлайн</span>
 </a>
@@ -301,10 +301,7 @@ FITZONE - {{ subscription.name }}
 </a>
 {% endif %}
                     
-                    <button class="purchase-btn secondary">
-                        <i class="fas fa-phone"></i>
-                        <span>Заказать звонок</span>
-                    </button>
+                   
                     
                     <div class="purchase-note">
                         <i class="fas fa-shield-alt"></i>

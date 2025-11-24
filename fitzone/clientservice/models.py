@@ -4,6 +4,10 @@ from django.contrib.auth.models import User
 from PIL import Image
 import os
 
+# SUMMARY: Модели данных для системы управления фитнес-клубом
+# ОСНОВНОЕ НАЗНАЧЕНИЕ: Определение структуры данных и бизнес-логики приложения
+# ПРИНЦИП РАБОТЫ: Каждая модель представляет таблицу в БД с соответствующими полями и методами
+# ОСОБЕННОСТИ: Включает профили пользователей, абонементы, тренировки, платежи и логирование действий
 
 class UserProfiles(models.Model):
     GENDER_CHOICES = [
@@ -37,31 +41,20 @@ class UserProfiles(models.Model):
         return ' '.join(part for part in parts if part).strip()
 
     def save(self, *args, **kwargs):
-        # Сначала сохраняем модель
         super().save(*args, **kwargs)
-        
-        # Затем обрабатываем аватар если он есть
         if self.avatar:
             self.resize_avatar()
     
-
     def resize_avatar(self):
         avatar_path = self.avatar.path
         if os.path.exists(avatar_path):
             try:
                 with Image.open(avatar_path) as img:
-                    # Конвертируем в RGB если нужно
                     if img.mode in ('RGBA', 'P'):
                         img = img.convert('RGB')
-                    
-                    # Ресайз до оптимального размера для аватарки
                     max_size = (400, 400)
                     img.thumbnail(max_size, Image.Resampling.LANCZOS)
-                    
-                    # Сохраняем с оптимизацией качества
                     img.save(avatar_path, 'JPEG', quality=85, optimize=True)
-                    
-                    print(f"Avatar resized to: {img.size}")
             except Exception as e:
                 print(f"Error resizing avatar: {e}")
 
@@ -72,7 +65,6 @@ class SubscriptionTypes(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, null=False)
     durationdays = models.IntegerField(null=False)
     
-    # Новые поля для включенных услуг
     gym_access = models.BooleanField(default=False, verbose_name='Тренажерный зал')
     pool_access = models.BooleanField(default=False, verbose_name='Бассейн')
     spa_access = models.BooleanField(default=False, verbose_name='СПА зона')
@@ -87,9 +79,7 @@ class SubscriptionTypes(models.Model):
         return self.name
 
     def get_included_services(self):
-        """Возвращает список включенных услуг"""
         services = []
-        
         if self.gym_access:
             services.append('Тренажерный зал')
         if self.pool_access:
@@ -102,12 +92,9 @@ class SubscriptionTypes(models.Model):
             services.append('Полотенце')
         if self.nutrition_consultation:
             services.append('Консультация по питанию')
-
-            
         return services
 
     def get_service_icons(self):
-        """Возвращает иконки для включенных услуг"""
         icons = {
             'gym_access': 'fas fa-dumbbell',
             'pool_access': 'fas fa-swimming-pool',
@@ -121,7 +108,6 @@ class SubscriptionTypes(models.Model):
         for field, icon in icons.items():
             if getattr(self, field):
                 active_icons.append(icon)
-                
         return active_icons
 
 
@@ -136,7 +122,6 @@ class Subscriptions(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.subscriptiontype.name}"
-    
 
 
 class TrainingPlans(models.Model):
@@ -151,7 +136,6 @@ class TrainingPlans(models.Model):
 
     def __str__(self):
         return self.name
-      
 
 
 class TrainerSpecializations(models.Model):
@@ -197,7 +181,6 @@ class ClassClient(models.Model):
         return f"{self.user.email} - {self.class_id.name}"
 
 
-# clientservice/models.py
 class UserActionsLog(models.Model):
     ACTION_TYPES = [
         ('CREATE', 'Создание'),
@@ -214,7 +197,7 @@ class UserActionsLog(models.Model):
     model_name = models.CharField(max_length=100, null=True, blank=True)
     object_id = models.IntegerField(null=True, blank=True)
     details = models.JSONField(null=True, blank=True)
-    user_full_name = models.CharField(max_length=255, null=True, blank=True)  # ФИО из UserProfiles
+    user_full_name = models.CharField(max_length=255, null=True, blank=True)
     actiondate = models.DateTimeField(auto_now_add=True, null=False)
 
     class Meta:
@@ -225,7 +208,6 @@ class UserActionsLog(models.Model):
         return f"{self.action} at {self.actiondate}"
 
     def save(self, *args, **kwargs):
-        # Автоматически заполняем ФИО при сохранении
         if self.user and self.user.userprofile:
             self.user_full_name = self.user.userprofile.full_name
         elif self.user:

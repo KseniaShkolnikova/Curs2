@@ -8,22 +8,33 @@ FITZONE - Управление сотрудниками
 {% block content %}
 <div class="particles-container" id="particles"></div>
 
-<section class="hero-section" style="margin: 20px 40px 40px; min-height: auto; padding-top: 20px;">
-    <div class="hero-content">
-        <h1 class="hero-title">
-            УПРАВЛЕНИЕ СОТРУДНИКАМИ
-        </h1>
+<!-- Hero Section -->
+<section class="create-plan-hero">
+    <div class="create-plan-hero-container">
+        <div class="create-plan-hero-content">
+            <div class="create-plan-hero-main">
+                <h1 class="create-plan-hero-title">УПРАВЛЕНИЕ СОТРУДНИКАМИ</h1>
+                <p class="create-plan-hero-desc">
+                    Управление тренерами и менеджерами фитнес-клуба
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
 
-        <div class="staff-management-container">
-            <!-- Кнопка создания нового сотрудника -->
+<!-- Основная секция управления сотрудниками -->
+<section class="create-plan-section">
+    <div class="create-plan-container">
+        <!-- Основной контент - список сотрудников -->
+        <div class="plan-form-card">
             <div class="staff-header">
-                <button onclick="showCreateModal()" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Добавить сотрудника
+                <button onclick="showCreateModal()" class="submit-btn">
+                    <i class="fas fa-plus"></i> 
+                    <span>Добавить сотрудника</span>
                 </button>
                 <div class="staff-stats">
+                    <span ></span>
                     <span class="stat-item">Всего: {{ total_count }}</span>
-                    <span class="stat-item active">Активных: {{ active_count }}</span>
-                    <span class="stat-item inactive">Неактивных: {{ inactive_count }}</span>
                 </div>
             </div>
 
@@ -61,24 +72,24 @@ FITZONE - Управление сотрудниками
                             </p>
                             <p class="staff-status">
                                 {% if user.is_active %}
-                                    <span class="status-active">✅ Активен</span>
+                                    <span class="status-active"> Активен</span>
                                 {% else %}
-                                    <span class="status-inactive">❌ Неактивен</span>
+                                    <span class="status-inactive"> Неактивен</span>
                                 {% endif %}
                                 <span class="staff-date">Зарегистрирован: {{ user.date_joined|date:"d.m.Y" }}</span>
                             </p>
                         </div>
                     </div>
                     <div class="staff-actions">
-                        <button onclick="editStaff({{ user.id }})" class="btn btn-edit">
+                        <button onclick="editStaff({{ user.id }})" class="btn-edit">
                             <i class="fas fa-edit"></i> Изменить
                         </button>
                         {% if user.is_active %}
-                            <button onclick="deleteStaff({{ user.id }})" class="btn btn-delete">
+                            <button onclick="deleteStaff({{ user.id }})" class="btn-delete">
                                 <i class="fas fa-user-slash"></i> Деактивировать
                             </button>
                         {% else %}
-                            <button onclick="activateStaff({{ user.id }})" class="btn btn-activate">
+                            <button onclick="activateStaff({{ user.id }})" class="btn-activate">
                                 <i class="fas fa-user-check"></i> Активировать
                             </button>
                         {% endif %}
@@ -90,6 +101,53 @@ FITZONE - Управление сотрудниками
                     <p>Сотрудники не найдены</p>
                 </div>
                 {% endfor %}
+            </div>
+        </div>
+
+        <!-- Информационная панель -->
+        <div class="plan-info-card">
+            <h3 class="info-title">Информация</h3>
+            <div class="info-content">
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="info-text">
+                        <strong>Всего сотрудников:</strong>
+                        <span>{{ total_count }}</span>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="info-text">
+                        <strong>Активных:</strong>
+                        <span>{{ active_count }}</span>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="fas fa-user-slash"></i>
+                    </div>
+                    <div class="info-text">
+                        <strong>Неактивных:</strong>
+                        <span>{{ inactive_count }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tips-section">
+                <h4>Управление сотрудниками:</h4>
+                <ul class="tips-list">
+                    <li>Тренерам автоматически создается профиль</li>
+                    <li>Менеджеры получают доступ к продажам</li>
+                    <li>Деактивированные сотрудники не могут войти</li>
+                    <li>Все ФИО берутся из профиля пользователя</li>
+                    <li>Для тренеров укажите специализацию</li>
+                </ul>
             </div>
         </div>
     </div>
@@ -107,31 +165,47 @@ FITZONE - Управление сотрудниками
                 {% csrf_token %}
                 <div class="form-group">
                     <label for="email">Email *</label>
-                    <input type="email" id="email" name="email" required>
+                    <input type="email" id="email" name="email" required class="form-input">
                 </div>
                 <div class="form-group">
                     <label for="password">Пароль *</label>
-                    <input type="password" id="password" name="password" required>
+                    <input type="password" id="password" name="password" required class="form-input">
                 </div>
                 <div class="form-group">
-                    <label for="first_name">Имя</label>
-                    <input type="text" id="first_name" name="first_name">
+                    <label for="first_name">Имя *</label>
+                    <input type="text" id="first_name" name="first_name" required class="form-input">
                 </div>
                 <div class="form-group">
-                    <label for="last_name">Фамилия</label>
-                    <input type="text" id="last_name" name="last_name">
+                    <label for="last_name">Фамилия *</label>
+                    <input type="text" id="last_name" name="last_name" required class="form-input">
                 </div>
                 <div class="form-group">
-                    <label for="group_id">Должность</label>
-                    <select id="group_id" name="group_id">
+                    <label for="middlename">Отчество</label>
+                    <input type="text" id="middlename" name="middlename" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="group_id">Должность *</label>
+                    <select id="group_id" name="group_id" class="form-input" required onchange="toggleSpecializationField()">
+                        <option value="">Выберите должность</option>
                         {% for group in available_groups %}
                         <option value="{{ group.id }}">{{ group.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
+                <div class="form-group" id="specialization-group" style="display: none;">
+                    <label for="specialization">Специализация тренера</label>
+                    <input type="text" id="specialization" name="specialization" class="form-input" 
+                           placeholder="Например: Фитнес, Йога, Бокс...">
+                </div>
                 <div class="form-actions">
-                    <button type="button" onclick="closeCreateModal()" class="btn btn-secondary">Отмена</button>
-                    <button type="submit" class="btn btn-primary">Создать</button>
+                    <button type="button" onclick="closeCreateModal()" class="cancel-btn">
+                        <i class="fas fa-times"></i>
+                        <span>Отмена</span>
+                    </button>
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-save"></i>
+                        <span>Создать сотрудника</span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -150,31 +224,47 @@ FITZONE - Управление сотрудниками
                 {% csrf_token %}
                 <input type="hidden" id="edit_user_id" name="user_id">
                 <div class="form-group">
-                    <label for="edit_first_name">Имя</label>
-                    <input type="text" id="edit_first_name" name="first_name">
+                    <label for="edit_first_name">Имя *</label>
+                    <input type="text" id="edit_first_name" name="first_name" required class="form-input">
                 </div>
                 <div class="form-group">
-                    <label for="edit_last_name">Фамилия</label>
-                    <input type="text" id="edit_last_name" name="last_name">
+                    <label for="edit_last_name">Фамилия *</label>
+                    <input type="text" id="edit_last_name" name="last_name" required class="form-input">
                 </div>
                 <div class="form-group">
-                    <label for="edit_group_id">Должность</label>
-                    <select id="edit_group_id" name="group_id">
+                    <label for="edit_middlename">Отчество</label>
+                    <input type="text" id="edit_middlename" name="middlename" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="edit_group_id">Должность *</label>
+                    <select id="edit_group_id" name="group_id" required class="form-input" onchange="toggleEditSpecializationField()">
+                        <option value="">Выберите должность</option>
                         {% for group in available_groups %}
                         <option value="{{ group.id }}">{{ group.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
+                <div class="form-group" id="edit-specialization-group" style="display: none;">
+                    <label for="edit_specialization">Специализация тренера</label>
+                    <input type="text" id="edit_specialization" name="specialization" class="form-input" 
+                           placeholder="Например: Фитнес, Йога, Бокс...">
+                </div>
                 <div class="form-group">
                     <label class="checkbox-label">
-                        <input type="checkbox" id="edit_is_active" name="is_active" value="true">
+                        <input type="checkbox" id="edit_is_active" name="is_active" value="true" class="form-checkbox">
                         <span class="checkmark"></span>
                         Активный сотрудник
                     </label>
                 </div>
                 <div class="form-actions">
-                    <button type="button" onclick="closeEditModal()" class="btn btn-secondary">Отмена</button>
-                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                    <button type="button" onclick="closeEditModal()" class="cancel-btn">
+                        <i class="fas fa-times"></i>
+                        <span>Отмена</span>
+                    </button>
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-save"></i>
+                        <span>Сохранить изменения</span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -185,10 +275,120 @@ FITZONE - Управление сотрудниками
 <div id="staffStatus" class="status-message"></div>
 
 <style>
-.staff-management-container {
+.create-plan-section {
+    padding: 40px 0;
+}
+
+.create-plan-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    align-items: start;
+}
+
+.create-plan-hero {
+    padding: 50px 0 30px 0;
+    background: transparent;
+    position: relative;
+    margin-top: 100px;
+}
+
+.create-plan-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+    border-radius: 2px;
+}
+
+.create-plan-hero-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 40px 0;
+    padding: 0 20px;
+}
+
+.create-plan-hero-content {
+    text-align: center;
+}
+
+.create-plan-hero-main {
+    color: var(--text-dark);
+}
+
+.dark-theme .create-plan-hero-main {
+    color: var(--dark-text);
+}
+
+.create-plan-hero-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 15px;
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+}
+
+.create-plan-hero-desc {
+    font-size: 1.2rem;
+    color: var(--text-gray);
+    margin: 0;
+    font-weight: 500;
+    position: relative;
+    display: inline-block;
+}
+
+.create-plan-hero-desc::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 4px;
+    background: var(--neon-purple);
+    border-radius: 50%;
+    opacity: 0.7;
+}
+
+.dark-theme .create-plan-hero-desc {
+    color: var(--dark-text-light);
+}
+
+.plan-form-card {
+    background: var(--light-card);
+    border-radius: 20px;
+    padding: 30px;
+    border: 1px solid var(--light-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.dark-theme .plan-form-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.plan-info-card {
+    background: var(--light-card);
+    border-radius: 20px;
+    padding: 25px;
+    border: 1px solid var(--light-border);
+    position: sticky;
+    top: 100px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.dark-theme .plan-info-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .staff-header {
@@ -197,49 +397,38 @@ FITZONE - Управление сотрудниками
     align-items: center;
     margin-bottom: 30px;
     padding: 20px;
-    background: var(--light-card);
+    background: var(--light-bg);
     border-radius: 12px;
-    margin-top: 20px;
+    border: 1px solid var(--light-border);
 }
 
 .dark-theme .staff-header {
-    background: var(--dark-card);
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
 }
 
 .staff-stats {
     display: flex;
-    gap: 20px;
+    gap: 15px;
     font-size: 14px;
 }
 
 .stat-item {
     padding: 8px 12px;
     border-radius: 6px;
-    background: var(--light-bg);
+    background: var(--light-card);
     border: 1px solid var(--light-border);
+    font-weight: 500;
 }
 
 .dark-theme .stat-item {
-    background: var(--dark-bg);
+    background: var(--dark-card);
     border-color: var(--dark-border);
-}
-
-.stat-item.active {
-    background: rgba(46, 204, 113, 0.1);
-    border-color: #2ecc71;
-    color: #2ecc71;
-}
-
-.stat-item.inactive {
-    background: rgba(231, 76, 60, 0.1);
-    border-color: #e74c3c;
-    color: #e74c3c;
 }
 
 .staff-list {
     display: grid;
     gap: 16px;
-    margin-bottom: 40px;
 }
 
 .staff-card {
@@ -293,7 +482,7 @@ FITZONE - Управление сотрудниками
 .avatar-placeholder {
     width: 100%;
     height: 100%;
-    background: var(--neon-purple);
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -350,7 +539,7 @@ FITZONE - Управление сотрудниками
 .role-badge {
     display: inline-block;
     padding: 4px 8px;
-    background: var(--neon-purple);
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
     color: white;
     border-radius: 6px;
     font-size: 12px;
@@ -385,7 +574,7 @@ FITZONE - Управление сотрудниками
     gap: 8px;
 }
 
-.btn {
+.btn-edit, .btn-delete, .btn-activate {
     padding: 8px 16px;
     border: none;
     border-radius: 6px;
@@ -395,11 +584,7 @@ FITZONE - Управление сотрудниками
     display: flex;
     align-items: center;
     gap: 6px;
-}
-
-.btn-primary {
-    background: var(--neon-purple);
-    color: white;
+    font-weight: 500;
 }
 
 .btn-edit {
@@ -407,9 +592,19 @@ FITZONE - Управление сотрудниками
     color: white;
 }
 
+.btn-edit:hover {
+    background: #2980b9;
+    transform: translateY(-1px);
+}
+
 .btn-delete {
     background: #e74c3c;
     color: white;
+}
+
+.btn-delete:hover {
+    background: #c0392b;
+    transform: translateY(-1px);
 }
 
 .btn-activate {
@@ -417,16 +612,9 @@ FITZONE - Управление сотрудниками
     color: white;
 }
 
-.btn-secondary {
-    background: var(--light-bg);
-    color: var(--text-dark);
-    border: 1px solid var(--light-border);
-}
-
-.dark-theme .btn-secondary {
-    background: var(--dark-bg);
-    color: var(--dark-text);
-    border-color: var(--dark-border);
+.btn-activate:hover {
+    background: #219a52;
+    transform: translateY(-1px);
 }
 
 .no-staff {
@@ -440,240 +628,239 @@ FITZONE - Управление сотрудниками
     margin-bottom: 16px;
     opacity: 0.5;
 }
-.staff-management-container {
-    max-width: 1200px;
-    margin: 0 auto;
+
+.form-group {
+    margin-bottom: 20px;
 }
 
-.staff-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-    padding: 20px;
-    background: var(--light-card);
-    border-radius: 12px;
+.form-label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 0.95rem;
 }
 
-.dark-theme .staff-header {
-    background: var(--dark-card);
+.dark-theme .form-label {
+    color: var(--dark-text);
 }
 
-.staff-stats {
-    font-size: 16px;
-    color: var(--text-gray);
-}
-
-.staff-list {
-    display: grid;
-    gap: 16px;
-}
-
-.staff-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    background: var(--light-card);
-    border-radius: 12px;
-    border: 1px solid var(--light-border);
+.form-input, .form-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--light-border);
+    border-radius: 10px;
+    font-size: 1rem;
     transition: all 0.3s ease;
+    background: var(--light-bg);
+    color: var(--text-dark);
+    font-family: inherit;
 }
 
-.dark-theme .staff-card {
-    background: var(--dark-card);
+.dark-theme .form-input,
+.dark-theme .form-textarea {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+    color: var(--dark-text);
+}
+
+.form-input:focus, .form-textarea:focus {
+    outline: none;
+    border-color: var(--neon-purple);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    gap: 8px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.dark-theme .checkbox-label {
+    color: var(--dark-text);
+}
+
+.form-checkbox {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 2px solid var(--light-border);
+    background: var(--light-bg);
+    cursor: pointer;
+    position: relative;
+}
+
+.dark-theme .form-checkbox {
+    background: var(--dark-bg);
     border-color: var(--dark-border);
 }
-.staff-management-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 40px 0; /* Добавляем отступы сверху и снизу */
-}
 
-.staff-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-    padding: 20px;
-    background: var(--light-card);
-    border-radius: 12px;
-    margin-top: 20px; /* Дополнительный отступ сверху */
-}
-
-.dark-theme .staff-header {
-    background: var(--dark-card);
-}
-
-.staff-list {
-    display: grid;
-    gap: 16px;
-    margin-bottom: 40px; /* Добавляем отступ снизу списка */
-}
-
-/* Увеличиваем отступ для модальных окон */
-.modal-content {
-    background-color: var(--light-card);
-    margin: 10% auto; /* Увеличиваем отступ сверху для модалок */
-    padding: 0;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-}
-
-.dark-theme .modal-content {
-    background-color: var(--dark-card);
-}
-
-/* Увеличиваем отступ для статусных сообщений */
-.status-message {
-    position: fixed;
-    top: 40px; /* Увеличиваем отступ сверху */
-    right: 20px;
-    padding: 16px 20px;
-    border-radius: 8px;
-    z-index: 1001;
-    display: none;
-}
-
-
-.staff-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.staff-info {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.staff-avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    overflow: hidden;
-}
-
-.staff-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.avatar-placeholder {
-    width: 100%;
-    height: 100%;
+.form-checkbox:checked {
     background: var(--neon-purple);
+    border-color: var(--neon-purple);
+}
+
+.form-checkbox:checked::after {
+    content: '✓';
+    position: absolute;
+    color: white;
+    font-size: 12px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 24px;
+}
+
+.cancel-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: transparent;
+    color: var(--text-gray);
+    text-decoration: none;
+    border: 2px solid var(--light-border);
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    flex: 1;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.dark-theme .cancel-btn {
+    color: var(--dark-text-light);
+    border-color: var(--dark-border);
+}
+
+.cancel-btn:hover {
+    background: var(--light-bg);
+    transform: translateY(-2px);
+}
+
+.dark-theme .cancel-btn:hover {
+    background: var(--dark-bg);
+}
+
+.submit-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 2;
+    justify-content: center;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+}
+
+.info-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.dark-theme .info-title {
+    color: var(--dark-text);
+}
+
+.info-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--light-bg);
+    border-radius: 10px;
+}
+
+.dark-theme .info-item {
+    background: var(--dark-bg);
+}
+
+.info-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 24px;
+    font-size: 0.9rem;
+    flex-shrink: 0;
 }
 
-.staff-details h3 {
-    margin: 0 0 4px 0;
-    font-size: 18px;
+.info-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.info-text strong {
+    font-size: 0.85rem;
+    color: var(--text-gray);
+}
+
+.dark-theme .info-text strong {
+    color: var(--dark-text-light);
+}
+
+.info-text span {
+    font-weight: 600;
     color: var(--text-dark);
 }
 
-.dark-theme .staff-details h3 {
+.dark-theme .info-text span {
     color: var(--dark-text);
 }
 
-.staff-email {
-    margin: 0 0 8px 0;
-    color: var(--text-gray);
-    font-size: 14px;
+.tips-section h4 {
+    font-size: 1rem;
+    color: var(--text-dark);
+    margin-bottom: 12px;
 }
 
-.staff-role {
+.dark-theme .tips-section h4 {
+    color: var(--dark-text);
+}
+
+.tips-list {
     margin: 0;
-}
-
-.role-badge {
-    display: inline-block;
-    padding: 4px 8px;
-    background: var(--neon-purple);
-    color: white;
-    border-radius: 6px;
-    font-size: 12px;
-    margin-right: 4px;
-}
-
-.staff-status {
-    margin: 8px 0 0 0;
-}
-
-.status-active {
-    color: #27ae60;
-    font-weight: 500;
-}
-
-.status-inactive {
-    color: #e74c3c;
-    font-weight: 500;
-}
-
-.staff-actions {
-    display: flex;
-    gap: 8px;
-}
-
-.btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.btn-primary {
-    background: var(--neon-purple);
-    color: white;
-}
-
-.btn-edit {
-    background: #3498db;
-    color: white;
-}
-
-.btn-delete {
-    background: #e74c3c;
-    color: white;
-}
-
-.btn-secondary {
-    background: var(--light-bg);
-    color: var(--text-dark);
-    border: 1px solid var(--light-border);
-}
-
-.dark-theme .btn-secondary {
-    background: var(--dark-bg);
-    color: var(--dark-text);
-    border-color: var(--dark-border);
-}
-
-.no-staff {
-    text-align: center;
-    padding: 60px 20px;
+    padding-left: 20px;
     color: var(--text-gray);
 }
 
-.no-staff i {
-    font-size: 48px;
-    margin-bottom: 16px;
-    opacity: 0.5;
+.tips-list li {
+    margin-bottom: 6px;
+    line-height: 1.4;
 }
 
-/* Модальные окна */
 .modal {
     display: none;
     position: fixed;
@@ -740,61 +927,15 @@ FITZONE - Управление сотрудниками
     padding: 20px;
 }
 
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 500;
-    color: var(--text-dark);
-}
-
-.dark-theme .form-group label {
-    color: var(--dark-text);
-}
-
-.form-group input,
-.form-group select {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid var(--light-border);
-    border-radius: 6px;
-    background: var(--light-bg);
-    color: var(--text-dark);
-    font-size: 14px;
-}
-
-.dark-theme .form-group input,
-.dark-theme .form-group select {
-    background: var(--dark-bg);
-    border-color: var(--dark-border);
-    color: var(--dark-text);
-}
-
-.form-actions {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-    margin-top: 24px;
-}
-
-.checkbox-label {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    gap: 8px;
-}
-
 .status-message {
     position: fixed;
-    top: 20px;
+    top: 40px;
     right: 20px;
     padding: 16px 20px;
     border-radius: 8px;
     z-index: 1001;
     display: none;
+    font-weight: 500;
 }
 
 .status-message.success {
@@ -811,10 +952,103 @@ FITZONE - Управление сотрудниками
     display: block;
 }
 
+@media (max-width: 968px) {
+    .create-plan-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .plan-info-card {
+        position: static;
+        order: -1;
+    }
+    
+    .create-plan-hero-title {
+        font-size: 2rem;
+    }
+    
+    .staff-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .staff-stats {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .plan-form-card,
+    .plan-info-card {
+        padding: 20px;
+    }
+    
+    .staff-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .staff-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .cancel-btn,
+    .submit-btn {
+        flex: none;
+    }
+    
+    .create-plan-hero {
+        padding: 40px 0 30px 0;
+    }
+    
+    .create-plan-hero-title {
+        font-size: 1.8rem;
+    }
+    
+    .create-plan-hero-desc {
+        font-size: 1.1rem;
+    }
+}
 </style>
 
 <script>
-// Добавьте функцию активации сотрудника
+// SUMMARY: Система управления сотрудниками фитнес-клуба
+// Основные функции: создание, редактирование, активация/деактивация сотрудников
+// Особенности: динамическое отображение поля специализации для тренеров, обработка форм через AJAX
+
+function toggleSpecializationField() {
+    const groupSelect = document.getElementById('group_id');
+    const specializationGroup = document.getElementById('specialization-group');
+    const selectedOption = groupSelect.options[groupSelect.selectedIndex];
+    
+    if (selectedOption.text === 'Тренер') {
+        specializationGroup.style.display = 'block';
+    } else {
+        specializationGroup.style.display = 'none';
+        document.getElementById('specialization').value = '';
+    }
+}
+
+function toggleEditSpecializationField() {
+    const groupSelect = document.getElementById('edit_group_id');
+    const specializationGroup = document.getElementById('edit-specialization-group');
+    const selectedOption = groupSelect.options[groupSelect.selectedIndex];
+    
+    if (selectedOption.text === 'Тренер') {
+        specializationGroup.style.display = 'block';
+    } else {
+        specializationGroup.style.display = 'none';
+        document.getElementById('edit_specialization').value = '';
+    }
+}
+
 async function activateStaff(userId) {
     if (!confirm('Вы уверены, что хотите активировать этого сотрудника?')) {
         return;
@@ -845,7 +1079,6 @@ async function activateStaff(userId) {
     }
 }
 
-// Обновите функцию удаления для уточнения действия
 async function deleteStaff(userId) {
     if (!confirm('Вы уверены, что хотите деактивировать этого сотрудника? Он не сможет войти в систему.')) {
         return;
@@ -872,14 +1105,15 @@ async function deleteStaff(userId) {
     }
 }
 
-// Модальные окна
 function showCreateModal() {
     document.getElementById('createModal').style.display = 'block';
+    toggleSpecializationField();
 }
 
 function closeCreateModal() {
     document.getElementById('createModal').style.display = 'none';
     document.getElementById('createStaffForm').reset();
+    document.getElementById('specialization-group').style.display = 'none';
 }
 
 function showEditModal() {
@@ -890,7 +1124,6 @@ function closeEditModal() {
     document.getElementById('editModal').style.display = 'none';
 }
 
-// Показать статус
 function showStaffStatus(message, isSuccess) {
     const statusEl = document.getElementById('staffStatus');
     statusEl.textContent = message;
@@ -901,7 +1134,48 @@ function showStaffStatus(message, isSuccess) {
     }, 5000);
 }
 
-// Создание сотрудника
+async function editStaff(userId) {
+    try {
+        showEditModal();
+        document.getElementById('editStaffForm').style.opacity = '0.5';
+        
+        const response = await fetch(`/admin-panel/get-staff-data/${userId}/`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const user = data.user;
+            
+            document.getElementById('edit_user_id').value = user.id;
+            document.getElementById('edit_first_name').value = user.firstname || '';
+            document.getElementById('edit_last_name').value = user.lastname || '';
+            document.getElementById('edit_middlename').value = user.middlename || '';
+            document.getElementById('edit_group_id').value = user.group_id || '';
+            document.getElementById('edit_is_active').checked = user.is_active;
+            
+            if (user.group_id) {
+                const groupSelect = document.getElementById('edit_group_id');
+                const selectedOption = groupSelect.querySelector(`option[value="${user.group_id}"]`);
+                if (selectedOption && selectedOption.text === 'Тренер') {
+                    const specResponse = await fetch(`/admin-panel/get-trainer-specialization/${userId}/`);
+                    const specData = await specResponse.json();
+                    if (specData.success && specData.specialization) {
+                        document.getElementById('edit_specialization').value = specData.specialization;
+                    }
+                    toggleEditSpecializationField();
+                }
+            }
+            
+            document.getElementById('editStaffForm').style.opacity = '1';
+        } else {
+            closeEditModal();
+            showStaffStatus(data.message, false);
+        }
+    } catch (error) {
+        closeEditModal();
+        showStaffStatus('Ошибка загрузки данных: ' + error, false);
+    }
+}
+
 document.getElementById('createStaffForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
@@ -935,48 +1209,12 @@ document.getElementById('createStaffForm').addEventListener('submit', async func
     }
 });
 
-// Редактирование сотрудника
-// Редактирование сотрудника
-async function editStaff(userId) {
-    try {
-        // Показываем загрузку
-        showEditModal();
-        document.getElementById('editStaffForm').style.opacity = '0.5';
-        
-        // Загружаем данные сотрудника
-        const response = await fetch(`/admin-panel/get-staff-data/${userId}/`);
-        const data = await response.json();
-        
-        if (data.success) {
-            const user = data.user;
-            
-            // Заполняем форму данными
-            document.getElementById('edit_user_id').value = user.id;
-            document.getElementById('edit_first_name').value = user.first_name || '';
-            document.getElementById('edit_last_name').value = user.last_name || '';
-            document.getElementById('edit_group_id').value = user.group_id || '';
-            document.getElementById('edit_is_active').checked = user.is_active;
-            
-            // Восстанавливаем прозрачность
-            document.getElementById('editStaffForm').style.opacity = '1';
-        } else {
-            closeEditModal();
-            showStaffStatus(data.message, false);
-        }
-    } catch (error) {
-        closeEditModal();
-        showStaffStatus('Ошибка загрузки данных: ' + error, false);
-    }
-}
-
-// Обработка формы редактирования
 document.getElementById('editStaffForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
     const userId = document.getElementById('edit_user_id').value;
     const formData = new FormData(this);
     
-    // Добавляем CSRF токен
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     
     const btn = this.querySelector('button[type="submit"]');
@@ -1011,68 +1249,6 @@ document.getElementById('editStaffForm').addEventListener('submit', async functi
     }
 });
 
-document.getElementById('editStaffForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const userId = document.getElementById('edit_user_id').value;
-    const formData = new FormData(this);
-    const btn = this.querySelector('button[type="submit"]');
-    const originalText = btn.innerHTML;
-    
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
-    btn.disabled = true;
-    
-    try {
-        const response = await fetch(`/admin-panel/update-staff/${userId}/`, {
-            method: 'POST',
-            body: formData
-        });
-        
-        const data = await response.json();
-        showStaffStatus(data.message, data.success);
-        
-        if (data.success) {
-            closeEditModal();
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
-        }
-    } catch (error) {
-        showStaffStatus('Ошибка сети: ' + error, false);
-    } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-    }
-});
-
-// Удаление сотрудника
-async function deleteStaff(userId) {
-    if (!confirm('Вы уверены, что хотите удалить этого сотрудника?')) {
-        return;
-    }
-    
-    try {
-        const response = await fetch(`/admin-panel/delete-staff/${userId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-            }
-        });
-        
-        const data = await response.json();
-        showStaffStatus(data.message, data.success);
-        
-        if (data.success) {
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
-        }
-    } catch (error) {
-        showStaffStatus('Ошибка сети: ' + error, false);
-    }
-}
-
-// Закрытие модальных окон при клике вне их
 window.onclick = function(event) {
     const createModal = document.getElementById('createModal');
     const editModal = document.getElementById('editModal');

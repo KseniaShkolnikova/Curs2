@@ -5,6 +5,11 @@ urlpatterns = [
     
 ]
 
+# SUMMARY: Регистрация ViewSet'ов для REST API endpoints
+# ОСНОВНОЕ НАЗНАЧЕНИЕ: Автоматическая генерация URL маршрутов для всех моделей системы
+# ПРИНЦИП РАБОТЫ: Router создает стандартные CRUD endpoints (list, create, retrieve, update, destroy)
+# СТРУКТУРА: Каждый ViewSet предоставляет полный API для соответствующей модели
+
 router = routers.SimpleRouter()
 router.register('user-profiles', UserProfileViewSet, basename='user-profiles')
 router.register('subscription-types', SubscriptionTypesViewSet, basename='subscription-types')
