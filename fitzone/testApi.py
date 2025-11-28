@@ -17,8 +17,6 @@ def test_api_subscription():
     """
     ТЕСТ: Создание через API → Проверка в БД
     """
-    print("ТЕСТ: СОЗДАНИЕ ЧЕРЕЗ API → ПРОВЕРКА В БД")
-    print("=" * 50)
     
     user = User.objects.get_or_create(
         username='api_test_user',
@@ -27,7 +25,7 @@ def test_api_subscription():
     
     sub_type = SubscriptionTypes.objects.first()
     if not sub_type:
-        print("❌ Нет типов абонементов")
+        print(" Нет типов абонементов")
         return
     
     api_data = {
@@ -55,7 +53,6 @@ def test_api_subscription():
             subscription_id = api_response.get('id')
             print(f"API успешно создал абонемент ID: {subscription_id}")
             
-            # 4. ПРОВЕРЯЕМ В БАЗЕ ДАННЫХ
             try:
                 db_subscription = Subscriptions.objects.get(id=subscription_id)
                 print("Абонемент создан через API и найден в БД")

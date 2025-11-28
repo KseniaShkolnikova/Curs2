@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: fitZone_DB
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  web:
+    build: .
+    environment:
+      - DEBUG=False
+      - DB_NAME=fitZone_DB
+      - DB_USER=postgres
+      - DB_PASSWORD=1
+      - DB_HOST=db
+      - DB_PORT=5432
+      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
+    volumes:
+      - ./staticfiles:/app/staticfiles
+      - ./media:/app/media
+    ports:
+      - "8010:8000"
+    depends_on:
+      - db
+    command: python manage.py runserver 0.0.0.0:8000
+
+volumes:
+  postgres_data:
