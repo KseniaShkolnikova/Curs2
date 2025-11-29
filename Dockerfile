@@ -26,8 +26,8 @@ COPY . .
 
 RUN mkdir -p staticfiles media
 
-# Собираем статику
-RUN cd fitzone && python manage.py collectstatic --noinput
+# Собираем статику (правильный путь)
+RUN cd /app/fitzone && python manage.py collectstatic --noinput
 
 EXPOSE 8000
 
@@ -35,8 +35,8 @@ RUN echo '#!/bin/bash\n\
 set -e\n\
 echo "=== Запуск приложения ==="\n\
 \n\
-# Переходим в папку проекта\n\
-cd fitzone\n\
+# Переходим в папку проекта (АБСОЛЮТНЫЙ путь)\n\
+cd /app/fitzone\n\
 \n\
 echo "1. Проверяем БД..."\n\
 until PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "SELECT 1;" > /dev/null 2>&1; do\n\
