@@ -1,7 +1,20 @@
 FROM python:3.11-slim
 
+# Устанавливаем ВСЕ системные зависимости
 RUN apt-get update && apt-get install -y \
-    gcc python3-dev libpq-dev postgresql-client \
+    gcc \
+    python3-dev \
+    libpq-dev \
+    pkg-config \
+    libcairo2-dev \
+    postgresql-client \
+    libffi-dev \
+    libxml2-dev \
+    libxslt-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libfreetype6-dev \
+    zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -13,14 +26,14 @@ COPY . .
 
 RUN mkdir -p staticfiles media
 
-# Теперь знаем точный путь!
+# Собираем статику
 RUN cd fitzone && python manage.py collectstatic --noinput
 
 EXPOSE 8000
 
 RUN echo '#!/bin/bash\n\
 set -e\n\
-echo "=== Запуск приложения ===\n\
+echo "=== Запуск приложения ==="\n\
 \n\
 # Переходим в папку проекта\n\
 cd fitzone\n\
