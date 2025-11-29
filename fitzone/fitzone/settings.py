@@ -88,12 +88,24 @@ import dj_database_url
 
 import os
 import dj_database_url
+from pathlib import Path
 
-# Database configuration with fallback
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Database - ТОЛЬКО PostgreSQL
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
-if DATABASE_URL:
-    # Production - use DATABASE_URL from Railway
+if not DATABASE_URL:
+    # Если нет DATABASE_URL - БД НЕТ, приложение не должно работать
+    print("❌ ОШИБКА: Нет DATABASE_URL! Приложение не может работать без БД.")
+    # Можно выйти с ошибкой или оставить пустую конфигурацию
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.dummy',
+        }
+    }
+else:
+    # Используем PostgreSQL из Railway
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
@@ -101,18 +113,11 @@ if DATABASE_URL:
             ssl_require=True
         )
     }
-else:
-    # Fallback for build time or local development
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
 
 print("=== DATABASE CONFIG ===")
-print("DATABASE_URL exists:", bool(DATABASE_URL))
-print("DATABASES['default']:", DATABASES['default']['ENGINE'])
+print("DATABASE_URL:", "ЕСТЬ" if DATABASE_URL else "НЕТ")
+if DATABASE_URL:
+    print("Используется PostgreSQL")
 
 
 # Password validation
