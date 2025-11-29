@@ -86,20 +86,33 @@ import dj_database_url
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Database - ПРОСТОЙ вариант
+import os
 import dj_database_url
 
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
-        conn_max_age=600,
-        ssl_require=True
-    )
-}
+# Database configuration with fallback
+DATABASE_URL = os.environ.get('DATABASE_URL')
 
-# Отладочный вывод
+if DATABASE_URL:
+    # Production - use DATABASE_URL from Railway
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=True
+        )
+    }
+else:
+    # Fallback for build time or local development
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
 print("=== DATABASE CONFIG ===")
-print("DATABASES['default']:", DATABASES['default'])
+print("DATABASE_URL exists:", bool(DATABASE_URL))
+print("DATABASES['default']:", DATABASES['default']['ENGINE'])
 
 
 # Password validation

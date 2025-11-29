@@ -13,11 +13,9 @@ COPY . .
 
 RUN mkdir -p staticfiles media
 
-# Собираем статику (теперь знаем точный путь)
 RUN cd /app/fitzone && python manage.py collectstatic --noinput
 
 EXPOSE 8000
 
-
-# ПРОСТОЙ и РАБОЧИЙ CMD
-CMD ["sh", "-c", "cd /app/fitzone && python manage.py migrate && if [ -f /app/db_backup.sql ]; then psql $DATABASE_URL < /app/db_backup.sql; echo '✅ База восстановлена из дампа'; fi && gunicorn fitzone.wsgi:application --bind 0.0.0.0:8000 --workers 3"]
+# Умный CMD - миграции только если есть БД
+CMD ["sh", "-c", "cd /app/fitzone && if [ -n \"$DATABASE_URL\" ]; then python manage.py migrate; if [ -f /app/db_backup.sql ]; then psql $DATABASE_URL < /app/db_backup.sql; echo '✅ База восстановлена'; fi; else echo '⚠️ Нет БД, пропускаем миграции'; fi && gunicorn fitzone.wsgi:application --bind 0.0.0.0:8000 --workers 3"]
