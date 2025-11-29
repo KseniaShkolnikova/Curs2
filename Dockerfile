@@ -11,22 +11,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# ПРОВЕРКА: что файлы скопировались
-RUN echo "=== ПРОВЕРКА ФАЙЛОВ ===" && \
-    ls -la && \
-    echo "=== db_backup.sql ===" && \
-    if [ -f db_backup.sql ]; then \
-        echo "✅ db_backup.sql найден, размер: $(wc -l < db_backup.sql) строк"; \
-    else \
-        echo "❌ db_backup.sql НЕ НАЙДЕН!"; \
-        echo "Доступные файлы:"; \
-        find . -name "*.sql" -type f; \
-    fi
-
 RUN mkdir -p staticfiles media
 
 RUN cd /app/fitzone && python manage.py collectstatic --noinput
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "cd /app/fitzone && echo '⏳ Ожидаем БД...' && until psql \"$DATABASE_URL\" -c 'SELECT 1;' >/dev/null 2>&1; do sleep 2; done && echo '✅ БД готова!' && python manage.py migrate && if [ -f /app/db_backup.sql ] && [ -s /app/db_backup.sql ]; then echo '🔄 Восстанавливаем дамп...' && psql \"$DATABASE_URL\" < /app/db_backup.sql && echo '✅ Дамп восстановлен!'; else echo '⚠️ Дамп не найден или пустой'; fi && gunicorn fitzone.wsgi:application --bind 0.0.0.0:8000 --workers 3"]
+CMD ["sh", "-c", "cd /app/fitzone && echo '=== ПЕРЕМЕННЫЕ ===' && echo 'DATABASE_URL: $DATABASE_URL' && echo '⏳ Ожидаем БД...' && python -c \"\nimport os\nimport time\nfrom urllib.parse import urlparse\n\ndb_url = os.environ.get('DATABASE_URL')\nif db_url:\n    parsed = urlparse(db_url)\n    host = parsed.hostname\n    port = parsed.port or 5432\n    user = parsed.username\n    password = parsed.password\n    dbname = parsed.path[1:] if parsed.path else 'postgres'\n    \n    import psycopg2\n    for i in range(30):  # 30 попыток по 2 секунды = 60 секунд\n        try:\n            conn = psycopg2.connect(\n                host=host,\n                port=port,\n                user=user,\n                password=password,\n                dbname=dbname\n            )\n            conn.close()\n            print('✅ БД готова!')\n            break\n        except Exception as e:\n            if i == 0:\n                print(f'Ожидаем БД: {e}')\n            time.sleep(2)\n    else:\n        print('❌ Не удалось подключиться к БД за 60 секунд')\nelse:\n    print('❌ Нет DATABASE_URL')\n\" && python manage.py migrate && gunicorn fitzone.wsgi:application --bind 0.0.0.0:8000 --workers 3"]
