@@ -20,4 +20,4 @@ RUN cd fitzone && python manage.py collectstatic --noinput
 EXPOSE 8000
 
 # ПРОСТАЯ команда запуска
-CMD ["sh", "-c", "cd /app/fitzone && gunicorn fitzone.wsgi:application --bind 0.0.0.0:8000 --workers 3"]
+CMD ["sh", "-c", "cd /FITZONE/fitzone && gunicorn fitzone.wsgi:application --bind 0.0.0.0:8000 --workers 3"]
