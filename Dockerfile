@@ -11,17 +11,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# ОТЛАДКА: смотрим структуру папок
-RUN echo "=== Содержимое /app ===" && ls -la && \
-    echo "=== Поиск manage.py ===" && find /app -name "manage.py" -type f
-
 RUN mkdir -p staticfiles media
 
-# Автоматически находим manage.py и собираем статику
-RUN find /app -name "manage.py" -execdir python manage.py collectstatic --noinput \;
+# Собираем статику (теперь знаем точный путь)
+RUN cd /app/fitzone && python manage.py collectstatic --noinput
 
 EXPOSE 8000
 
-# Автоматически находим manage.py при запуске
-CMD find /app -name "manage.py" -execdir python manage.py migrate \\; && \
-    find /app -name "manage.py" -execdir gunicorn fitzone.wsgi:application --bind 0.0.0.0:8000 --workers 3 \\;
+# ПРОСТОЙ и РАБОЧИЙ CMD
+CMD ["sh", "-c", "cd /app/fitzone && python manage.py migrate && gunicorn fitzone.wsgi:application --bind 0.0.0.0:8000 --workers 3"]
