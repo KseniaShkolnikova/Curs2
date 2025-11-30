@@ -1226,8 +1226,8 @@ FITZONE - Premium Fitness
         <img src="{{ class_item.image.url }}" class="class-image" alt="{{ class_item.name }}">
     {% else %}
         {% random_fitness_image as random_image %}
-        <img src="/media/img/fitness1.jpg" class="class-image" alt="Тренировка">
-
+        <img src="{{ random_image }}" class="class-image" alt="{{ class_item.name }}"
+             onerror="this.src='{% static 'img/fitness1.jpg' %}'">
     {% endif %}
                     <div class="class-content">
                         <span class="class-time">

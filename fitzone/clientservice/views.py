@@ -525,7 +525,38 @@ def process_payment(request, subscription_id):
                     paymentdate=timezone.now()
                 )
                 print(f"=== DEBUG 5: Payment created ===")
-
+           # После создания payment добавь этот код:
+            try:
+                from django.core.mail import EmailMessage
+                
+                # Простой тест email БЕЗ PDF
+                email = EmailMessage(
+                    'Абонемент FITZONE - Оплата успешна!',
+                    f'''
+                    Уважаемый клиент!
+                    
+                    Ваш абонемент "{subscription_type.name}" успешно оплачен.
+                    
+                    Детали заказа:
+                    - Абонемент: {subscription_type.name}
+                    - Стоимость: {subscription_type.price} руб.
+                    - Номер заказа: #{payment.id:06d}
+                    - Дата: {timezone.now().strftime('%d.%m.%Y')}
+                    
+                    Договор можно скачать в вашем профиле на сайте.
+                    
+                    Спасибо за выбор FITZONE!
+                    ''',
+                    'sesha_shk@mail.ru',
+                    [request.user.email],
+                )
+                
+                # Отправляем БЕЗ PDF вложения
+                email.send(fail_silently=True)
+                print(f"=== DEBUG: Email отправлен на {request.user.email} ===")
+                
+            except Exception as e:
+                print(f"=== DEBUG: Ошибка email: {e} ===")
             # ВОТ ИСПРАВЛЕНИЕ - возвращаем payment_id
             return JsonResponse({
                 'success': True,
@@ -540,6 +571,21 @@ def process_payment(request, subscription_id):
                 'success': False,
                 'message': f'Ошибка: {str(e)}'
             }, status=400)
+
+def test_email_view(request):
+    """Тест отправки email"""
+    from django.core.mail import send_mail
+    try:
+        send_mail(
+            'Тест почты FITZONE',
+            'Это тестовое письмо с Railway.',
+            'sesha_shk@mail.ru',
+            ['sesha_shk@mail.ru'],  # Отправь самому себе
+            fail_silently=False,
+        )
+        return JsonResponse({'status': 'SUCCESS: Email отправлен!'})
+    except Exception as e:
+        return JsonResponse({'status': f'ERROR: {str(e)}'})
 
 from django.http import HttpResponse
 from reportlab.pdfgen import canvas

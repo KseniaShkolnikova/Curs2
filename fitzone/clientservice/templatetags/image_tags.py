@@ -4,7 +4,6 @@ from django.templatetags.static import static
 
 register = template.Library()
 
-register = template.Library()
 
 FITNESS_IMAGES = [
     "fitness1.jpg",
