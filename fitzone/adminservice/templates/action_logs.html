@@ -6,19 +6,16 @@ FITZONE - Логи действий
 {% endblock %}
 
 {% block content %}
-<!-- SUMMARY: Основная страница просмотра логов действий пользователей -->
-<!-- Включает фильтры, таблицу логов, пагинацию и статистику с круговой диаграммой -->
-
+<!-- Основной контейнер для частиц -->
 <div class="particles-container" id="particles"></div>
 
-<section class="hero-section" style="margin: 60px 40px 40px; min-height: auto; padding-top: 20px;">
+<section class="hero-section" style="margin: 100px 40px 80px; min-height: auto; padding-top: 20px;">
     <div class="hero-content">
-        <h1> ⠀⠀</h1>
         <h1 class="hero-title">
             ЛОГИ ДЕЙСТВИЙ ПОЛЬЗОВАТЕЛЕЙ
         </h1>
 
-        <!-- SUMMARY: Карточка с фильтрами и поиском -->
+        <!-- Карточка с фильтрами и поиском -->
         <div class="admin-logs-filters-card">
             <div class="admin-logs-card-header">
                 <h2><i class="fas fa-filter"></i> ФИЛЬТРЫ И ПОИСК</h2>
@@ -27,14 +24,14 @@ FITZONE - Логи действий
             
             <form method="get" class="admin-logs-filters-form">
                 <div class="admin-logs-filters-grid">
-                    <!-- SUMMARY: Поле поиска по названию действия -->
+                    <!-- Поле поиска по названию действия -->
                     <div class="admin-logs-filter-group">
                         <label>Поиск по названию:</label>
                         <input type="text" name="search" value="{{ request.GET.search }}" 
                                placeholder="Введите название действия..." class="admin-logs-form-control">
                     </div>
 
-                    <!-- SUMMARY: Фильтр по роли пользователя -->
+                    <!-- Фильтр по роли пользователя -->
                     <div class="admin-logs-filter-group">
                         <label>Роль пользователя:</label>
                         <select name="role" class="admin-logs-form-control">
@@ -47,7 +44,7 @@ FITZONE - Логи действий
                         </select>
                     </div>
 
-                    <!-- SUMMARY: Фильтр по конкретному пользователю -->
+                    <!-- Фильтр по конкретному пользователю -->
                     <div class="admin-logs-filter-group">
                         <label>Пользователь:</label>
                         <select name="user" class="admin-logs-form-control">
@@ -60,7 +57,7 @@ FITZONE - Логи действий
                         </select>
                     </div>
 
-                    <!-- SUMMARY: Фильтр по типу действия -->
+                    <!-- Фильтр по типу действия -->
                     <div class="admin-logs-filter-group">
                         <label>Тип действия:</label>
                         <select name="action_type" class="admin-logs-form-control">
@@ -74,7 +71,7 @@ FITZONE - Логи действий
                     </div>
                 </div>
 
-                <!-- SUMMARY: Кнопки применения и сброса фильтров -->
+                <!-- Кнопки применения и сброса фильтров -->
                 <div class="admin-logs-filter-actions">
                     <button type="submit" class="admin-logs-btn admin-logs-btn-primary">
                         <i class="fas fa-search"></i> Применить фильтры
@@ -86,11 +83,11 @@ FITZONE - Логи действий
             </form>
         </div>
 
-        <!-- SUMMARY: Основная карточка с таблицей логов -->
+        <!-- Основная карточка с таблицей логов -->
         <div class="admin-logs-dashboard-card">
             <div class="admin-logs-card-header">
                 <h2><i class="fas fa-list-alt"></i> ЖУРНАЛ ДЕЙСТВИЙ</h2>
-                <!-- SUMMARY: Элементы управления сортировкой -->
+                <!-- Элементы управления сортировкой -->
                 <div class="admin-logs-sort-controls">
                     <span>Сортировка:</span>
                     <select onchange="location = this.value;" class="admin-logs-sort-select">
@@ -119,7 +116,7 @@ FITZONE - Логи действий
             </div>
 
             {% if logs %}
-            <!-- SUMMARY: Контейнер таблицы с логами -->
+            <!-- Контейнер таблицы с логами -->
             <div class="admin-logs-table-container">
                 <table class="admin-logs-data-table">
                     <thead>
@@ -132,7 +129,7 @@ FITZONE - Логи действий
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- SUMMARY: Цикл отображения записей логов -->
+                        <!-- Цикл отображения записей логов -->
                         {% for log in logs %}
                         <tr class="admin-logs-row">
                             <td class="admin-logs-date">
@@ -157,7 +154,7 @@ FITZONE - Логи действий
                                 <div class="admin-logs-action-text">{{ log.action }}</div>
                             </td>
                             <td class="admin-logs-type">
-                                <!-- SUMMARY: Бейдж с цветовым кодированием типа действия -->
+                                <!-- Бейдж с цветовым кодированием типа действия -->
                                 <span class="admin-logs-action-badge admin-logs-action-{{ log.action_type|lower }}">
                                     {{ log.get_action_type_display }}
                                 </span>
@@ -180,7 +177,7 @@ FITZONE - Логи действий
                 </table>
             </div>
 
-            <!-- SUMMARY: Пагинация для большого количества записей -->
+            <!-- Пагинация для большого количества записей -->
             {% if logs.has_other_pages %}
             <div class="admin-logs-pagination">
                 <div class="admin-logs-pagination-info">
@@ -216,11 +213,11 @@ FITZONE - Логи действий
             </div>
             {% endif %}
 
-            <!-- SUMMARY: Карточка с визуализацией статистики логов -->
+            <!-- Карточка с визуализацией статистики логов -->
             <div class="admin-logs-dashboard-card">
                 <div class="admin-logs-card-header">
                     <h2><i class="fas fa-chart-pie"></i> СТАТИСТИКА ЛОГОВ ПО ТИПАМ</h2>
-                    <!-- SUMMARY: Управление периодом для статистики -->
+                    <!-- Управление периодом для статистики -->
                     <div class="admin-logs-chart-controls">
                         <form method="get" id="chartPeriodForm" class="admin-logs-period-form">
                             <div class="period-controls">
@@ -237,7 +234,7 @@ FITZONE - Логи действий
                                 </button>
                             </div>
                             
-                            <!-- SUMMARY: Скрытые поля для сохранения параметров фильтрации -->
+                            <!-- Скрытые поля для сохранения параметров фильтрации -->
                             {% if request.GET.search %}
                                 <input type="hidden" name="search" value="{{ request.GET.search }}">
                             {% endif %}
@@ -260,7 +257,7 @@ FITZONE - Логи действий
                     </div>
                 </div>
                 
-                <!-- SUMMARY: Контейнер для круговой диаграммы -->
+                <!-- Контейнер для круговой диаграммы -->
                 <div class="admin-logs-chart-container">
                     <div class="admin-logs-chart-wrapper">
                         <canvas id="logsChart" width="400" height="400"></canvas>
@@ -268,7 +265,7 @@ FITZONE - Логи действий
                     <div class="admin-logs-chart-legend" id="chartLegend"></div>
                 </div>
                 
-                <!-- SUMMARY: Статистические показатели -->
+                <!-- Статистические показатели -->
                 <div class="admin-logs-chart-stats">
                     <div class="admin-logs-chart-stat">
                         <span class="admin-logs-stat-value" id="totalLogsCount">0</span>
@@ -286,7 +283,7 @@ FITZONE - Логи действий
             </div>
 
             {% else %}
-            <!-- SUMMARY: Состояние при отсутствии записей -->
+            <!-- Состояние при отсутствии записей -->
             <div class="admin-logs-empty-state">
                 <i class="fas fa-clipboard-list"></i>
                 <h3>Записи не найдены</h3>
@@ -298,158 +295,75 @@ FITZONE - Логи действий
 </section>
 
 <style>
-/* SUMMARY: Стили для круговой диаграммы и ее элементов */
-/* Стили для круговой диаграммы */
-.admin-logs-chart-container {
-    display: flex;
-    gap: 40px;
-    align-items: center;
-    justify-content: center;
-    padding: 20px 0;
-    flex-wrap: wrap;
+/* Основные переменные */
+:root {
+    --neon-purple: #8b5cf6;
+    --neon-purple-dark: #7c3aed;
+    --neon-purple-light: #a78bfa;
+    --light-bg: #f8fafc;
+    --light-card: #ffffff;
+    --light-border: #f1f5f9;
+    --text-dark: #0f172a;
+    --text-gray: #64748b;
+    --dark-bg: #0f172a;
+    --dark-card: #1e293b;
+    --dark-border: #334155;
+    --dark-text: #e2e8f0;
+    --dark-text-light: #94a3b8;
+    --accent-gradient: linear-gradient(135deg, var(--neon-purple), var(--neon-purple-dark));
+    --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.08);
+    --shadow-large: 0 20px 50px rgba(139, 92, 246, 0.15);
+    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-.admin-logs-chart-wrapper {
-    flex-shrink: 0;
+/* Hero Section */
+.hero-section {
+    min-height: auto;
+    padding: 0 40px;
+    margin: 100px 40px 80px !important;
+    position: relative;
+    z-index: 2;
 }
 
-.admin-logs-chart-legend {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    min-width: 200px;
+.hero-title {
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 3rem;
+    background: linear-gradient(135deg, var(--text-dark) 0%, var(--neon-purple) 30%, var(--neon-purple-dark) 70%, var(--text-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% 200%;
+    animation: gradientFlow 4s ease infinite;
+    text-transform: uppercase;
+    letter-spacing: -2px;
 }
 
-.admin-logs-legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    border-radius: 8px;
-    background: var(--light-bg);
-    border: 1px solid var(--light-border);
-    transition: all 0.3s ease;
+@keyframes gradientFlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
 }
 
-.dark-theme .admin-logs-legend-item {
-    background: var(--dark-bg);
-    border-color: var(--dark-border);
-}
-
-.admin-logs-legend-item:hover {
-    transform: translateX(4px);
-    border-color: var(--neon-purple);
-}
-
-.admin-logs-legend-color {
-    width: 16px;
-    height: 16px;
-    border-radius: 4px;
-    flex-shrink: 0;
-}
-
-.admin-logs-legend-info {
-    flex: 1;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.admin-logs-legend-name {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-dark);
-}
-
-.dark-theme .admin-logs-legend-name {
-    color: var(--dark-text);
-}
-
-.admin-logs-legend-count {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-gray);
-    background: var(--light-card);
-    padding: 2px 6px;
-    border-radius: 4px;
-}
-
-.dark-theme .admin-logs-legend-count {
-    color: var(--dark-text-light);
-    background: var(--dark-card);
-}
-
-.admin-logs-chart-controls {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.admin-logs-chart-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-top: 24px;
-    padding-top: 20px;
-    border-top: 1px solid var(--light-border);
-}
-
-.dark-theme .admin-logs-chart-stats {
-    border-top-color: var(--dark-border);
-}
-
-.admin-logs-chart-stat {
-    text-align: center;
-    padding: 16px;
-    background: var(--light-bg);
-    border-radius: 8px;
-    border: 1px solid var(--light-border);
-}
-
-.dark-theme .admin-logs-chart-stat {
-    background: var(--dark-bg);
-    border-color: var(--dark-border);
-}
-
-.admin-logs-stat-value {
-    display: block;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--text-dark);
-    margin-bottom: 4px;
-}
-
-.dark-theme .admin-logs-stat-value {
-    color: var(--dark-text);
-}
-
-.admin-logs-stat-label {
-    font-size: 12px;
-    color: var(--text-gray);
-    font-weight: 500;
-}
-
-.dark-theme .admin-logs-stat-label {
-    color: var(--dark-text-light);
-}
-
-/* SUMMARY: Цветовая схема для типов действий в диаграмме */
-/* Цвета для типов действий в диаграмме */
-.admin-logs-chart-create { background-color: #2ecc71; }
-.admin-logs-chart-update { background-color: #3498db; }
-.admin-logs-chart-delete { background-color: #e74c3c; }
-.admin-logs-chart-login { background-color: #9b59b6; }
-.admin-logs-chart-logout { background-color: #95a5a6; }
-.admin-logs-chart-system { background-color: #f39c12; }
-.admin-logs-chart-other { background-color: #34495e; }
-
-/* SUMMARY: Стили карточки фильтров */
+/* Карточка фильтров */
 .admin-logs-filters-card {
     background: var(--light-card);
-    border-radius: 16px;
-    padding: 24px;
+    border-radius: 20px;
+    padding: 30px;
     border: 1px solid var(--light-border);
-    margin-bottom: 24px;
+    margin-bottom: 30px;
+    box-shadow: var(--shadow-medium);
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-logs-filters-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--accent-gradient);
 }
 
 .dark-theme .admin-logs-filters-card {
@@ -461,8 +375,8 @@ FITZONE - Логи действий
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 16px;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
     border-bottom: 1px solid var(--light-border);
 }
 
@@ -471,12 +385,12 @@ FITZONE - Логи действий
 }
 
 .admin-logs-card-header h2 {
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 1.4rem;
+    font-weight: 700;
     color: var(--text-dark);
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     margin: 0;
 }
 
@@ -484,32 +398,38 @@ FITZONE - Логи действий
     color: var(--dark-text);
 }
 
-.admin-logs-total-badge {
-    background: var(--neon-purple);
-    color: white;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-weight: 500;
-    font-size: 12px;
+.admin-logs-card-header h2 i {
+    color: var(--neon-purple);
+    font-size: 1.2rem;
 }
 
+.admin-logs-total-badge {
+    background: var(--accent-gradient);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Форма фильтров */
 .admin-logs-filters-form {
     margin-top: 20px;
 }
 
 .admin-logs-filters-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 16px;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 25px;
 }
 
 .admin-logs-filter-group label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     font-weight: 600;
     color: var(--text-dark);
-    font-size: 14px;
+    font-size: 0.95rem;
 }
 
 .dark-theme .admin-logs-filter-group label {
@@ -518,12 +438,13 @@ FITZONE - Логи действий
 
 .admin-logs-form-control {
     width: 100%;
-    padding: 10px 12px;
+    padding: 12px 16px;
     border: 1px solid var(--light-border);
-    border-radius: 8px;
+    border-radius: 12px;
     background: var(--light-bg);
     color: var(--text-dark);
-    font-size: 14px;
+    font-size: 0.95rem;
+    transition: var(--transition);
 }
 
 .dark-theme .admin-logs-form-control {
@@ -532,73 +453,42 @@ FITZONE - Логи действий
     color: var(--dark-text);
 }
 
+.admin-logs-form-control:focus {
+    outline: none;
+    border-color: var(--neon-purple);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
 .admin-logs-filter-actions {
     display: flex;
-    gap: 12px;
+    gap: 15px;
     align-items: center;
 }
 
-/* SUMMARY: Корректировка отступов для правильного расположения элементов */
-/* Добавь эти стили в конец CSS блока */
-
-/* Отступы для страницы логов */
-.hero-section {
-    margin: 100px 40px 80px !important; /* Увеличил отступы сверху и снизу */
-    min-height: auto;
-    padding-top: 20px;
-}
-
-/* Дополнительный отступ для карточки с логами */
-.admin-logs-dashboard-card {
-    margin-bottom: 60px; /* Добавил отступ снизу */
-}
-
-/* Убедимся, что контент не обрезается */
-.admin-logs-table-container {
-    max-height: none !important;
-    overflow-x: auto;
-    margin-bottom: 24px;
-}
-
-/* Отступ для пагинации */
-.admin-logs-pagination {
-    margin-bottom: 20px;
-}
-
-/* Для мобильных устройств */
-@media (max-width: 768px) {
-    .hero-section {
-        margin: 80px 20px 60px !important;
-    }
-    
-    .admin-logs-dashboard-card {
-        margin-bottom: 40px;
-    }
-}
-
-@media (max-width: 480px) {
-    .hero-section {
-        margin: 60px 15px 40px !important;
-    }
-}
-
-/* SUMMARY: Стили кнопок и элементов управления */
+/* Кнопки */
 .admin-logs-btn {
-    padding: 10px 20px;
+    padding: 12px 24px;
     border: none;
-    border-radius: 8px;
-    font-weight: 500;
+    border-radius: 12px;
+    font-weight: 600;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition);
+    font-size: 0.95rem;
 }
 
 .admin-logs-btn-primary {
-    background: var(--neon-purple);
+    background: var(--accent-gradient);
     color: white;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+
+.admin-logs-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
 }
 
 .admin-logs-btn-secondary {
@@ -613,19 +503,60 @@ FITZONE - Логи действий
     border-color: var(--dark-border);
 }
 
+.admin-logs-btn-secondary:hover {
+    border-color: var(--neon-purple);
+    color: var(--neon-purple);
+    transform: translateY(-2px);
+}
+
+/* Основная карточка */
+.admin-logs-dashboard-card {
+    background: var(--light-card);
+    border-radius: 20px;
+    padding: 30px;
+    border: 1px solid var(--light-border);
+    margin-bottom: 30px;
+    box-shadow: var(--shadow-medium);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-logs-dashboard-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--accent-gradient);
+}
+
+.dark-theme .admin-logs-dashboard-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.admin-logs-dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-large);
+}
+
+/* Сортировка */
 .admin-logs-sort-controls {
     display: flex;
     align-items: center;
     gap: 12px;
-    font-size: 14px;
+    font-size: 0.95rem;
 }
 
 .admin-logs-sort-select {
-    padding: 6px 12px;
+    padding: 8px 12px;
     border: 1px solid var(--light-border);
-    border-radius: 6px;
+    border-radius: 8px;
     background: var(--light-bg);
     color: var(--text-dark);
+    transition: var(--transition);
 }
 
 .dark-theme .admin-logs-sort-select {
@@ -634,37 +565,38 @@ FITZONE - Логи действий
     color: var(--dark-text);
 }
 
-.admin-logs-dashboard-card {
-    background: var(--light-card);
-    border-radius: 16px;
-    padding: 24px;
-    border: 1px solid var(--light-border);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.admin-logs-sort-select:focus {
+    outline: none;
+    border-color: var(--neon-purple);
 }
 
-.dark-theme .admin-logs-dashboard-card {
-    background: var(--dark-card);
-    border-color: var(--dark-border);
-}
-
+/* Таблица */
 .admin-logs-table-container {
     overflow-x: auto;
-    margin-bottom: 24px;
+    margin-bottom: 25px;
+    border-radius: 12px;
+    border: 1px solid var(--light-border);
+}
+
+.dark-theme .admin-logs-table-container {
+    border-color: var(--dark-border);
 }
 
 .admin-logs-data-table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 800px;
 }
 
 .admin-logs-data-table th {
     background: var(--light-bg);
-    padding: 16px;
+    padding: 20px;
     text-align: left;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--text-dark);
     border-bottom: 1px solid var(--light-border);
-    font-size: 14px;
+    font-size: 0.95rem;
+    white-space: nowrap;
 }
 
 .dark-theme .admin-logs-data-table th {
@@ -674,7 +606,7 @@ FITZONE - Логи действий
 }
 
 .admin-logs-data-table td {
-    padding: 16px;
+    padding: 20px;
     border-bottom: 1px solid var(--light-border);
     vertical-align: top;
 }
@@ -685,25 +617,28 @@ FITZONE - Логи действий
 
 .admin-logs-row:hover {
     background: var(--light-bg);
+    transform: scale(1.01);
+    transition: var(--transition);
 }
 
 .dark-theme .admin-logs-row:hover {
     background: var(--dark-bg);
 }
 
+/* Стили для ячеек таблицы */
 .admin-logs-date .admin-logs-date-time {
     line-height: 1.2;
 }
 
 .admin-logs-date .admin-logs-date-text {
-    font-weight: 600;
+    font-weight: 700;
     color: var(--text-dark);
-    font-size: 14px;
+    font-size: 0.95rem;
 }
 
 .admin-logs-date .admin-logs-time-text {
     color: var(--text-gray);
-    font-size: 12px;
+    font-size: 0.85rem;
 }
 
 .dark-theme .admin-logs-date .admin-logs-date-text {
@@ -719,14 +654,14 @@ FITZONE - Логи действий
 }
 
 .admin-logs-user .admin-logs-user-name {
-    font-weight: 600;
+    font-weight: 700;
     color: var(--text-dark);
-    font-size: 14px;
+    font-size: 0.95rem;
 }
 
 .admin-logs-user .admin-logs-user-email {
     color: var(--text-gray);
-    font-size: 12px;
+    font-size: 0.85rem;
 }
 
 .dark-theme .admin-logs-user .admin-logs-user-name {
@@ -744,7 +679,7 @@ FITZONE - Логи действий
 
 .admin-logs-action .admin-logs-action-text {
     color: var(--text-dark);
-    font-size: 14px;
+    font-size: 0.95rem;
     line-height: 1.4;
 }
 
@@ -752,42 +687,50 @@ FITZONE - Логи действий
     color: var(--dark-text);
 }
 
-/* SUMMARY: Стили бейджей типов действий с цветовым кодированием */
+/* Бейджи типов действий */
 .admin-logs-action-badge {
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    border: 1px solid transparent;
 }
 
 .admin-logs-action-create {
-    background: rgba(46, 204, 113, 0.1);
+    background: rgba(46, 204, 113, 0.15);
     color: #2ecc71;
+    border-color: rgba(46, 204, 113, 0.3);
 }
 
 .admin-logs-action-update {
-    background: rgba(52, 152, 219, 0.1);
+    background: rgba(52, 152, 219, 0.15);
     color: #3498db;
+    border-color: rgba(52, 152, 219, 0.3);
 }
 
 .admin-logs-action-delete {
-    background: rgba(231, 76, 60, 0.1);
+    background: rgba(231, 76, 60, 0.15);
     color: #e74c3c;
+    border-color: rgba(231, 76, 60, 0.3);
 }
 
 .admin-logs-action-login {
-    background: rgba(155, 89, 182, 0.1);
+    background: rgba(155, 89, 182, 0.15);
     color: #9b59b6;
+    border-color: rgba(155, 89, 182, 0.3);
 }
 
 .admin-logs-action-logout {
-    background: rgba(149, 165, 166, 0.1);
+    background: rgba(149, 165, 166, 0.15);
     color: #95a5a6;
+    border-color: rgba(149, 165, 166, 0.3);
 }
 
 .admin-logs-action-system {
-    background: rgba(243, 156, 18, 0.1);
+    background: rgba(243, 156, 18, 0.15);
     color: #f39c12;
+    border-color: rgba(243, 156, 18, 0.3);
 }
 
 .admin-logs-object .admin-logs-object-info {
@@ -798,15 +741,16 @@ FITZONE - Логи действий
 
 .admin-logs-model-name {
     color: var(--text-dark);
-    font-size: 14px;
+    font-size: 0.95rem;
 }
 
 .admin-logs-object-id {
     color: var(--text-gray);
-    font-size: 12px;
+    font-size: 0.8rem;
     background: var(--light-bg);
-    padding: 2px 6px;
-    border-radius: 4px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 600;
 }
 
 .dark-theme .admin-logs-model-name {
@@ -818,13 +762,12 @@ FITZONE - Логи действий
     background: var(--dark-bg);
 }
 
-/* SUMMARY: Стили пагинации */
 /* Пагинация */
 .admin-logs-pagination {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 24px;
+    margin-top: 25px;
     padding-top: 20px;
     border-top: 1px solid var(--light-border);
 }
@@ -835,29 +778,30 @@ FITZONE - Логи действий
 
 .admin-logs-pagination-info {
     color: var(--text-gray);
-    font-size: 14px;
+    font-size: 0.9rem;
+    font-weight: 500;
 }
 
 .admin-logs-pagination-controls {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     align-items: center;
 }
 
 .admin-logs-pagination-btn {
-    padding: 8px 12px;
+    padding: 10px 14px;
     border: 1px solid var(--light-border);
-    border-radius: 6px;
+    border-radius: 8px;
     background: var(--light-bg);
     color: var(--text-dark);
     text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: var(--transition);
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 40px;
+    min-width: 44px;
 }
 
 .dark-theme .admin-logs-pagination-btn {
@@ -869,77 +813,164 @@ FITZONE - Логи действий
 .admin-logs-pagination-btn:hover {
     border-color: var(--neon-purple);
     color: var(--neon-purple);
+    transform: translateY(-2px);
 }
 
 .admin-logs-pagination-active {
-    background: var(--neon-purple) !important;
+    background: var(--accent-gradient) !important;
     color: white !important;
     border-color: var(--neon-purple) !important;
 }
 
-.admin-logs-pagination-first,
-.admin-logs-pagination-prev,
-.admin-logs-pagination-next,
-.admin-logs-pagination-last {
-    font-size: 12px;
+/* Диаграмма */
+.admin-logs-chart-container {
+    display: flex;
+    gap: 40px;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 0;
+    flex-wrap: wrap;
 }
 
-/* SUMMARY: Стили для состояния "нет данных" */
-.admin-logs-empty-state {
+.admin-logs-chart-wrapper {
+    flex-shrink: 0;
+}
+
+.admin-logs-chart-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 250px;
+}
+
+.admin-logs-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: var(--light-bg);
+    border: 1px solid var(--light-border);
+    transition: var(--transition);
+}
+
+.dark-theme .admin-logs-legend-item {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+.admin-logs-legend-item:hover {
+    transform: translateX(8px);
+    border-color: var(--neon-purple);
+}
+
+.admin-logs-legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    border: 2px solid white;
+}
+
+.dark-theme .admin-logs-legend-color {
+    border-color: var(--dark-card);
+}
+
+.admin-logs-legend-info {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-logs-legend-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.dark-theme .admin-logs-legend-name {
+    color: var(--dark-text);
+}
+
+.admin-logs-legend-count {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--neon-purple);
+    background: var(--light-card);
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.dark-theme .admin-logs-legend-count {
+    background: var(--dark-card);
+}
+
+/* Статистика диаграммы */
+.admin-logs-chart-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 30px;
+    padding-top: 25px;
+    border-top: 1px solid var(--light-border);
+}
+
+.dark-theme .admin-logs-chart-stats {
+    border-top-color: var(--dark-border);
+}
+
+.admin-logs-chart-stat {
     text-align: center;
-    padding: 60px 20px;
-    color: var(--text-gray);
+    padding: 20px;
+    background: var(--light-bg);
+    border-radius: 12px;
+    border: 1px solid var(--light-border);
+    transition: var(--transition);
 }
 
-.admin-logs-empty-state i {
-    font-size: 48px;
-    margin-bottom: 16px;
-    opacity: 0.5;
+.dark-theme .admin-logs-chart-stat {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
 }
 
-.admin-logs-empty-state h3 {
-    font-size: 18px;
+.admin-logs-chart-stat:hover {
+    border-color: var(--neon-purple);
+    transform: translateY(-3px);
+}
+
+.admin-logs-stat-value {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--text-dark);
     margin-bottom: 8px;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.dark-theme .admin-logs-stat-value {
+    color: var(--dark-text);
+}
+
+.admin-logs-stat-label {
+    font-size: 0.9rem;
+    color: var(--text-gray);
     font-weight: 600;
 }
 
-.admin-logs-empty-state p {
-    font-size: 14px;
-    margin: 0;
-    opacity: 0.7;
+.dark-theme .admin-logs-stat-label {
+    color: var(--dark-text-light);
 }
 
-/* SUMMARY: Адаптивные стили для мобильных устройств */
-@media (max-width: 768px) {
-    .admin-logs-filters-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .admin-logs-filter-actions {
-        flex-direction: column;
-    }
-    
-    .admin-logs-data-table {
-        font-size: 12px;
-    }
-    
-    .admin-logs-data-table th,
-    .admin-logs-data-table td {
-        padding: 12px 8px;
-    }
-    
-    .admin-logs-pagination {
-        flex-direction: column;
-        gap: 16px;
-        align-items: stretch;
-    }
-    
-    .admin-logs-pagination-controls {
-        justify-content: center;
-    }
+/* Управление диаграммой */
+.admin-logs-chart-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
-/* SUMMARY: Стили для формы выбора периода статистики */
 .admin-logs-period-form {
     display: flex;
     align-items: center;
@@ -949,13 +980,13 @@ FITZONE - Логи действий
 .period-controls {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
 .period-controls span {
-    font-weight: 500;
+    font-weight: 600;
     color: var(--text-dark);
-    font-size: 14px;
+    font-size: 0.95rem;
     white-space: nowrap;
 }
 
@@ -963,220 +994,419 @@ FITZONE - Логи действий
     color: var(--dark-text);
 }
 
-/* Делаем селект уже */
 .period-controls .admin-logs-form-control {
-    width: 120px;
+    width: 140px;
 }
 
-/* Делаем кнопку компактной */
 .period-controls .admin-logs-btn {
-    padding: 8px 16px;
-    font-size: 13px;
+    padding: 10px 20px;
+    font-size: 0.9rem;
     white-space: nowrap;
 }
 
-</style>
+/* Состояние пустоты */
+.admin-logs-empty-state {
+    text-align: center;
+    padding: 80px 40px;
+    color: var(--text-gray);
+}
+
+.admin-logs-empty-state i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.admin-logs-empty-state h3 {
+    font-size: 1.5rem;
+    margin-bottom: 12px;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.dark-theme .admin-logs-empty-state h3 {
+    color: var(--dark-text);
+}
+
+.admin-logs-empty-state p {
+    font-size: 1rem;
+    margin: 0;
+    opacity: 0.7;
+}
+
+/* Цвета для диаграммы */
+.admin-logs-chart-create { background-color: #2ecc71; }
+.admin-logs-chart-update { background-color: #3498db; }
+.admin-logs-chart-delete { background-color: #e74c3c; }
+.admin-logs-chart-login { background-color: #9b59b6; }
+.admin-logs-chart-logout { background-color: #95a5a6; }
+.admin-logs-chart-system { background-color: #f39c12; }
+.admin-logs-chart-other { background-color: #34495e; }
+
+/* АДАПТИВНОСТЬ ДЛЯ ПЛАНШЕТОВ */
+@media (max-width: 1024px) {
+    .hero-section {
+        margin: 80px 30px 60px !important;
+        padding: 0 30px;
+    }
+    
+    .admin-logs-filters-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .admin-logs-chart-container {
+        gap: 30px;
+    }
+    
+    .admin-logs-chart-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* АДАПТИВНОСТЬ ДЛЯ ТЕЛЕФОНОВ */
+@media (max-width: 768px) {
+    .hero-section {
+        margin: 70px 20px 40px !important;
+        padding: 0 20px;
+    }
+    
+    .hero-title {
+        font-size: clamp(2rem, 8vw, 3rem);
+        letter-spacing: -1px;
+        margin-bottom: 2rem;
+    }
+    
+    .admin-logs-filters-card,
+    .admin-logs-dashboard-card {
+        padding: 20px;
+        border-radius: 16px;
+    }
+    
+    .admin-logs-filters-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .admin-logs-filter-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .admin-logs-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .admin-logs-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .admin-logs-sort-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .admin-logs-data-table {
+        font-size: 0.85rem;
+        min-width: 600px;
+    }
+    
+    .admin-logs-data-table th,
+    .admin-logs-data-table td {
+        padding: 15px 12px;
+    }
+    
+    .admin-logs-pagination {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    
+    .admin-logs-pagination-controls {
+        justify-content: center;
+    }
+    
+    .admin-logs-chart-container {
+        flex-direction: column;
+        gap: 25px;
+    }
+    
+    .admin-logs-chart-stats {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .period-controls {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+    
+    .period-controls .admin-logs-form-control {
+        width: 100%;
+    }
+}
+
+/* Мелкие телефоны */
+@media (max-width: 480px) {
+    .hero-section {
+        margin: 60px 15px 30px !important;
+        padding: 0 15px;
+    }
+    
+    .admin-logs-filters-card,
+    .admin-logs-dashboard-card {
+        padding: 18px;
+        border-radius: 14px;
+    }
+    
+    .admin-logs-data-table th,
+    .admin-logs-data-table td {
+        padding: 12px 8px;
+    }
+    
+    .admin-logs-action-badge {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+    }
+    
+    .admin-logs-chart-wrapper canvas {
+        width: 300px !important;
+        height: 300px !important;
+    }
+    
+    .admin-logs-empty-state {
+        padding: 60px 20px;
+    }
+    
+    .admin-logs-empty-state i {
+        font-size: 3rem;
+    }
+}
 </style>
 {% endblock %}
 
 {% block skripts %}
-<!-- SUMMARY: JavaScript для интерактивных элементов страницы -->
-<!-- Включает обработку горячих клавиш, построение диаграммы и обновление статистики -->
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <script>
-// SUMMARY: Обработка горячей клавиши Ctrl+Delete для быстрого сброса фильтров
-document.addEventListener('keydown', function(e) {
-    if (e.ctrlKey && e.key === 'Delete') {
-        e.preventDefault();
-        console.log('Ctrl+Delete pressed - resetting filters');
-        
-        const resetButton = document.querySelector('a[href*="action-logs"]');
-        if (resetButton) {
-            resetButton.style.transform = 'scale(0.95)';
-            resetButton.style.boxShadow = '0 0 15px rgba(139, 92, 246, 0.5)';
-            setTimeout(() => {
-                resetButton.style.transform = '';
-                resetButton.style.boxShadow = '';
-            }, 500);
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработка горячей клавиши Ctrl+Delete для быстрого сброса фильтров
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'Delete') {
+            e.preventDefault();
+            console.log('Ctrl+Delete pressed - resetting filters');
             
-            setTimeout(() => {
-                window.location.href = resetButton.href;
-            }, 300);
-        } else {
-            console.log('Reset button not found');
+            const resetButton = document.querySelector('a[href*="action-logs"]');
+            if (resetButton) {
+                resetButton.style.transform = 'scale(0.95)';
+                resetButton.style.boxShadow = '0 0 15px rgba(139, 92, 246, 0.5)';
+                setTimeout(() => {
+                    resetButton.style.transform = '';
+                    resetButton.style.boxShadow = '';
+                }, 500);
+                
+                setTimeout(() => {
+                    window.location.href = resetButton.href;
+                }, 300);
+            } else {
+                console.log('Reset button not found');
+            }
         }
-    }
-});
+    });
 
-    // SUMMARY: Инициализация круговой диаграммы и статистики при загрузке страницы
-    document.addEventListener('DOMContentLoaded', function() {
-        let logsChart = null;
+    // Инициализация круговой диаграммы и статистики при загрузке страницы
+    let logsChart = null;
+    
+    // Цветовая схема для типов действий
+    const typeColors = {
+        'create': '#2ecc71',
+        'update': '#3498db', 
+        'delete': '#e74c3c',
+        'login': '#9b59b6',
+        'logout': '#95a5a6',
+        'system': '#f39c12',
+        'other': '#34495e'
+    };
+    
+    // Получение данных для диаграммы из Django-контекста
+    const chartData = {{ chart_stats|safe }};
+    console.log('Данные для диаграммы с сервера:', chartData);
+    
+    // Функция обновления круговой диаграммы
+    function updateChart(data) {
+        const ctx = document.getElementById('logsChart');
         
-        // SUMMARY: Цветовая схема для типов действий
-        const typeColors = {
-            'create': '#2ecc71',
-            'update': '#3498db', 
-            'delete': '#e74c3c',
-            'login': '#9b59b6',
-            'logout': '#95a5a6',
-            'system': '#f39c12',
-            'other': '#34495e'
-        };
+        if (!ctx) {
+            console.error('Canvas элемент не найден!');
+            return;
+        }
         
-        // SUMMARY: Получение данных для диаграммы из Django-контекста
-        const chartData = {{ chart_stats|safe }};
-        console.log('Данные для диаграммы с сервера:', chartData);
+        const ctx2d = ctx.getContext('2d');
         
-        // SUMMARY: Функция обновления круговой диаграммы
-        function updateChart(data) {
-            const ctx = document.getElementById('logsChart');
-            
-            if (!ctx) {
-                console.error('Canvas элемент не найден!');
-                return;
-            }
-            
-            const ctx2d = ctx.getContext('2d');
-            
-            if (logsChart) {
-                logsChart.destroy();
-            }
-            
-            const labels = Object.keys(data.types);
-            const counts = Object.values(data.types);
-            const backgroundColors = labels.map(type => typeColors[type] || typeColors['other']);
-            
-            console.log('Данные для диаграммы:', { labels, counts, backgroundColors });
-            
-            // SUMMARY: Обработка случая отсутствия данных
-            if (labels.length === 0) {
-                ctx2d.clearRect(0, 0, ctx.width, ctx.height);
-                ctx2d.font = '16px Arial';
-                ctx2d.fillStyle = '#666';
-                ctx2d.textAlign = 'center';
-                ctx2d.fillText('Нет данных для отображения', ctx.width / 2, ctx.height / 2);
-                return;
-            }
-            
-            // SUMMARY: Создание новой круговой диаграммы с использованием Chart.js
-            logsChart = new Chart(ctx2d, {
-                type: 'pie',
-                data: {
-                    labels: labels.map(type => {
-                        const typeNames = {
-                            'create': 'Создание',
-                            'update': 'Обновление', 
-                            'delete': 'Удаление',
-                            'system': 'Система',
-                            'other': 'Другие'
-                        };
-                        return typeNames[type] || type;
-                    }),
-                    datasets: [{
-                        data: counts,
-                        backgroundColor: backgroundColors,
-                        borderWidth: 2,
-                        borderColor: '#ffffff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.raw || 0;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = Math.round((value / total) * 100);
-                                    return `${label}: ${value} (${percentage}%)`;
-                                }
+        if (logsChart) {
+            logsChart.destroy();
+        }
+        
+        const labels = Object.keys(data.types);
+        const counts = Object.values(data.types);
+        const backgroundColors = labels.map(type => typeColors[type] || typeColors['other']);
+        
+        console.log('Данные для диаграммы:', { labels, counts, backgroundColors });
+        
+        // Обработка случая отсутствия данных
+        if (labels.length === 0) {
+            ctx2d.clearRect(0, 0, ctx.width, ctx.height);
+            ctx2d.font = '16px Arial';
+            ctx2d.fillStyle = '#666';
+            ctx2d.textAlign = 'center';
+            ctx2d.fillText('Нет данных для отображения', ctx.width / 2, ctx.height / 2);
+            return;
+        }
+        
+        // Создание новой круговой диаграммы с использованием Chart.js
+        logsChart = new Chart(ctx2d, {
+            type: 'pie',
+            data: {
+                labels: labels.map(type => {
+                    const typeNames = {
+                        'create': 'Создание',
+                        'update': 'Обновление', 
+                        'delete': 'Удаление',
+                        'system': 'Система',
+                        'other': 'Другие'
+                    };
+                    return typeNames[type] || type;
+                }),
+                datasets: [{
+                    data: counts,
+                    backgroundColor: backgroundColors,
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} (${percentage}%)`;
                             }
                         }
                     }
                 }
-            });
-            
-            updateLegend(data.types);
-            updateStats(data);
+            }
+        });
+        
+        updateLegend(data.types);
+        updateStats(data);
+    }
+    
+    // Функция обновления легенды диаграммы
+    function updateLegend(types) {
+        const legendContainer = document.getElementById('chartLegend');
+        if (!legendContainer) {
+            console.error('Контейнер легенды не найден!');
+            return;
         }
         
-        // SUMMARY: Функция обновления легенды диаграммы
-        function updateLegend(types) {
-            const legendContainer = document.getElementById('chartLegend');
-            if (!legendContainer) {
-                console.error('Контейнер легенды не найден!');
-                return;
+        legendContainer.innerHTML = '';
+        
+        Object.entries(types).forEach(([type, count]) => {
+            const typeNames = {
+                'create': 'Создание',
+                'update': 'Обновление',
+                'delete': 'Удаление',
+                'system': 'Система',
+                'other': 'Другие'
+            };
+            
+            const legendItem = document.createElement('div');
+            legendItem.className = 'admin-logs-legend-item';
+            legendItem.innerHTML = `
+                <div class="admin-logs-legend-color admin-logs-chart-${type}" 
+                     style="background-color: ${typeColors[type] || typeColors['other']}"></div>
+                <div class="admin-logs-legend-info">
+                    <span class="admin-logs-legend-name">${typeNames[type] || type}</span>
+                    <span class="admin-logs-legend-count">${count}</span>
+                </div>
+            `;
+            legendContainer.appendChild(legendItem);
+        });
+    }
+    
+    // Функция обновления статистических показателей
+    function updateStats(data) {
+        const totalLogsElement = document.getElementById('totalLogsCount');
+        const mostCommonElement = document.getElementById('mostCommonType');
+        const leastCommonElement = document.getElementById('leastCommonType');
+        
+        if (totalLogsElement) totalLogsElement.textContent = data.total;
+        
+        const types = data.types;
+        const entries = Object.entries(types);
+        
+        if (entries.length > 0) {
+            const mostCommon = entries.reduce((a, b) => a[1] > b[1] ? a : b);
+            if (mostCommonElement) {
+                mostCommonElement.textContent = 
+                    mostCommon[0] === 'create' ? 'Создание' :
+                    mostCommon[0] === 'update' ? 'Обновление' :
+                    mostCommon[0] === 'delete' ? 'Удаление' :
+                    mostCommon[0] === 'system' ? 'Система' : 'Другие';
             }
             
-            legendContainer.innerHTML = '';
-            
-            Object.entries(types).forEach(([type, count]) => {
-                const typeNames = {
-                    'create': 'Создание',
-                    'update': 'Обновление',
-                    'delete': 'Удаление',
-                    'system': 'Система',
-                    'other': 'Другие'
-                };
-                
-                const legendItem = document.createElement('div');
-                legendItem.className = 'admin-logs-legend-item';
-                legendItem.innerHTML = `
-                    <div class="admin-logs-legend-color admin-logs-chart-${type}" 
-                         style="background-color: ${typeColors[type] || typeColors['other']}"></div>
-                    <div class="admin-logs-legend-info">
-                        <span class="admin-logs-legend-name">${typeNames[type] || type}</span>
-                        <span class="admin-logs-legend-count">${count}</span>
-                    </div>
-                `;
-                legendContainer.appendChild(legendItem);
-            });
-        }
-        
-        // SUMMARY: Функция обновления статистических показателей
-        function updateStats(data) {
-            const totalLogsElement = document.getElementById('totalLogsCount');
-            const mostCommonElement = document.getElementById('mostCommonType');
-            const leastCommonElement = document.getElementById('leastCommonType');
-            
-            if (totalLogsElement) totalLogsElement.textContent = data.total;
-            
-            const types = data.types;
-            const entries = Object.entries(types);
-            
-            if (entries.length > 0) {
-                const mostCommon = entries.reduce((a, b) => a[1] > b[1] ? a : b);
-                if (mostCommonElement) {
-                    mostCommonElement.textContent = 
-                        mostCommon[0] === 'create' ? 'Создание' :
-                        mostCommon[0] === 'update' ? 'Обновление' :
-                        mostCommon[0] === 'delete' ? 'Удаление' :
-                        mostCommon[0] === 'system' ? 'Система' : 'Другие';
-                }
-                
-                const leastCommon = entries.reduce((a, b) => a[1] < b[1] ? a : b);
-                if (leastCommonElement) {
-                    leastCommonElement.textContent =
-                        leastCommon[0] === 'create' ? 'Создание' :
-                        leastCommon[0] === 'update' ? 'Обновление' :
-                        leastCommon[0] === 'delete' ? 'Удаление' :
-                        leastCommon[0] === 'system' ? 'Система' : 'Другие';
-                }
-            } else {
-                if (mostCommonElement) mostCommonElement.textContent = '—';
-                if (leastCommonElement) leastCommonElement.textContent = '—';
+            const leastCommon = entries.reduce((a, b) => a[1] < b[1] ? a : b);
+            if (leastCommonElement) {
+                leastCommonElement.textContent =
+                    leastCommon[0] === 'create' ? 'Создание' :
+                    leastCommon[0] === 'update' ? 'Обновление' :
+                    leastCommon[0] === 'delete' ? 'Удаление' :
+                    leastCommon[0] === 'system' ? 'Система' : 'Другие';
             }
+        } else {
+            if (mostCommonElement) mostCommonElement.textContent = '—';
+            if (leastCommonElement) leastCommonElement.textContent = '—';
         }
-        
-        // SUMMARY: Первоначальное построение диаграммы при загрузке страницы
-        updateChart(chartData);
+    }
+    
+    // Первоначальное построение диаграммы при загрузке страницы
+    updateChart(chartData);
+    
+    // Анимация появления элементов
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    // Применение анимации ко всем карточкам
+    document.querySelectorAll('.admin-logs-dashboard-card, .admin-logs-filters-card').forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = 'all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)';
+        card.style.transitionDelay = `${index * 0.1}s`;
+        observer.observe(card);
     });
-    </script>
+});
+</script>
 {% endblock %}

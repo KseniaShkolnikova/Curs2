@@ -22,11 +22,25 @@ FITZONE - Регистрация
             </div>
             <h2>Присоединяйтесь к FITZONE</h2>
             <p>Создайте аккаунт и получите доступ к персонализированным тренировкам, отслеживанию прогресса и эксклюзивному контенту от наших фитнес-экспертов.</p>
+            
+            
         </div>
     </div>
     
     <!-- Форма справа -->
     <div class="register-content">
+        <!-- Mobile Header -->
+        <div class="mobile-header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M23 5.5V20.5C23 21.3284 22.3284 22 21.5 22H2.5C1.67157 22 1 21.3284 1 20.5V5.5C1 4.67157 1.67157 4 2.5 4H21.5C22.3284 4 23 4.67157 23 5.5ZM3 7V19H21V7H3ZM7 9C7 8.44772 7.44772 8 8 8H16C16.5523 8 17 8.44772 17 9V17C17 17.5523 16.5523 18 16 18H8C7.44772 18 7 17.5523 7 17V9ZM9 10V16H15V10H9ZM18 10C18.5523 10 19 10.4477 19 11V15C19 15.5523 18.5523 16 18 16C17.4477 16 17 15.5523 17 15V11C17 10.4477 17.4477 10 18 10Z"/>
+                    </svg>
+                </div>
+                <div class="logo-text">FITZONE</div>
+            </div>
+        </div>
+
         <h1 class="register-title">Создать аккаунт</h1>
         <p class="register-subtitle">Присоединяйтесь к нашему фитнес-сообществу</p>
         
@@ -346,31 +360,54 @@ FITZONE - Регистрация
 </script>
 
 <style>
-/* Фиксация страницы */
-html, body {
-    overflow: hidden;
-    height: 100%;
-    position: fixed;
-    width: 100%;
+:root {
+    --neon-purple: #8b5cf6;
+    --neon-purple-dark: #7c3aed;
+    --neon-purple-light: #a78bfa;
+    --light-bg: #f8fafc;
+    --light-card: #ffffff;
+    --light-border: #f1f5f9;
+    --text-dark: #0f172a;
+    --text-gray: #64748b;
+    --dark-bg: #0f172a;
+    --dark-card: #1e293b;
+    --dark-border: #334155;
+    --dark-text: #e2e8f0;
+    --dark-text-light: #94a3b8;
+    --accent-gradient: linear-gradient(135deg, var(--neon-purple), var(--neon-purple-dark));
+    --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.08);
+    --shadow-large: 0 20px 50px rgba(139, 92, 246, 0.15);
+    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-.register-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    overflow-y: auto;
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-/* Registration Page Specific Styles */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--light-bg);
+    color: var(--text-dark);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+.dark-theme body {
+    background: var(--dark-bg);
+    color: var(--dark-text);
+}
+
+/* Main container */
 .register-container {
     display: flex;
     min-height: 100vh;
-    position: relative;
+    width: 100%;
 }
 
-/* Фитнес-зал с фиолетовым фильтром слева */
+/* Background section */
 .register-background {
     flex: 1;
     position: relative;
@@ -378,7 +415,7 @@ html, body {
     align-items: center;
     justify-content: center;
     padding: 60px;
-    order: 1; /* Слева */
+    background: #000;
     overflow: hidden;
 }
 
@@ -392,7 +429,7 @@ html, body {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    filter: brightness(0.8);
+    filter: brightness(0.7);
 }
 
 .background-overlay {
@@ -401,9 +438,8 @@ html, body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, 
-        rgba(139, 92, 246, 0.85) 0%, 
-        rgba(124, 58, 237, 0.9) 100%);
+    background: var(--accent-gradient);
+    opacity: 0.9;
 }
 
 .background-content {
@@ -460,10 +496,11 @@ html, body {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.features-list {
-    display: flex;
+.mobile-features {
+    display: none;
     flex-direction: column;
     gap: 15px;
+    margin-top: 30px;
 }
 
 .feature-item {
@@ -480,7 +517,7 @@ html, body {
     text-align: center;
 }
 
-/* Форма справа */
+/* Form section */
 .register-content {
     flex: 1;
     max-width: 500px;
@@ -490,18 +527,54 @@ html, body {
     justify-content: center;
     background: var(--light-card);
     position: relative;
-    z-index: 2;
-    order: 2; /* Справа */
 }
 
 .dark-theme .register-content {
     background: var(--dark-card);
 }
 
+.mobile-header {
+    display: none;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.mobile-header .logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.mobile-header .logo-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--accent-gradient);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-header .logo-icon svg {
+    width: 22px;
+    height: 22px;
+    fill: white;
+}
+
+.mobile-header .logo-text {
+    font-size: 1.8rem;
+    font-weight: 800;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
 .register-title {
     font-size: 2.8rem;
     font-weight: 700;
     color: var(--text-dark);
+    margin-bottom: 10px;
 }
 
 .dark-theme .register-title {
@@ -518,6 +591,7 @@ html, body {
     color: var(--dark-text-light);
 }
 
+/* Form styles */
 .form-group {
     margin-bottom: 25px;
     position: relative;
@@ -541,7 +615,7 @@ html, body {
     border: 2px solid var(--light-border);
     border-radius: 12px;
     font-size: 1rem;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     background: var(--light-bg);
     color: var(--text-dark);
     font-family: inherit;
@@ -574,7 +648,7 @@ html, body {
     cursor: pointer;
     padding: 6px;
     border-radius: 6px;
-    transition: all 0.3s ease;
+    transition: var(--transition);
 }
 
 .password-toggle:hover {
@@ -594,7 +668,7 @@ html, body {
     height: 100%;
     width: 0%;
     border-radius: 3px;
-    transition: all 0.3s ease;
+    transition: var(--transition);
 }
 
 .password-strength-text {
@@ -615,7 +689,7 @@ html, body {
     align-items: center;
     gap: 8px;
     font-size: 0.85rem;
-    transition: all 0.3s ease;
+    transition: var(--transition);
 }
 
 .requirement.valid {
@@ -648,7 +722,7 @@ html, body {
     font-weight: 500;
 }
 
-/* Checkbox Styles */
+/* Checkbox styles */
 .checkbox-label {
     display: flex;
     align-items: flex-start;
@@ -676,7 +750,7 @@ html, body {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     margin-top: 2px;
 }
 
@@ -706,14 +780,7 @@ html, body {
     text-decoration: underline;
 }
 
-.checkbox-label input[type="checkbox"]:required + .checkmark {
-    border-color: #ba00dfff;
-}
-
-.checkbox-label input[type="checkbox"]:required:checked + .checkmark {
-    border-color: var(--neon-purple);
-}
-
+/* Button styles */
 .register-button {
     width: 100%;
     background: var(--accent-gradient);
@@ -723,7 +790,7 @@ html, body {
     border-radius: 12px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     font-size: 1.1rem;
     font-family: inherit;
     margin-top: 10px;
@@ -741,6 +808,7 @@ html, body {
     box-shadow: none;
 }
 
+/* Footer */
 .register-footer {
     text-align: center;
     margin-top: 30px;
@@ -762,11 +830,75 @@ html, body {
     text-decoration: underline;
 }
 
-/* Tablet Styles (768px - 1024px) */
-@media (max-width: 1024px) and (min-width: 769px) {
+/* Messages styles */
+.messages-container {
+    margin-bottom: 25px;
+}
+
+.success-message,
+.error-message,
+.info-message {
+    position: relative;
+    padding: 12px 40px 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    border-left: 4px solid;
+}
+
+.success-message {
+    background: #d1fae5;
+    color: #065f46;
+    border-left-color: #10b981;
+}
+
+.error-message {
+    background: #fef2f2;
+    color: #dc2626;
+    border-left-color: #dc2626;
+}
+
+.info-message {
+    background: #dbeafe;
+    color: #1e40af;
+    border-left-color: #3b82f6;
+}
+
+.dark-theme .success-message {
+    background: #064e3b;
+    color: #a7f3d0;
+}
+
+.dark-theme .error-message {
+    background: #7f1d1d;
+    color: #fca5a5;
+}
+
+.dark-theme .info-message {
+    background: #1e3a8a;
+    color: #93c5fd;
+}
+
+.close-message {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7;
+}
+
+.close-message:hover {
+    opacity: 1;
+}
+
+/* АДАПТИВНОСТЬ ДЛЯ ПЛАНШЕТОВ */
+@media (max-width: 1024px) {
     .register-container {
         flex-direction: row;
-        min-height: 100vh;
     }
     
     .register-background {
@@ -818,7 +950,7 @@ html, body {
     }
 }
 
-/* Mobile Styles (768px and below) */
+/* АДАПТИВНОСТЬ ДЛЯ ТЕЛЕФОНОВ */
 @media (max-width: 768px) {
     .register-container {
         flex-direction: column;
@@ -879,28 +1011,10 @@ html, body {
     
     .mobile-header {
         display: block;
-        text-align: center;
-        margin-bottom: 20px;
-    }
-    
-    .mobile-header .logo {
-        margin-bottom: 0;
     }
     
     .mobile-features {
         display: flex;
-        flex-direction: column;
-        gap: 12px;
-        margin-top: 25px;
-    }
-    
-    .feature-item {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        font-size: 0.9rem;
-        opacity: 0.95;
     }
     
     .register-title {
@@ -975,7 +1089,7 @@ html, body {
     }
 }
 
-/* Small Mobile Styles (480px and below) */
+/* Мелкие телефоны */
 @media (max-width: 480px) {
     .register-background {
         padding: 25px 15px;
@@ -1048,92 +1162,8 @@ html, body {
     }
     
     .mobile-features {
-        display: none; /* Скрываем фичи в ландшафте для экономии места */
+        display: none;
     }
-}
-
-/* Hide mobile header on desktop */
-.mobile-header {
-    display: none;
-}
-
-.mobile-features {
-    display: none;
-}
-
-@media (max-width: 768px) {
-    .mobile-header {
-        display: block;
-    }
-    
-    .mobile-features {
-        display: flex;
-    }
-}
-
-/* Messages Styles */
-.messages-container {
-    margin-bottom: 25px;
-}
-
-.success-message,
-.error-message,
-.info-message {
-    position: relative;
-    padding: 12px 40px 12px 16px;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    font-size: 0.9rem;
-    border-left: 4px solid;
-}
-
-.success-message {
-    background: #d1fae5;
-    color: #065f46;
-    border-left-color: #10b981;
-}
-
-.error-message {
-    background: #fef2f2;
-    color: #dc2626;
-    border-left-color: #dc2626;
-}
-
-.info-message {
-    background: #dbeafe;
-    color: #1e40af;
-    border-left-color: #3b82f6;
-}
-
-.dark-theme .success-message {
-    background: #064e3b;
-    color: #a7f3d0;
-}
-
-.dark-theme .error-message {
-    background: #7f1d1d;
-    color: #fca5a5;
-}
-
-.dark-theme .info-message {
-    background: #1e3a8a;
-    color: #93c5fd;
-}
-
-.close-message {
-    position: absolute;
-    top: 8px;
-    right: 12px;
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    cursor: pointer;
-    color: inherit;
-    opacity: 0.7;
-}
-
-.close-message:hover {
-    opacity: 1;
 }
 </style>
 {% endblock %}

@@ -33,8 +33,9 @@ FITZONE - Управление сотрудниками
                     <span>Добавить сотрудника</span>
                 </button>
                 <div class="staff-stats">
-                    <span ></span>
                     <span class="stat-item">Всего: {{ total_count }}</span>
+                    <span class="stat-item">Активных: {{ active_count }}</span>
+                    <span class="stat-item">Неактивных: {{ inactive_count }}</span>
                 </div>
             </div>
 
@@ -72,9 +73,9 @@ FITZONE - Управление сотрудниками
                             </p>
                             <p class="staff-status">
                                 {% if user.is_active %}
-                                    <span class="status-active"> Активен</span>
+                                    <span class="status-active">Активен</span>
                                 {% else %}
-                                    <span class="status-inactive"> Неактивен</span>
+                                    <span class="status-inactive">Неактивен</span>
                                 {% endif %}
                                 <span class="staff-date">Зарегистрирован: {{ user.date_joined|date:"d.m.Y" }}</span>
                             </p>
@@ -275,8 +276,30 @@ FITZONE - Управление сотрудниками
 <div id="staffStatus" class="status-message"></div>
 
 <style>
+:root {
+    --neon-purple: #8b5cf6;
+    --neon-purple-dark: #7c3aed;
+    --neon-purple-light: #a78bfa;
+    --neon-blue: #3b82f6;
+    --light-bg: #f8fafc;
+    --light-card: #ffffff;
+    --light-border: #f1f5f9;
+    --text-dark: #0f172a;
+    --text-gray: #64748b;
+    --dark-bg: #0f172a;
+    --dark-card: #1e293b;
+    --dark-border: #334155;
+    --dark-text: #e2e8f0;
+    --dark-text-light: #94a3b8;
+    --accent-gradient: linear-gradient(135deg, var(--neon-purple), var(--neon-purple-dark));
+    --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.08);
+    --shadow-large: 0 20px 50px rgba(139, 92, 246, 0.15);
+    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
 .create-plan-section {
     padding: 40px 0;
+    margin-bottom: 60px;
 }
 
 .create-plan-container {
@@ -284,6 +307,9 @@ FITZONE - Управление сотрудниками
     grid-template-columns: 2fr 1fr;
     gap: 30px;
     align-items: start;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
 }
 
 .create-plan-hero {
@@ -301,7 +327,7 @@ FITZONE - Управление сотрудниками
     transform: translateX(-50%);
     width: 100px;
     height: 4px;
-    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+    background: var(--accent-gradient);
     border-radius: 2px;
 }
 
@@ -324,15 +350,22 @@ FITZONE - Управление сотрудниками
 }
 
 .create-plan-hero-title {
-    font-size: 2.5rem;
+    font-size: clamp(2.5rem, 6vw, 4rem);
     font-weight: 800;
     margin-bottom: 15px;
-    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+    background: linear-gradient(135deg, var(--text-dark) 0%, var(--neon-purple) 30%, var(--neon-purple-dark) 70%, var(--text-dark) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    background-clip: text;
-    letter-spacing: -0.5px;
+    background-size: 200% 200%;
+    animation: gradientFlow 4s ease infinite;
+    text-transform: uppercase;
+    letter-spacing: -1px;
     line-height: 1.1;
+}
+
+@keyframes gradientFlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
 }
 
 .create-plan-hero-desc {
@@ -366,13 +399,24 @@ FITZONE - Управление сотрудниками
     border-radius: 20px;
     padding: 30px;
     border: 1px solid var(--light-border);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-medium);
+    position: relative;
+    overflow: hidden;
+}
+
+.plan-form-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--accent-gradient);
 }
 
 .dark-theme .plan-form-card {
     background: var(--dark-card);
     border-color: var(--dark-border);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .plan-info-card {
@@ -382,13 +426,12 @@ FITZONE - Управление сотрудниками
     border: 1px solid var(--light-border);
     position: sticky;
     top: 100px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-medium);
 }
 
 .dark-theme .plan-info-card {
     background: var(--dark-card);
     border-color: var(--dark-border);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .staff-header {
@@ -419,11 +462,13 @@ FITZONE - Управление сотрудниками
     background: var(--light-card);
     border: 1px solid var(--light-border);
     font-weight: 500;
+    color: var(--text-dark);
 }
 
 .dark-theme .stat-item {
     background: var(--dark-card);
     border-color: var(--dark-border);
+    color: var(--dark-text);
 }
 
 .staff-list {
@@ -439,7 +484,7 @@ FITZONE - Управление сотрудниками
     background: var(--light-card);
     border-radius: 12px;
     border: 1px solid var(--light-border);
-    transition: all 0.3s ease;
+    transition: var(--transition);
 }
 
 .dark-theme .staff-card {
@@ -450,12 +495,12 @@ FITZONE - Управление сотрудниками
 .staff-card.staff-inactive {
     opacity: 0.7;
     background: rgba(149, 165, 166, 0.1);
-    border-color: #95a5a6;
 }
 
 .staff-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-medium);
+    border-color: var(--neon-purple);
 }
 
 .staff-info {
@@ -471,6 +516,7 @@ FITZONE - Управление сотрудниками
     border-radius: 50%;
     overflow: hidden;
     flex-shrink: 0;
+    border: 2px solid var(--light-border);
 }
 
 .staff-avatar img {
@@ -482,7 +528,7 @@ FITZONE - Управление сотрудниками
 .avatar-placeholder {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+    background: var(--accent-gradient);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -539,11 +585,12 @@ FITZONE - Управление сотрудниками
 .role-badge {
     display: inline-block;
     padding: 4px 8px;
-    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+    background: var(--accent-gradient);
     color: white;
     border-radius: 6px;
     font-size: 12px;
     margin-right: 4px;
+    font-weight: 600;
 }
 
 .staff-status {
@@ -556,12 +603,12 @@ FITZONE - Управление сотрудниками
 
 .status-active {
     color: #27ae60;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .status-inactive {
     color: #e74c3c;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .staff-date {
@@ -580,7 +627,7 @@ FITZONE - Управление сотрудниками
     border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     display: flex;
     align-items: center;
     gap: 6px;
@@ -629,6 +676,11 @@ FITZONE - Управление сотрудниками
     opacity: 0.5;
 }
 
+.no-staff p {
+    margin: 0;
+    font-size: 16px;
+}
+
 .form-group {
     margin-bottom: 20px;
 }
@@ -651,7 +703,7 @@ FITZONE - Управление сотрудниками
     border: 2px solid var(--light-border);
     border-radius: 10px;
     font-size: 1rem;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     background: var(--light-bg);
     color: var(--text-dark);
     font-family: inherit;
@@ -730,7 +782,7 @@ FITZONE - Управление сотрудниками
     border: 2px solid var(--light-border);
     border-radius: 10px;
     font-weight: 600;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     flex: 1;
     justify-content: center;
     cursor: pointer;
@@ -744,6 +796,8 @@ FITZONE - Управление сотрудниками
 .cancel-btn:hover {
     background: var(--light-bg);
     transform: translateY(-2px);
+    border-color: var(--neon-purple);
+    color: var(--neon-purple);
 }
 
 .dark-theme .cancel-btn:hover {
@@ -755,13 +809,13 @@ FITZONE - Управление сотрудниками
     align-items: center;
     gap: 8px;
     padding: 12px 24px;
-    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+    background: var(--accent-gradient);
     color: white;
     border: none;
     border-radius: 10px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     flex: 2;
     justify-content: center;
 }
@@ -797,16 +851,22 @@ FITZONE - Управление сотрудниками
     padding: 12px;
     background: var(--light-bg);
     border-radius: 10px;
+    transition: var(--transition);
 }
 
 .dark-theme .info-item {
     background: var(--dark-bg);
 }
 
+.info-item:hover {
+    transform: translateX(4px);
+    border-left: 3px solid var(--neon-purple);
+}
+
 .info-icon {
     width: 36px;
     height: 36px;
-    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+    background: var(--accent-gradient);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -834,6 +894,7 @@ FITZONE - Управление сотрудниками
 .info-text span {
     font-weight: 600;
     color: var(--text-dark);
+    font-size: 1.1rem;
 }
 
 .dark-theme .info-text span {
@@ -859,6 +920,15 @@ FITZONE - Управление сотрудниками
 .tips-list li {
     margin-bottom: 6px;
     line-height: 1.4;
+    position: relative;
+}
+
+.tips-list li::before {
+    content: '•';
+    color: var(--neon-purple);
+    font-weight: bold;
+    position: absolute;
+    left: -15px;
 }
 
 .modal {
@@ -870,6 +940,7 @@ FITZONE - Управление сотрудниками
     width: 100%;
     height: 100%;
     background-color: rgba(0,0,0,0.5);
+    backdrop-filter: blur(5px);
 }
 
 .modal-content {
@@ -879,7 +950,15 @@ FITZONE - Управление сотрудниками
     border-radius: 12px;
     width: 90%;
     max-width: 500px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    box-shadow: var(--shadow-large);
+    transform: translateY(-20px);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.modal.show .modal-content {
+    transform: translateY(0);
+    opacity: 1;
 }
 
 .dark-theme .modal-content {
@@ -913,14 +992,12 @@ FITZONE - Управление сотрудниками
     font-weight: bold;
     cursor: pointer;
     color: var(--text-gray);
+    transition: var(--transition);
 }
 
 .close:hover {
-    color: var(--text-dark);
-}
-
-.dark-theme .close:hover {
-    color: var(--dark-text);
+    color: var(--neon-purple);
+    transform: scale(1.1);
 }
 
 .modal-body {
@@ -936,6 +1013,7 @@ FITZONE - Управление сотрудниками
     z-index: 1001;
     display: none;
     font-weight: 500;
+    box-shadow: var(--shadow-medium);
 }
 
 .status-message.success {
@@ -952,7 +1030,8 @@ FITZONE - Управление сотрудниками
     display: block;
 }
 
-@media (max-width: 968px) {
+/* АДАПТИВНОСТЬ ДЛЯ ПЛАНШЕТОВ */
+@media (max-width: 1024px) {
     .create-plan-container {
         grid-template-columns: 1fr;
         gap: 20px;
@@ -978,10 +1057,16 @@ FITZONE - Управление сотрудниками
     }
 }
 
+/* АДАПТИВНОСТЬ ДЛЯ ТЕЛЕФОНОВ */
 @media (max-width: 768px) {
+    .create-plan-container {
+        padding: 0 15px;
+    }
+    
     .plan-form-card,
     .plan-info-card {
         padding: 20px;
+        border-radius: 16px;
     }
     
     .staff-card {
@@ -1006,6 +1091,7 @@ FITZONE - Управление сотрудниками
     
     .create-plan-hero {
         padding: 40px 0 30px 0;
+        margin-top: 80px;
     }
     
     .create-plan-hero-title {
@@ -1015,11 +1101,62 @@ FITZONE - Управление сотрудниками
     .create-plan-hero-desc {
         font-size: 1.1rem;
     }
+    
+    .modal-content {
+        margin: 10% auto;
+        width: 95%;
+    }
+}
+
+/* Мелкие телефоны */
+@media (max-width: 480px) {
+    .create-plan-section {
+        padding: 20px 0;
+    }
+    
+    .plan-form-card,
+    .plan-info-card {
+        padding: 18px;
+        border-radius: 14px;
+    }
+    
+    .staff-info {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+    }
+    
+    .staff-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn-edit, .btn-delete, .btn-activate {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .staff-stats {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .create-plan-hero-title {
+        font-size: 1.6rem;
+    }
+    
+    .create-plan-hero-desc {
+        font-size: 1rem;
+    }
 }
 </style>
 
 <script>
-// SUMMARY: Система управления сотрудниками фитнес-клуба
+// Система управления сотрудниками фитнес-клуба
 // Основные функции: создание, редактирование, активация/деактивация сотрудников
 // Особенности: динамическое отображение поля специализации для тренеров, обработка форм через AJAX
 
@@ -1106,22 +1243,30 @@ async function deleteStaff(userId) {
 }
 
 function showCreateModal() {
-    document.getElementById('createModal').style.display = 'block';
+    const modal = document.getElementById('createModal');
+    modal.style.display = 'block';
+    modal.classList.add('show');
     toggleSpecializationField();
 }
 
 function closeCreateModal() {
-    document.getElementById('createModal').style.display = 'none';
+    const modal = document.getElementById('createModal');
+    modal.style.display = 'none';
+    modal.classList.remove('show');
     document.getElementById('createStaffForm').reset();
     document.getElementById('specialization-group').style.display = 'none';
 }
 
 function showEditModal() {
-    document.getElementById('editModal').style.display = 'block';
+    const modal = document.getElementById('editModal');
+    modal.style.display = 'block';
+    modal.classList.add('show');
 }
 
 function closeEditModal() {
-    document.getElementById('editModal').style.display = 'none';
+    const modal = document.getElementById('editModal');
+    modal.style.display = 'none';
+    modal.classList.remove('show');
 }
 
 function showStaffStatus(message, isSuccess) {
@@ -1260,5 +1405,40 @@ window.onclick = function(event) {
         closeEditModal();
     }
 }
+
+// Анимация появления карточек
+document.addEventListener('DOMContentLoaded', function() {
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    // Применение анимации ко всем карточкам сотрудников
+    document.querySelectorAll('.staff-card').forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = 'all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)';
+        card.style.transitionDelay = `${index * 0.1}s`;
+        observer.observe(card);
+    });
+    
+    // Анимация для информационных карточек
+    document.querySelectorAll('.plan-form-card, .plan-info-card').forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.5s ease';
+        card.style.transitionDelay = `${index * 0.05}s`;
+        observer.observe(card);
+    });
+});
 </script>
 {% endblock %}

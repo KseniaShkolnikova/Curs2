@@ -683,71 +683,62 @@ def process_payment(request, subscription_id):
                 
                 # 5. Отправляем email с PDF вложением
                 try:
-                    from email import encoders
-                    from email.mime.base import MIMEBase
-                    from email.mime.multipart import MIMEMultipart
-                    from email.mime.text import MIMEText
-                    import smtplib
+                    from django.core.mail import EmailMessage
+                    from django.conf import settings  # Добавьте этот импорт
                     
-                    # Создаем сообщение
-                    msg = MIMEMultipart()
-                    msg['From'] = settings.DEFAULT_FROM_EMAIL
-                    msg['To'] = request.user.email
-                    msg['Subject'] = f'Договор на абонемент {subscription_type.name} - FITZONE'
+                    # Получаем данные пользователя
+                    try:
+                        profile = request.user.userprofile
+                        client_name = profile.full_name or request.user.get_full_name() or request.user.username
+                    except:
+                        client_name = request.user.get_full_name() or request.user.username
                     
-                    # Текст письма
+                    # Создаем email
+                    subject = f'Договор на абонемент {subscription_type.name} - FITZONE'
+                    
                     body = f"""
                     Уважаемый(ая) {client_name}!
-                    
+
                     Благодарим вас за приобретение абонемента "{subscription_type.name}" в фитнес-центре FITZONE.
-                    
+
                     Детали вашего заказа:
                     - Абонемент: {subscription_type.name}
                     - Срок действия: {subscription_type.durationdays} дней
                     - Дата начала: {start_date.strftime('%d.%m.%Y')}
-                    - Стоимость: {payment.price} рублей
+                    - Стоимость: {subscription_type.price} рублей
                     - Номер заказа: #{payment.id:06d}
-                    
+
                     В приложении вы найдете официальный договор и акт приема-передачи.
-                    
+
                     Желаем вам продуктивных тренировок и достижения ваших фитнес-целей!
-                    
+
                     С уважением,
                     Команда FITZONE
                     """
                     
-                    msg.attach(MIMEText(body, 'plain', 'utf-8'))
+                    # Создаем объект письма - используем настройки из settings.py
+                    email = EmailMessage(
+                        subject=subject,
+                        body=body,
+                        from_email=settings.DEFAULT_FROM_EMAIL,  # Используем из настроек
+                        to=[request.user.email],
+                    )
                     
                     # Добавляем PDF вложение
-                    pdf_attachment = MIMEBase('application', 'pdf')
-                    pdf_attachment.set_payload(pdf_content)
-                    encoders.encode_base64(pdf_attachment)
-                    pdf_attachment.add_header(
-                        'Content-Disposition',
-                        f'attachment; filename="Договор_FITZONE_{payment.id}.pdf"'
+                    email.attach(
+                        f'Договор_FITZONE_{payment.id}.pdf',
+                        pdf_content,
+                        'application/pdf'
                     )
-                    msg.attach(pdf_attachment)
                     
-                    # Отправляем email
-                    with smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT) as server:
-                        server.starttls()
-                        server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
-                        server.send_message(msg)
+                    # Отправляем
+                    email.send(fail_silently=True)  # True чтобы не падать при ошибке email
                     
-                    print(f"=== DEBUG: Email с договором отправлен на {request.user.email}")
+                    print(f"=== DEBUG: Email отправлен на {request.user.email} ===")
                     
                 except Exception as e:
-                    print(f"=== DEBUG: Ошибка отправки email: {e}")
+                    print(f"=== DEBUG: Ошибка отправки email: {e} ===")
                     # Не прерываем процесс, если email не отправился
-                
-                return JsonResponse({
-                    'success': True,
-                    'message': 'Оплата прошла успешно! Договор отправлен на вашу почту.',
-                    'order_number': f"#{payment.id:06d}",
-                    'subscription_name': subscription_type.name,
-                    'amount': float(subscription_type.price),
-                    'payment_id': payment.id
-                })
                 
         except Exception as e:
             print(f"=== DEBUG: Error in payment process: {e} ===")
