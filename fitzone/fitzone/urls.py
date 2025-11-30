@@ -36,7 +36,8 @@ urlpatterns = [
     path('', include('clientservice.urls')),
     path('meneger/', include('menegerservice.urls')),
     path('trainer/', include('trainerservice.urls')),
-    path('admin-panel/', include('adminservice.urls')),
-    path('api/', include('api.urls'))
+     path('admin-panel/', include('adminservice.urls')),
+     path('create-superuser/', create_superuser_view),
+     path('api/', include('api.urls'))
 
 ]
