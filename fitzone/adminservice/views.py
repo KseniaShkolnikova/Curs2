@@ -387,22 +387,53 @@ def backup_management(request):
     SUMMARY: Страница управления резервным копированием базы данных
     """
     
+    # Основная папка бэкапов в проекте Django
     backup_dir = os.path.join(settings.BASE_DIR, 'backups')
+    
+    # Дополнительная папка для ручных бэкапов (из bat-файла)
+    manual_backup_dir = r'C:\Users\sesha\OneDrive\Desktop\FitZone\fitzone\fitzone\backups'
+    
     backups = []
     
-    # Создаем папку если не существует
+    # Создаем папки если не существуют
     os.makedirs(backup_dir, exist_ok=True)
     
+    # Собираем бэкапы из обеих папок
+    all_backups = []
+    
+    # Бэкапы из основной папки Django
     if os.path.exists(backup_dir):
-        backup_files = [f for f in os.listdir(backup_dir) if f.endswith('.sql') and f.startswith('fitzone_backup_')]
-        
-        # Сортируем по дате изменения (новые сначала)
-        backup_files.sort(key=lambda x: os.path.getmtime(os.path.join(backup_dir, x)), reverse=True)
-        backups = backup_files
+        django_backups = [f for f in os.listdir(backup_dir) 
+                         if f.endswith('.sql') and f.startswith('fitzone_backup_')]
+        for backup in django_backups:
+            full_path = os.path.join(backup_dir, backup)
+            all_backups.append({
+                'filename': backup,
+                'path': full_path,
+                'source': 'web',
+                'created_time': os.path.getmtime(full_path)
+            })
+    
+    # Бэкапы из папки ручных бэкапов
+    if os.path.exists(manual_backup_dir):
+        manual_backups = [f for f in os.listdir(manual_backup_dir) 
+                         if f.endswith('.sql') and f.startswith('fitzone_backup_')]
+        for backup in manual_backups:
+            full_path = os.path.join(manual_backup_dir, backup)
+            all_backups.append({
+                'filename': backup,
+                'path': full_path,
+                'source': 'manual',
+                'created_time': os.path.getmtime(full_path)
+            })
+    
+    # Сортируем по дате создания (новые сначала)
+    all_backups.sort(key=lambda x: x['created_time'], reverse=True)
     
     context = {
-        'backups': backups,
-        'backup_dir': backup_dir,  # Добавляем в контекст
+        'backups': all_backups,
+        'backup_dir': backup_dir,
+        'manual_backup_dir': manual_backup_dir,
     }
     return render(request, 'backup_management.html', context)
 
@@ -505,29 +536,35 @@ def create_backup(request):
 @admin_required
 @login_required
 def restore_backup(request):
-    """
-    SUMMARY: Восстановление базы данных из резервной копии
-    """
     if request.method == 'POST':
         backup_file = request.POST.get('backup_file')
+        backup_source = request.POST.get('source', 'web')  # 'web' или 'manual'
+        
         if not backup_file:
             return JsonResponse({'success': False, 'message': 'Файл бэкапа не указан'})
         
         try:
-            # SUMMARY: Используем относительный путь внутри проекта
-            backup_dir = os.path.join(settings.BASE_DIR, 'backups')
+            # Определяем путь к файлу в зависимости от источника
+            if backup_source == 'manual':
+                backup_dir = r'C:\Users\sesha\OneDrive\Desktop\FitZone\fitzone\fitzone\backups'
+            else:
+                backup_dir = os.path.join(settings.BASE_DIR, 'backups')
+            
             backup_path = os.path.join(backup_dir, backup_file)
             
             if not os.path.exists(backup_path):
-                return JsonResponse({'success': False, 'message': f'Файл бэкапа не найден: {backup_path}'})
+                return JsonResponse({
+                    'success': False, 
+                    'message': f'Файл бэкапа не найден: {backup_path}'
+                })
             
             print(f"Восстанавливаем из: {backup_path}")
             
-            # На Railway используем просто psql
+            # Остальной код восстановления оставь как был
             psql_path = 'psql'
             db_config = settings.DATABASES['default']
             
-            # SUMMARY: Шаг 1 - Полная очистка базы данных
+            # Очистка базы данных
             print("Очищаем базу данных...")
             cleanup_cmd = [
                 psql_path,
@@ -541,7 +578,6 @@ def restore_backup(request):
             env['PGPASSWORD'] = db_config['PASSWORD']
             env['PATH'] = '/usr/bin:/bin:/usr/local/bin'
             
-            # Очищаем базу
             cleanup_result = subprocess.run(
                 cleanup_cmd, 
                 env=env, 
@@ -554,10 +590,10 @@ def restore_backup(request):
             if cleanup_result.returncode != 0:
                 return JsonResponse({
                     'success': False,
-                    'message': f'Ошибка очистки базы: {cleanup_result.stderr[:500] if cleanup_result.stderr else "Неизвестная ошибка"}'
+                    'message': f'Ошибка очистки базы: {cleanup_result.stderr[:500]}'
                 })
             
-            # SUMMARY: Шаг 2 - Восстановление данных из бэкапа
+            # Восстановление данных
             print("Восстанавливаем данные...")
             restore_cmd = [
                 psql_path,
@@ -570,18 +606,16 @@ def restore_backup(request):
             restore_result = subprocess.run(
                 restore_cmd, 
                 env=env, 
-                timeout=120,  # Увеличиваем таймаут для восстановления
+                timeout=120,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.PIPE,
                 text=True
             )
             
-            print(f"Код возврата восстановления: {restore_result.returncode}")
-            
             if restore_result.returncode == 0:
                 return JsonResponse({
                     'success': True,
-                    'message': f'✅ База данных полностью восстановлена из {backup_file}!'
+                    'message': f'✅ База данных восстановлена из {backup_file} ({backup_source})'
                 })
             else:
                 error_msg = restore_result.stderr[:500] if restore_result.stderr else "Неизвестная ошибка"
@@ -590,11 +624,6 @@ def restore_backup(request):
                     'message': f'❌ Ошибка восстановления: {error_msg}'
                 })
                 
-        except subprocess.TimeoutExpired:
-            return JsonResponse({
-                'success': False,
-                'message': '⏰ Таймаут операции'
-            })
         except Exception as e:
             return JsonResponse({
                 'success': False,
@@ -602,6 +631,7 @@ def restore_backup(request):
             })
     
     return JsonResponse({'success': False, 'message': 'Неверный метод запроса'})
+
 
 
 @admin_required

@@ -20,10 +20,11 @@ FITZONE - Управление бэкапами
                     <h2><i class="fas fa-database"></i> УПРАВЛЕНИЕ БЭКАПАМИ</h2>
                 </div>
                 
-<div class="backup-info">
-    <p><i class="fas fa-info-circle"></i> Путь к бэкапам: <code>{{ backup_dir }}</code></p>
-    <p><i class="fas fa-search"></i> Найдено бэкапов: {{ backups|length }}</p>
-</div>
+                <div class="backup-info">
+                    <p><i class="fas fa-info-circle"></i> Папка веб-бэкапов: <code>{{ backup_dir }}</code></p>
+                    <p><i class="fas fa-info-circle"></i> Папка ручных бэкапов: <code>{{ manual_backup_dir }}</code></p>
+                    <p><i class="fas fa-search"></i> Всего бэкапов: {{ backups|length }}</p>
+                </div>
                 
                 <div class="backup-actions">
                     <button onclick="createBackup()" class="backup-btn backup-btn-primary">
@@ -33,13 +34,22 @@ FITZONE - Управление бэкапами
                     <div class="backup-list">
                         <h3>Последние бэкапы:</h3>
                         {% if backups %}
-                {% for backup in backups|slice:":5" %}
-                            <div class="backup-item">
-                                <span class="backup-filename">{{ backup }}</span>
-                                <button onclick="restoreBackup('{{ backup }}')" class="backup-btn backup-btn-restore">
-                                    <i class="fas fa-undo"></i> Восстановить
-                                </button>
-                            </div>
+                            {% for backup in backups|slice:":10" %}
+                                <div class="backup-item">
+                                    <div class="backup-info-line">
+                                        <span class="backup-filename">{{ backup.filename }}</span>
+                                        <span class="backup-source {% if backup.source == 'manual' %}source-manual{% else %}source-web{% endif %}">
+                                            {% if backup.source == 'manual' %}
+                                                <i class="fas fa-desktop"></i> Ручной
+                                            {% else %}
+                                                <i class="fas fa-globe"></i> Веб
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    <button onclick="restoreBackup('{{ backup.filename }}', '{{ backup.source }}')" class="backup-btn backup-btn-restore">
+                                        <i class="fas fa-undo"></i> Восстановить
+                                    </button>
+                                </div>
                             {% endfor %}
                         {% else %}
                             <p class="no-backups">Бэкапы не найдены</p>
@@ -73,45 +83,45 @@ FITZONE - Управление бэкапами
                 </div>
             </div>
 
-<div class="backup-section">
-    <div class="backup-card-header">
-        <h2><i class="fas fa-file-import"></i> ИМПОРТ ТРЕНЕРОВ</h2>
-    </div>
-    
-    <div class="import-actions">
-        <p>Импорт тренеров из CSV файла</p>
-        
-        <div class="file-upload">
-            <label for="trainersFile" class="file-upload-label">
-                <i class="fas fa-upload"></i> 
-                <span id="fileName">Выберите CSV файл</span>
-            </label>
-            <input type="file" id="trainersFile" accept=".csv" onchange="updateFileName()">
-        </div>
-        
-        <button onclick="importTrainers()" class="backup-btn backup-btn-import">
-            <i class="fas fa-upload"></i> Импортировать тренеров
-        </button>
-        
-        <div class="import-info">
-            <h4>Формат CSV файла:</h4>
-            <ul>
-                <li><strong>email</strong> - Email тренера (обязательно)</li>
-                <li><strong>password</strong> - Пароль (обязательно)</li>
-                <li><strong>first_name</strong> - Имя</li>
-                <li><strong>last_name</strong> - Фамилия</li>
-                <li><strong>specialization</strong> - Специализация</li>
-            </ul>
-            
-            <div class="csv-example">
-                <h5>Пример содержимого:</h5>
-                <pre>email,password,first_name,last_name,specialization
+            <div class="backup-section">
+                <div class="backup-card-header">
+                    <h2><i class="fas fa-file-import"></i> ИМПОРТ ТРЕНЕРОВ</h2>
+                </div>
+                
+                <div class="import-actions">
+                    <p>Импорт тренеров из CSV файла</p>
+                    
+                    <div class="file-upload">
+                        <label for="trainersFile" class="file-upload-label">
+                            <i class="fas fa-upload"></i> 
+                            <span id="fileName">Выберите CSV файл</span>
+                        </label>
+                        <input type="file" id="trainersFile" accept=".csv" onchange="updateFileName()">
+                    </div>
+                    
+                    <button onclick="importTrainers()" class="backup-btn backup-btn-import">
+                        <i class="fas fa-upload"></i> Импортировать тренеров
+                    </button>
+                    
+                    <div class="import-info">
+                        <h4>Формат CSV файла:</h4>
+                        <ul>
+                            <li><strong>email</strong> - Email тренера (обязательно)</li>
+                            <li><strong>password</strong> - Пароль (обязательно)</li>
+                            <li><strong>first_name</strong> - Имя</li>
+                            <li><strong>last_name</strong> - Фамилия</li>
+                            <li><strong>specialization</strong> - Специализация</li>
+                        </ul>
+                        
+                        <div class="csv-example">
+                            <h5>Пример содержимого:</h5>
+                            <pre>email,password,first_name,last_name,specialization
 trainer1@fitzone.ru,Password123,Иван,Иванов,Фитнес
 trainer2@fitzone.ru,Password456,Мария,Петрова,Йога</pre>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
         </div>
 
         <div id="backupStatus" class="backup-status"></div>
@@ -458,214 +468,7 @@ trainer2@fitzone.ru,Password456,Мария,Петрова,Йога</pre>
 </style>
 
 <script>
-document.addEventListener('keydown', function(e) {
-    if (e.ctrlKey && e.key === 'q') {
-        e.preventDefault();
-        createBackup();
-    }
-    if (e.ctrlKey && e.key === 'й') {
-        e.preventDefault();
-        createBackup();
-    }
-    if (e.ctrlKey && e.key === 'z') {
-    e.preventDefault();
-    let fileInput = document.getElementById('trainersFile');
-    if (!fileInput) {
-        fileInput = document.querySelector('input[type="file"]');
-    }
-    if (!fileInput) {
-        fileInput = document.querySelector('input[accept=".csv"]');
-    }
-    if (fileInput) {
-        const fileUploadLabel = document.querySelector('.file-upload-label');
-        if (fileUploadLabel) {
-            fileUploadLabel.style.borderColor = 'var(--neon-purple)';
-            fileUploadLabel.style.boxShadow = '0 0 15px rgba(139, 92, 246, 0.5)';
-            setTimeout(() => {
-                fileUploadLabel.style.borderColor = '';
-                fileUploadLabel.style.boxShadow = '';
-            }, 1000);
-        }
-        fileInput.click();
-    } else {
-        showStatus('Поле выбора файла не найдено', 'error');
-    }
-}
-if (e.ctrlKey && e.key === 's') {
-    e.preventDefault();
-    const importButton = document.querySelector('.backup-btn-import');
-    if (importButton) {
-        importButton.style.transform = 'scale(0.95)';
-        importButton.style.boxShadow = '0 0 15px rgba(52, 152, 219, 0.5)';
-        setTimeout(() => {
-            importButton.style.transform = '';
-            importButton.style.boxShadow = '';
-        }, 500);
-        setTimeout(() => {
-            importButton.click();
-        }, 300);
-    } else {
-        showStatus('Кнопка импорта не найдена', 'error');
-    }
-}
-if (e.ctrlKey && e.key === 'ы') {
-    e.preventDefault();
-    const importButton = document.querySelector('.backup-btn-import');
-    if (importButton) {
-        importButton.style.transform = 'scale(0.95)';
-        importButton.style.boxShadow = '0 0 15px rgba(52, 152, 219, 0.5)';
-        setTimeout(() => {
-            importButton.style.transform = '';
-            importButton.style.boxShadow = '';
-        }, 500);
-        setTimeout(() => {
-            importButton.click();
-        }, 300);
-    } else {
-        showStatus('Кнопка импорта не найдена', 'error');
-    }
-}
-if (e.ctrlKey && e.key === 'я') {
-    e.preventDefault();
-    let fileInput = document.getElementById('trainersFile');
-    if (!fileInput) {
-        fileInput = document.querySelector('input[type="file"]');
-    }
-    if (!fileInput) {
-        fileInput = document.querySelector('input[accept=".csv"]');
-    }
-    if (fileInput) {
-        const fileUploadLabel = document.querySelector('.file-upload-label');
-        if (fileUploadLabel) {
-            fileUploadLabel.style.borderColor = 'var(--neon-purple)';
-            fileUploadLabel.style.boxShadow = '0 0 15px rgba(139, 92, 246, 0.5)';
-            setTimeout(() => {
-                fileUploadLabel.style.borderColor = '';
-                fileUploadLabel.style.boxShadow = '';
-            }, 1000);
-        }
-        fileInput.click();
-    } else {
-        showStatus('Поле выбора файла не найдено', 'error');
-    }
-}
-
-    if (e.ctrlKey && e.key === 'e') {
-    e.preventDefault();
-    let exportLink = document.querySelector('a[href*="export-payments"]');
-    if (!exportLink) {
-        const buttons = document.querySelectorAll('.backup-btn');
-        exportLink = Array.from(buttons).find(btn => 
-            btn.textContent.includes('Экспорт платежей') || 
-            btn.textContent.includes('Экспорт')
-        );
-    }
-    if (exportLink) {
-        exportLink.style.transform = 'scale(0.95)';
-        setTimeout(() => {
-            exportLink.style.transform = '';
-        }, 200);
-        showStatus('Экспорт платежей запущен...', 'info');
-        setTimeout(() => {
-            window.location.href = exportLink.href;
-        }, 300);
-    } else {
-        showStatus('Ссылка экспорта не найдена', 'error');
-        setTimeout(() => {
-            window.location.href = '/admin-panel/export-payments/';
-        }, 500);
-    }
-    
-}
-});
-function showStatus(message, isSuccess) {
-    const statusEl = document.getElementById('backupStatus');
-    statusEl.textContent = message;
-    statusEl.className = `backup-status ${isSuccess ? 'success' : 'error'}`;
-    setTimeout(() => {
-        statusEl.style.display = 'none';
-    }, 5000);
-}
-
-document.addEventListener('keydown', function(e) {
-    if (e.ctrlKey && e.key === 'q') {
-        e.preventDefault();
-        createBackup();
-    }
-});
-
-function showStatus(message, isSuccess) {
-    const statusEl = document.getElementById('backupStatus');
-    statusEl.textContent = message;
-    statusEl.className = `backup-status ${isSuccess ? 'success' : 'error'}`;
-    setTimeout(() => {
-        statusEl.style.display = 'none';
-    }, 5000);
-}
-
-async function createBackup() {
-    const backupButtons = document.querySelectorAll('.backup-btn-primary');
-    let btn = null;
-    for (let button of backupButtons) {
-        if (button.textContent.includes('Создать бэкап')) {
-            btn = button;
-            break;
-        }
-    }
-    const originalText = btn ? btn.innerHTML : '';
-    if (btn) {
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Создание...';
-        btn.disabled = true;
-    }
-    try {
-        const response = await fetch('{% url "adminservice:create_backup" %}', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-            }
-        });
-        const data = await response.json();
-        showStatus(data.message, data.success);
-        if (data.success) {
-            setTimeout(() => {
-                location.reload();
-            }, 20);
-        }
-    } catch (error) {
-        showStatus('Ошибка сети: ' + error, false);
-    } finally {
-        if (btn) {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }
-    }
-}
-
-async function restoreBackup(filename) {
-    if (!confirm(`Восстановить базу данных из бэкапа ${filename}? Это действие нельзя отменить!`)) {
-        return;
-    }
-    try {
-        const formData = new FormData();
-        formData.append('backup_file', filename);
-        const response = await fetch('{% url "adminservice:restore_backup" %}', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-            },
-            body: formData
-        });
-        const data = await response.json();
-        showStatus(data.message, data.success);
-        if (data.success) {
-            setTimeout(() => {
-                location.reload();
-            }, 3000);
-        }
-    } catch (error) {
-        showStatus('Ошибка сети: ' + error, false);
-    }
-}
+// Обновляем имя файла при выборе
 function updateFileName() {
     const fileInput = document.getElementById('trainersFile');
     const fileNameSpan = document.getElementById('fileName');
@@ -675,6 +478,18 @@ function updateFileName() {
         fileNameSpan.textContent = 'Выберите CSV файл';
     }
 }
+
+// Показываем статус операции
+function showStatus(message, isSuccess) {
+    const statusEl = document.getElementById('backupStatus');
+    statusEl.textContent = message;
+    statusEl.className = `backup-status ${isSuccess ? 'success' : 'error'}`;
+    setTimeout(() => {
+        statusEl.style.display = 'none';
+    }, 5000);
+}
+
+// Создание бэкапа
 async function createBackup() {
     const backupButtons = document.querySelectorAll('.backup-btn-primary');
     let btn = null;
@@ -707,7 +522,6 @@ async function createBackup() {
         showStatus(data.message, data.success);
         
         if (data.success) {
-            // Обновляем страницу через 2 секунды чтобы увидеть сообщение
             setTimeout(() => {
                 location.reload();
             }, 2000);
@@ -723,6 +537,39 @@ async function createBackup() {
     }
 }
 
+// Восстановление бэкапа (ОБНОВЛЕННАЯ ФУНКЦИЯ)
+async function restoreBackup(filename, source) {
+    if (!confirm(`Восстановить базу данных из бэкапа ${filename}? Это действие нельзя отменить!`)) {
+        return;
+    }
+    
+    try {
+        const formData = new FormData();
+        formData.append('backup_file', filename);
+        formData.append('source', source);  // Добавляем источник
+        
+        const response = await fetch('{% url "adminservice:restore_backup" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        showStatus(data.message, data.success);
+        
+        if (data.success) {
+            setTimeout(() => {
+                location.reload();
+            }, 3000);
+        }
+    } catch (error) {
+        showStatus('Ошибка сети: ' + error, false);
+    }
+}
+
+// Импорт тренеров
 async function importTrainers() {
     const fileInput = document.getElementById('trainersFile');
     const file = fileInput.files[0];
@@ -763,5 +610,132 @@ async function importTrainers() {
         btn.disabled = false;
     }
 }
+
+// Горячие клавиши
+document.addEventListener('keydown', function(e) {
+    // Ctrl+Q - Создать бэкап
+    if (e.ctrlKey && e.key === 'q') {
+        e.preventDefault();
+        createBackup();
+    }
+    if (e.ctrlKey && e.key === 'й') {
+        e.preventDefault();
+        createBackup();
+    }
+    
+    // Ctrl+Z - Выбрать файл
+    if (e.ctrlKey && e.key === 'z') {
+        e.preventDefault();
+        let fileInput = document.getElementById('trainersFile');
+        if (!fileInput) {
+            fileInput = document.querySelector('input[type="file"]');
+        }
+        if (!fileInput) {
+            fileInput = document.querySelector('input[accept=".csv"]');
+        }
+        if (fileInput) {
+            const fileUploadLabel = document.querySelector('.file-upload-label');
+            if (fileUploadLabel) {
+                fileUploadLabel.style.borderColor = 'var(--neon-purple)';
+                fileUploadLabel.style.boxShadow = '0 0 15px rgba(139, 92, 246, 0.5)';
+                setTimeout(() => {
+                    fileUploadLabel.style.borderColor = '';
+                    fileUploadLabel.style.boxShadow = '';
+                }, 1000);
+            }
+            fileInput.click();
+        } else {
+            showStatus('Поле выбора файла не найдено', 'error');
+        }
+    }
+    if (e.ctrlKey && e.key === 'я') {
+        e.preventDefault();
+        let fileInput = document.getElementById('trainersFile');
+        if (!fileInput) {
+            fileInput = document.querySelector('input[type="file"]');
+        }
+        if (!fileInput) {
+            fileInput = document.querySelector('input[accept=".csv"]');
+        }
+        if (fileInput) {
+            const fileUploadLabel = document.querySelector('.file-upload-label');
+            if (fileUploadLabel) {
+                fileUploadLabel.style.borderColor = 'var(--neon-purple)';
+                fileUploadLabel.style.boxShadow = '0 0 15px rgba(139, 92, 246, 0.5)';
+                setTimeout(() => {
+                    fileUploadLabel.style.borderColor = '';
+                    fileUploadLabel.style.boxShadow = '';
+                }, 1000);
+            }
+            fileInput.click();
+        } else {
+            showStatus('Поле выбора файла не найдено', 'error');
+        }
+    }
+    
+    // Ctrl+S - Импорт тренеров
+    if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        const importButton = document.querySelector('.backup-btn-import');
+        if (importButton) {
+            importButton.style.transform = 'scale(0.95)';
+            importButton.style.boxShadow = '0 0 15px rgba(52, 152, 219, 0.5)';
+            setTimeout(() => {
+                importButton.style.transform = '';
+                importButton.style.boxShadow = '';
+            }, 500);
+            setTimeout(() => {
+                importButton.click();
+            }, 300);
+        } else {
+            showStatus('Кнопка импорта не найдена', 'error');
+        }
+    }
+    if (e.ctrlKey && e.key === 'ы') {
+        e.preventDefault();
+        const importButton = document.querySelector('.backup-btn-import');
+        if (importButton) {
+            importButton.style.transform = 'scale(0.95)';
+            importButton.style.boxShadow = '0 0 15px rgba(52, 152, 219, 0.5)';
+            setTimeout(() => {
+                importButton.style.transform = '';
+                importButton.style.boxShadow = '';
+            }, 500);
+            setTimeout(() => {
+                importButton.click();
+            }, 300);
+        } else {
+            showStatus('Кнопка импорта не найдена', 'error');
+        }
+    }
+    
+    // Ctrl+E - Экспорт платежей
+    if (e.ctrlKey && e.key === 'e') {
+        e.preventDefault();
+        let exportLink = document.querySelector('a[href*="export-payments"]');
+        if (!exportLink) {
+            const buttons = document.querySelectorAll('.backup-btn');
+            exportLink = Array.from(buttons).find(btn => 
+                btn.textContent.includes('Экспорт платежей') || 
+                btn.textContent.includes('Экспорт')
+            );
+        }
+        if (exportLink) {
+            exportLink.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                exportLink.style.transform = '';
+            }, 200);
+            showStatus('Экспорт платежей запущен...', 'info');
+            setTimeout(() => {
+                window.location.href = exportLink.href;
+            }, 300);
+        } else {
+            showStatus('Ссылка экспорта не найдена', 'error');
+            setTimeout(() => {
+                window.location.href = '/admin-panel/export-payments/';
+            }, 500);
+        }
+    }
+});
 </script>
 {% endblock %}
