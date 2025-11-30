@@ -14,7 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime, timedelta
 from django.db import transaction
 from utils.decorators import client_required
-
+import time
 
 
 
@@ -463,20 +463,7 @@ def profile_view(request):
     })
 
 
-def test_email_simple(request):
-    """Простой тест отправки email - добавь эту функцию в views.py"""
-    from django.core.mail import send_mail
-    try:
-        send_mail(
-            'Тест почты FITZONE',
-            'Если ты это видишь - почта работает! Время: ' + timezone.now().strftime('%H:%M:%S'),
-            'noreply@fitzone.com',
-            ['sesha_shk@mail.ru'],  # Замени на свою почту
-            fail_silently=False,
-        )
-        return JsonResponse({'status': 'SUCCESS: Email отправлен! Проверь почту.'})
-    except Exception as e:
-        return JsonResponse({'status': f'ERROR: {str(e)}'})
+
 
 # Вызов функции - добавь этот URL в urls.py
 
@@ -699,7 +686,6 @@ def process_payment(request, subscription_id):
                 # 5. Отправляем email с PDF вложением
                 try:
                     from django.core.mail import EmailMessage
-                    from django.conf import settings  # Добавьте этот импорт
                     
                     # Получаем данные пользователя
                     try:
@@ -731,11 +717,11 @@ def process_payment(request, subscription_id):
                     Команда FITZONE
                     """
                     
-                    # Создаем объект письма - используем настройки из settings.py
+                    # Создаем объект письма - используем прямое значение
                     email = EmailMessage(
                         subject=subject,
                         body=body,
-                        from_email=settings.DEFAULT_FROM_EMAIL,  # Используем из настроек
+                        from_email='FITZONE <noreply@fitzone.com>',  # Прямое значение вместо settings
                         to=[request.user.email],
                     )
                     
@@ -746,15 +732,14 @@ def process_payment(request, subscription_id):
                         'application/pdf'
                     )
                     
-                    # Отправляем
-                    email.send(fail_silently=True)  # True чтобы не падать при ошибке email
+                    # Отправляем (fail_silently=True чтобы не падать при ошибке)
+                    email.send(fail_silently=True)
                     
                     print(f"=== DEBUG: Email отправлен на {request.user.email} ===")
                     
                 except Exception as e:
                     print(f"=== DEBUG: Ошибка отправки email: {e} ===")
                     # Не прерываем процесс, если email не отправился
-                
         except Exception as e:
             print(f"=== DEBUG: Error in payment process: {e} ===")
             return JsonResponse({
