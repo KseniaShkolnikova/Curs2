@@ -83,6 +83,15 @@ WSGI_APPLICATION = 'fitzone.wsgi.application'
 
 import dj_database_url
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://curs2-production.up.railway.app',
+    'https://*.up.railway.app',
+]
+
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
