@@ -494,6 +494,28 @@ def subscription_payment(request, subscription_id):
     
     return render(request, 'subscription_payment.html', context)
 
+import resend
+
+resend.api_key = os.getenv('RESEND_API_KEY')
+
+def send_resend_email_simple(subject, message, to_email):
+    """Простая отправка email через Resend"""
+    try:
+        params = {
+            'from': 'FITZONE <onboarding@resend.dev>',
+            'to': [to_email],
+            'subject': subject,
+            'html': f'<div style="font-family: Arial, sans-serif; padding: 20px;"><h2>FITZONE</h2><p>{message}</p></div>',
+            'text': message
+        }
+        
+        response = resend.Emails.send(params)
+        print(f"Resend email sent to {to_email}")
+        return True
+    except Exception as e:
+        print(f"Resend error: {e}")
+        return False
+
 @client_required
 @login_required
 def process_payment(request, subscription_id):
@@ -516,15 +538,29 @@ def process_payment(request, subscription_id):
                     paymentdate=timezone.now()
                 )
                 
-                # ОТПРАВКА ЧЕРЕЗ RESEND
+                # ОТПРАВКА EMAIL ЧЕРЕЗ RESEND
                 try:
-                    from utils.email_service import send_subscription_email
+                    email_subject = f'Абонемент FITZONE - Оплата успешна!'
+                    email_message = f"""
+Уважаемый клиент!
+
+Ваш абонемент "{subscription_type.name}" успешно оплачен.
+
+Детали заказа:
+- Абонемент: {subscription_type.name}
+- Стоимость: {subscription_type.price} руб.
+- Номер заказа: #{payment.id:06d}
+- Дата: {timezone.now().strftime('%d.%m.%Y %H:%M')}
+
+Договор можно скачать в вашем профиле на сайте.
+
+Спасибо за выбор FITZONE!
+"""
                     
-                    send_subscription_email(
-                        user_email=request.user.email,
-                        subscription_name=subscription_type.name,
-                        price=subscription_type.price,
-                        order_number=f"#{payment.id:06d}"
+                    send_resend_email_simple(
+                        subject=email_subject,
+                        message=email_message,
+                        to_email=request.user.email
                     )
                     print(f"Resend email отправлен на {request.user.email}")
                     
@@ -544,26 +580,42 @@ def process_payment(request, subscription_id):
                 'success': False,
                 'message': f'Ошибка: {str(e)}'
             }, status=400)
+        
 
 def test_resend_email(request):
     """Тест Resend email"""
     try:
-        from fitzone.utils.email_service import send_resend_email
+        # Проверяем наличие API ключа
+        if not resend.api_key:
+            return JsonResponse({'status': 'ERROR', 'message': 'RESEND_API_KEY не настроен'})
         
-        success = send_resend_email(
-            subject='Тест Resend - FITZONE',
-            html_content='<h1>Resend работает!</h1><p>Если вы это видите - email отправляется корректно.</p>',
-            to_email=request.user.email if request.user.is_authenticated else 'sesha_shk@mail.ru',
-            text_content='Resend работает! Если вы это видите - email отправляется корректно.'
-        )
+        # Определяем email для теста
+        if request.user.is_authenticated:
+            test_email = request.user.email
+        else:
+            test_email = 'sesha_shk@mail.ru'  # ваша тестовая почта
+        
+        subject = 'Тест Resend - FITZONE'
+        message = 'Если вы это видите - Resend работает корректно! Поздравляю! 🎉'
+        
+        success = send_resend_email_simple(subject, message, test_email)
         
         if success:
-            return JsonResponse({'status': 'SUCCESS', 'message': 'Resend email отправлен!'})
+            return JsonResponse({
+                'status': 'SUCCESS', 
+                'message': f'Resend email отправлен на {test_email}! Проверьте почту.'
+            })
         else:
-            return JsonResponse({'status': 'ERROR', 'message': 'Resend не отправил email'})
+            return JsonResponse({
+                'status': 'ERROR', 
+                'message': 'Resend не смог отправить email. Проверьте API ключ.'
+            })
             
     except Exception as e:
-        return JsonResponse({'status': 'ERROR', 'message': str(e)})
+        return JsonResponse({
+            'status': 'ERROR', 
+            'message': f'Ошибка: {str(e)}'
+        })
 
 from django.http import HttpResponse
 from reportlab.pdfgen import canvas
