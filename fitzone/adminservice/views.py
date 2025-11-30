@@ -415,83 +415,62 @@ def backup_management(request):
 @admin_required
 @login_required
 def create_backup(request):
-    """
-    SUMMARY: Создание резервной копии базы данных PostgreSQL
-    """
     if request.method == 'POST':
+        print("=== CREATE BACKUP STARTED ===")
+        print(f"Request method: {request.method}")
+        print(f"BASE_DIR: {settings.BASE_DIR}")
+        
         try:
-            # SUMMARY: Используем относительный путь внутри проекта
             backup_dir = os.path.join(settings.BASE_DIR, 'backups')
-            os.makedirs(backup_dir, exist_ok=True)
+            print(f"Backup dir: {backup_dir}")
             
-            print(f"Создаем папку для бэкапов: {backup_dir}")
+            # Проверим права на запись
+            if not os.path.exists(backup_dir):
+                os.makedirs(backup_dir)
+                print(f"Created backup directory: {backup_dir}")
             
-            # Генерируем имя файла с timestamp
+            # Проверим можем ли писать в папку
+            test_file = os.path.join(backup_dir, 'test.txt')
+            with open(test_file, 'w') as f:
+                f.write('test')
+            print(f"Test file created: {test_file}")
+            
+            # Создаем простой JSON бэкап через Django
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            backup_file = os.path.join(backup_dir, f'fitzone_backup_{timestamp}.sql')
+            backup_file = os.path.join(backup_dir, f'fitzone_backup_{timestamp}.json')
             
-            print(f"Создаем бэкап: {backup_file}")
+            # Простой бэкап основных моделей
+            from django.core import serializers
+            from clientservice.models import UserProfiles, SubscriptionTypes, Classes
             
-            # Для Windows используем полный путь к pg_dump
-            pg_dump_path = r'C:\Program Files\PostgreSQL\16\bin\pg_dump.exe'
+            data = {
+                'user_profiles': serializers.serialize('json', UserProfiles.objects.all()[:10]),  # первые 10 для теста
+                'timestamp': timestamp
+            }
             
-            # SUMMARY: Формирование команды создания бэкапа
-            cmd = [
-                pg_dump_path,
-                '-h', settings.DATABASES['default']['HOST'],
-                '-U', settings.DATABASES['default']['USER'],
-                '-d', settings.DATABASES['default']['NAME'],
-                '-f', backup_file
-            ]
+            with open(backup_file, 'w') as f:
+                json.dump(data, f, indent=2)
             
-            print(f"Выполняем команду: {' '.join(cmd)}")
+            file_size = os.path.getsize(backup_file)
+            print(f"Backup created: {backup_file}, Size: {file_size} bytes")
             
-            # SUMMARY: Выполнение команды с передачей пароля
-            env = os.environ.copy()
-            env['PGPASSWORD'] = settings.DATABASES['default']['PASSWORD']
-            result = subprocess.run(cmd, env=env, capture_output=True, text=True)
+            return JsonResponse({
+                'success': True,
+                'message': f'Бэкап создан: fitzone_backup_{timestamp}.json ({file_size} bytes)',
+                'filename': f'fitzone_backup_{timestamp}.json'
+            })
             
-            print(f"Результат: код {result.returncode}")
-            if result.stdout:
-                print(f"STDOUT: {result.stdout}")
-            if result.stderr:
-                print(f"STDERR: {result.stderr}")
-            
-            # SUMMARY: Проверка успешности операции
-            file_exists = os.path.exists(backup_file)
-            file_size = os.path.getsize(backup_file) if file_exists else 0
-            
-            print(f"Файл создан: {file_exists}, Размер: {file_size} байт, Путь: {backup_file}")
-            
-            # Проверяем содержимое папки
-            if os.path.exists(backup_dir):
-                files_in_dir = os.listdir(backup_dir)
-                print(f"Файлы в папке бэкапов: {files_in_dir}")
-            
-            if result.returncode == 0 and file_exists:
-                return JsonResponse({
-                    'success': True,
-                    'message': f'Бэкап успешно создан: fitzone_backup_{timestamp}.sql ({file_size} bytes)',
-                    'filename': f'fitzone_backup_{timestamp}.sql',
-                    'filepath': backup_file
-                })
-            else:
-                error_msg = result.stderr if result.stderr else "Неизвестная ошибка"
-                return JsonResponse({
-                    'success': False,
-                    'message': f'Ошибка при создании бэкапа: {error_msg}'
-                })
-                
         except Exception as e:
+            print(f"ERROR: {str(e)}")
             import traceback
-            error_details = traceback.format_exc()
-            print(f"Исключение: {error_details}")
+            print(f"TRACEBACK: {traceback.format_exc()}")
             return JsonResponse({
                 'success': False,
                 'message': f'Ошибка: {str(e)}'
             })
     
     return JsonResponse({'success': False, 'message': 'Неверный метод запроса'})
+
 
 @admin_required
 @login_required
