@@ -501,25 +501,22 @@ def process_payment(request, subscription_id):
         try:
             print(f"=== DEBUG: Starting payment process ===")
             
-            # Парсим JSON данные
             data = json.loads(request.body)
-            print(f"Form data: {data}")
             
-            # Сохраняем паспортные данные в сессии для документа
-            request.session['passport_series'] = data.get('passport_series', '')
-            request.session['passport_number'] = data.get('passport_number', '')
-            request.session['passport_issued'] = data.get('passport_issued', '')
-            request.session['issue_date'] = data.get('issue_date', '')
-            request.session['division_code'] = data.get('division_code', '')
+            # Сохраняем паспортные данные
+            request.session.update({
+                'passport_series': data.get('passport_series', ''),
+                'passport_number': data.get('passport_number', ''),
+                'passport_issued': data.get('passport_issued', ''),
+                'issue_date': data.get('issue_date', ''),
+                'division_code': data.get('division_code', ''),
+            })
             
-            # Получаем тип абонемента
             subscription_type = get_object_or_404(SubscriptionTypes, id=subscription_id)
             
-            # Используем транзакцию для надежности
             with transaction.atomic():
-                # 1. Создаем запись в Subscriptions
+                # 1. Создаем записи в БД
                 start_date = timezone.now().date()
-                
                 subscription = Subscriptions.objects.create(
                     user=request.user,
                     subscriptiontype=subscription_type,
@@ -527,231 +524,58 @@ def process_payment(request, subscription_id):
                     is_active=True
                 )
                 
-                # 2. Создаем запись в Payments
                 payment = Payments.objects.create(
                     subscription=subscription,
                     price=subscription_type.price,
                     paymentdate=timezone.now()
                 )
                 
-                # 3. Логируем действие
                 UserActionsLog.objects.create(
                     user=request.user,
                     action=f'Оплата абонемента: {subscription_type.name}'
                 )
-                
-                # 4. Генерируем PDF документ
+
+                # 2. ПРОСТОЙ PDF (без сложной графики)
                 pdf_buffer = io.BytesIO()
                 p = canvas.Canvas(pdf_buffer, pagesize=A4)
-                width, height = A4
                 
-                # Настройки шрифтов
-                try:
-                    # Попробуем зарегистрировать шрифты
-                    pdfmetrics.registerFont(TTFont('Arial', 'arial.ttf'))
-                    pdfmetrics.registerFont(TTFont('Arial-Bold', 'arialbd.ttf'))
-                    font_name = 'Arial'
-                except:
-                    font_name = 'Helvetica'
-                
-                # ШАПКА ДОКУМЕНТА
-                p.setFont(font_name + '-Bold', 16)
-                p.drawCentredString(width/2, height-50, "ДОГОВОР ОКАЗАНИЯ УСЛУГ И АКТ ПРИЕМА-ПЕРЕДАЧИ")
-                p.setFont(font_name, 10)
-                p.drawCentredString(width/2, height-70, f"№ {payment.id} от {datetime.now().strftime('%d.%m.%Y')}")
-                
-                # ИНФОРМАЦИЯ О КОМПАНИИ
-                y_position = height - 120
-                
-                p.setFont(font_name + '-Bold', 12)
-                p.drawString(50, y_position, "ИСПОЛНИТЕЛЬ:")
-                p.setFont(font_name, 10)
-                p.drawString(50, y_position-20, "ООО 'FITZONE'")
-                p.drawString(50, y_position-35, "ИНН: 1234567890, КПП: 123456789, ОГРН: 1234567890123")
-                p.drawString(50, y_position-50, "Юридический адрес: г. Москва, ул. Фитнесная, д. 1")
-                p.drawString(50, y_position-65, "Расчетный счет: 40702810123456789012")
-                p.drawString(50, y_position-80, "Банк: ПАО 'СБЕРБАНК', БИК: 044525225, к/с: 30101810400000000225")
-                p.drawString(50, y_position-95, "Генеральный директор: Школьникова Ксения Васильевна")
-                
-                # ИНФОРМАЦИЯ О КЛИЕНТЕ
-                p.setFont(font_name + '-Bold', 12)
-                p.drawString(50, y_position-125, "ЗАКАЗЧИК:")
-                p.setFont(font_name, 10)
-                
-                # Получаем данные пользователя
-                try:
-                    profile = request.user.userprofile
-                    client_name = profile.full_name or f"{profile.lastname or ''} {profile.firstname or ''} {profile.middlename or ''}".strip()
-                    if not client_name:
-                        client_name = request.user.get_full_name() or request.user.username
-                except:
-                    client_name = request.user.get_full_name() or request.user.username
-                    
-                p.drawString(50, y_position-145, f"ФИО: {client_name}")
-                
-                # Паспортные данные из сессии (если есть)
-                passport_series = request.session.get('passport_series', 'XXXX')
-                passport_number = request.session.get('passport_number', 'XXXXXX')
-                passport_issued = request.session.get('passport_issued', 'Отделом УФМС России')
-                issue_date = request.session.get('issue_date', datetime.now().strftime('%d.%m.%Y'))
-                division_code = request.session.get('division_code', '000-000')
-                
-                p.drawString(50, y_position-160, f"Паспорт: серия {passport_series} № {passport_number}")
-                p.drawString(50, y_position-175, f"Выдан: {passport_issued}")
-                p.drawString(50, y_position-190, f"Дата выдачи: {issue_date}")
-                p.drawString(50, y_position-205, f"Код подразделения: {division_code}")
-                
-                # ПРЕДМЕТ ДОГОВОРА
-                y_position -= 240
-                p.setFont(font_name + '-Bold', 12)
-                p.drawString(50, y_position, "1. ПРЕДМЕТ ДОГОВОРА")
-                p.setFont(font_name, 10)
-                
-                contract_text = [
-                    "1.1. Исполнитель обязуется оказать Заказчику услуги по предоставлению доступа",
-                    "к фитнес-центру 'FITZONE', а Заказчик обязуется оплатить эти услуги.",
-                    "",
-                    f"1.2. Наименование услуги: Абонемент '{subscription_type.name}'",
-                    f"1.3. Срок действия: {subscription_type.durationdays} дней",
-                    f"1.4. Дата начала: {start_date.strftime('%d.%m.%Y')}",
-                    f"1.5. Стоимость: {payment.price} рублей 00 копеек",
-                    "",
-                    "1.6. Услуги включают в себя:"
-                ]
-                
-                for i, line in enumerate(contract_text):
-                    p.drawString(60, y_position-20-(i*15), line)
-                
-                # УСЛУГИ АБОНЕМЕНТА
-                services_y = y_position-20-(len(contract_text)*15)
-                services = []
-                if subscription_type.gym_access:
-                    services.append("✓ Доступ в тренажерный зал")
-                if subscription_type.pool_access:
-                    services.append("✓ Доступ в бассейн")
-                if subscription_type.spa_access:
-                    services.append("✓ Доступ в СПА-зону")
-
-                if subscription_type.locker_room:
-                    services.append("✓ Раздевалка")
-                if subscription_type.towel_service:
-                    services.append("✓ Полотенце")
-
-                if subscription_type.nutrition_consultation:
-                    services.append("✓ Консультация по питанию")
-                
-                for i, service in enumerate(services):
-                    p.drawString(70, services_y-20-(i*15), service)
-                
-                # АКТ ПРИЕМА-ПЕРЕДАЧИ
-                act_y = services_y-20-(len(services)*15) - 40
-                p.setFont(font_name + '-Bold', 12)
-                p.drawString(50, act_y, "АКТ ПРИЕМА-ПЕРЕДАЧИ № 1")
-                p.setFont(font_name, 10)
-                
-                act_text = [
-                    f"к Договору оказания услуг № {payment.id} от {datetime.now().strftime('%d.%m.%Y')}",
-                    "",
-                    "Исполнитель передал, а Заказчик принял следующие услуги:",
-                    f"- Абонемент '{subscription_type.name}'",
-                    f"- Срок действия: {subscription_type.durationdays} дней",
-                    f"- Стоимость: {payment.price} рублей 00 копеек",
-                    "",
-                    "Услуги переданы в полном объеме, качество услуг соответствует условиям Договора.",
-                    "Претензий к количеству и качеству оказанных услуг Заказчик не имеет."
-                ]
-                
-                for i, line in enumerate(act_text):
-                    p.drawString(60, act_y-20-(i*15), line)
-                
-                # ПОДПИСИ
-                signature_y = act_y-20-(len(act_text)*15) - 50
-                p.line(100, signature_y, 300, signature_y)
-                p.drawString(100, signature_y-15, "Исполнитель: ООО 'FITZONE'")
-                p.drawString(100, signature_y-30, "Генеральный директор")
-                p.drawString(100, signature_y-45, "_________________________ К.В. Школьникова")
-                p.drawString(100, signature_y-60, "М.П.")
-                
-                p.line(350, signature_y, 550, signature_y)
-                p.drawString(350, signature_y-15, "Заказчик:")
-                p.drawString(350, signature_y-30, "_________________________")
-                p.drawString(350, signature_y-45, client_name)
+                # Только самый необходимый текст
+                p.drawString(100, 800, f"ДОГОВОР №{payment.id}")
+                p.drawString(100, 780, f"Абонемент: {subscription_type.name}")
+                p.drawString(100, 760, f"Стоимость: {subscription_type.price} руб.")
+                p.drawString(100, 740, f"Срок: {subscription_type.durationdays} дней")
+                p.drawString(100, 720, f"Клиент: {request.user.get_full_name()}")
                 
                 p.showPage()
                 p.save()
-                
                 pdf_content = pdf_buffer.getvalue()
                 pdf_buffer.close()
-                
-                # 5. Отправляем email с PDF вложением
+
+                # 3. БЫСТРАЯ отправка email
                 try:
                     from django.core.mail import EmailMessage
-                    
-                    # Получаем данные пользователя
-                    try:
-                        profile = request.user.userprofile
-                        client_name = profile.full_name or request.user.get_full_name() or request.user.username
-                    except:
-                        client_name = request.user.get_full_name() or request.user.username
-                    
-                    # Создаем email
-                    subject = f'Договор на абонемент {subscription_type.name} - FITZONE'
-                    
-                    body = f"""
-                    Уважаемый(ая) {client_name}!
-
-                    Благодарим вас за приобретение абонемента "{subscription_type.name}" в фитнес-центре FITZONE.
-
-                    Детали вашего заказа:
-                    - Абонемент: {subscription_type.name}
-                    - Срок действия: {subscription_type.durationdays} дней
-                    - Дата начала: {start_date.strftime('%d.%m.%Y')}
-                    - Стоимость: {subscription_type.price} рублей
-                    - Номер заказа: #{payment.id:06d}
-
-                    В приложении вы найдете официальный договор и акт приема-передачи.
-
-                    Желаем вам продуктивных тренировок и достижения ваших фитнес-целей!
-
-                    С уважением,
-                    Команда FITZONE
-                    """
-                    
-                    # Создаем объект письма - используем прямое значение
                     email = EmailMessage(
-                        subject=subject,
-                        body=body,
-                        from_email='FITZONE <noreply@fitzone.com>',  # Прямое значение вместо settings
-                        to=[request.user.email],
+                        f'Договор {subscription_type.name}',
+                        'Ваш договор во вложении.',
+                        'noreply@fitzone.com',
+                        [request.user.email],
                     )
-                    
-                    # Добавляем PDF вложение
-                    email.attach(
-                        f'Договор_FITZONE_{payment.id}.pdf',
-                        pdf_content,
-                        'application/pdf'
-                    )
-                    
-                    # Отправляем (fail_silently=True чтобы не падать при ошибке)
+                    email.attach(f'dogovor_{payment.id}.pdf', pdf_content, 'application/pdf')
                     email.send(fail_silently=True)
-                    
-                    print(f"=== DEBUG: Email отправлен на {request.user.email} ===")
-                    
+                    print("Email отправлен")
                 except Exception as e:
-                    print(f"=== DEBUG: Ошибка отправки email: {e} ===")
-                    # Не прерываем процесс, если email не отправился
-        except Exception as e:
-            print(f"=== DEBUG: Error in payment process: {e} ===")
-            return JsonResponse({
-                'success': False,
-                'message': f'Ошибка при обработке платежа: {str(e)}'
-            }, status=400)
-    
-    return JsonResponse({
-        'success': False,
-        'message': 'Неверный метод запроса'
-    }, status=405)
+                    print(f"Email error: {e}")
 
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Оплата успешна!',
+                    'order_number': f"#{payment.id:06d}",
+                    'payment_id': payment.id
+                })
+                
+        except Exception as e:
+            print(f"ERROR: {e}")
+            return JsonResponse({'success': False, 'message': str(e)})
 
 from django.http import HttpResponse
 from reportlab.pdfgen import canvas

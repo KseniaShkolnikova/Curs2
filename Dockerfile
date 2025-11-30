@@ -18,4 +18,4 @@ RUN cd /app/fitzone && python manage.py collectstatic --noinput
 EXPOSE 8000
 
 # ДОБАВЬТЕ --timeout 120 К GUNICORN
-CMD cd /app/fitzone && python manage.py migrate && gunicorn fitzone.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120
+CMD cd /app/fitzone && python manage.py migrate && gunicorn fitzone.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 40
