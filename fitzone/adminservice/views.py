@@ -387,20 +387,14 @@ def backup_management(request):
     SUMMARY: Страница управления резервным копированием базы данных
     """
     
-    # SUMMARY: Используем относительный путь внутри проекта
     backup_dir = os.path.join(settings.BASE_DIR, 'backups')
     backups = []
-    
-    print(f"BASE_DIR: {settings.BASE_DIR}")
-    print(f"Проверяем папку: {backup_dir}")
-    print(f"Папка существует: {os.path.exists(backup_dir)}")
     
     # Создаем папку если не существует
     os.makedirs(backup_dir, exist_ok=True)
     
     if os.path.exists(backup_dir):
         backup_files = [f for f in os.listdir(backup_dir) if f.endswith('.sql') and f.startswith('fitzone_backup_')]
-        print(f"Найдено файлов: {len(backup_files)}")
         
         # Сортируем по дате изменения (новые сначала)
         backup_files.sort(key=lambda x: os.path.getmtime(os.path.join(backup_dir, x)), reverse=True)
@@ -408,7 +402,7 @@ def backup_management(request):
     
     context = {
         'backups': backups,
-        'backup_dir': backup_dir,
+        'backup_dir': backup_dir,  # Добавляем в контекст
     }
     return render(request, 'backup_management.html', context)
 
@@ -417,60 +411,96 @@ def backup_management(request):
 def create_backup(request):
     if request.method == 'POST':
         print("=== CREATE BACKUP STARTED ===")
-        print(f"Request method: {request.method}")
-        print(f"BASE_DIR: {settings.BASE_DIR}")
         
         try:
             backup_dir = os.path.join(settings.BASE_DIR, 'backups')
             print(f"Backup dir: {backup_dir}")
             
-            # Проверим права на запись
+            # Создаем папку если не существует
             if not os.path.exists(backup_dir):
                 os.makedirs(backup_dir)
                 print(f"Created backup directory: {backup_dir}")
             
-            # Проверим можем ли писать в папку
-            test_file = os.path.join(backup_dir, 'test.txt')
-            with open(test_file, 'w') as f:
-                f.write('test')
-            print(f"Test file created: {test_file}")
-            
-            # Создаем простой JSON бэкап через Django
+            # Создаем SQL бэкап через pg_dump
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            backup_file = os.path.join(backup_dir, f'fitzone_backup_{timestamp}.json')
+            backup_file = os.path.join(backup_dir, f'fitzone_backup_{timestamp}.sql')
             
-            # Простой бэкап основных моделей
-            from django.core import serializers
-            from clientservice.models import UserProfiles, SubscriptionTypes, Classes
+            print(f"Creating SQL backup: {backup_file}")
             
-            data = {
-                'user_profiles': serializers.serialize('json', UserProfiles.objects.all()[:10]),  # первые 10 для теста
-                'timestamp': timestamp
-            }
+            # На Railway используем просто pg_dump (без полного пути)
+            pg_dump_path = 'pg_dump'
             
-            with open(backup_file, 'w') as f:
-                json.dump(data, f, indent=2)
+            # Получаем настройки базы данных
+            db_config = settings.DATABASES['default']
             
-            file_size = os.path.getsize(backup_file)
-            print(f"Backup created: {backup_file}, Size: {file_size} bytes")
+            # Формирование команды создания бэкапа
+            cmd = [
+                pg_dump_path,
+                '-h', db_config['HOST'],
+                '-U', db_config['USER'],
+                '-d', db_config['NAME'],
+                '-f', backup_file,
+                '--no-password'  # Не запрашивать пароль
+            ]
             
-            return JsonResponse({
-                'success': True,
-                'message': f'Бэкап создан: fitzone_backup_{timestamp}.json ({file_size} bytes)',
-                'filename': f'fitzone_backup_{timestamp}.json'
-            })
+            print(f"Executing command: {' '.join(cmd)}")
             
-        except Exception as e:
-            print(f"ERROR: {str(e)}")
-            import traceback
-            print(f"TRACEBACK: {traceback.format_exc()}")
+            # Выполнение команды с передачей пароля через переменную окружения
+            env = os.environ.copy()
+            env['PGPASSWORD'] = db_config['PASSWORD']
+            
+            # На Railway может потребоваться установить переменную PATH
+            env['PATH'] = '/usr/bin:/bin:/usr/local/bin'
+            
+            result = subprocess.run(
+                cmd, 
+                env=env, 
+                capture_output=True, 
+                text=True,
+                timeout=60  # Увеличиваем таймаут
+            )
+            
+            print(f"Return code: {result.returncode}")
+            if result.stdout:
+                print(f"STDOUT: {result.stdout}")
+            if result.stderr:
+                print(f"STDERR: {result.stderr}")
+            
+            # Проверка успешности операции
+            file_exists = os.path.exists(backup_file)
+            file_size = os.path.getsize(backup_file) if file_exists else 0
+            
+            print(f"File created: {file_exists}, Size: {file_size} bytes")
+            
+            if result.returncode == 0 and file_exists and file_size > 0:
+                return JsonResponse({
+                    'success': True,
+                    'message': f'✅ Бэкап создан успешно! Размер: {file_size} байт',
+                    'filename': f'fitzone_backup_{timestamp}.sql',
+                    'filepath': backup_file
+                })
+            else:
+                error_msg = result.stderr if result.stderr else "Неизвестная ошибка"
+                return JsonResponse({
+                    'success': False,
+                    'message': f'❌ Ошибка при создании бэкапа: {error_msg}'
+                })
+                
+        except subprocess.TimeoutExpired:
             return JsonResponse({
                 'success': False,
-                'message': f'Ошибка: {str(e)}'
+                'message': '⏰ Таймаут операции создания бэкапа'
+            })
+        except Exception as e:
+            import traceback
+            error_details = traceback.format_exc()
+            print(f"Exception: {error_details}")
+            return JsonResponse({
+                'success': False,
+                'message': f'❌ Ошибка: {str(e)}'
             })
     
     return JsonResponse({'success': False, 'message': 'Неверный метод запроса'})
-
 
 @admin_required
 @login_required
@@ -493,21 +523,23 @@ def restore_backup(request):
             
             print(f"Восстанавливаем из: {backup_path}")
             
-            psql_path = r'C:\Program Files\PostgreSQL\16\bin\psql.exe'
-            
+            # На Railway используем просто psql
+            psql_path = 'psql'
+            db_config = settings.DATABASES['default']
             
             # SUMMARY: Шаг 1 - Полная очистка базы данных
             print("Очищаем базу данных...")
             cleanup_cmd = [
                 psql_path,
-                '-h', settings.DATABASES['default']['HOST'],
-                '-U', settings.DATABASES['default']['USER'],
-                '-d', settings.DATABASES['default']['NAME'],
+                '-h', db_config['HOST'],
+                '-U', db_config['USER'],
+                '-d', db_config['NAME'],
                 '-c', "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
             ]
             
             env = os.environ.copy()
-            env['PGPASSWORD'] = settings.DATABASES['default']['PASSWORD']
+            env['PGPASSWORD'] = db_config['PASSWORD']
+            env['PATH'] = '/usr/bin:/bin:/usr/local/bin'
             
             # Очищаем базу
             cleanup_result = subprocess.run(
@@ -516,9 +548,7 @@ def restore_backup(request):
                 timeout=30,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.PIPE,
-                text=True,
-                encoding='utf-8',
-                errors='ignore'
+                text=True
             )
             
             if cleanup_result.returncode != 0:
@@ -531,21 +561,19 @@ def restore_backup(request):
             print("Восстанавливаем данные...")
             restore_cmd = [
                 psql_path,
-                '-h', settings.DATABASES['default']['HOST'],
-                '-U', settings.DATABASES['default']['USER'],
-                '-d', settings.DATABASES['default']['NAME'],
+                '-h', db_config['HOST'],
+                '-U', db_config['USER'],
+                '-d', db_config['NAME'],
                 '-f', backup_path
             ]
             
             restore_result = subprocess.run(
                 restore_cmd, 
                 env=env, 
-                timeout=60,
+                timeout=120,  # Увеличиваем таймаут для восстановления
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.PIPE,
-                text=True,
-                encoding='utf-8',
-                errors='ignore'
+                text=True
             )
             
             print(f"Код возврата восстановления: {restore_result.returncode}")
@@ -553,7 +581,7 @@ def restore_backup(request):
             if restore_result.returncode == 0:
                 return JsonResponse({
                     'success': True,
-                    'message': f'✅ База данных полностью восстановлена из {backup_file}! Все новые данные удалены.'
+                    'message': f'✅ База данных полностью восстановлена из {backup_file}!'
                 })
             else:
                 error_msg = restore_result.stderr[:500] if restore_result.stderr else "Неизвестная ошибка"
@@ -574,6 +602,7 @@ def restore_backup(request):
             })
     
     return JsonResponse({'success': False, 'message': 'Неверный метод запроса'})
+
 
 @admin_required
 @login_required
