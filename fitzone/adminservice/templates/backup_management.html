@@ -22,7 +22,6 @@ FITZONE - Управление бэкапами
                 
                 <div class="backup-info">
                     <p><i class="fas fa-info-circle"></i> Папка веб-бэкапов: <code>{{ backup_dir }}</code></p>
-                    <p><i class="fas fa-info-circle"></i> Папка ручных бэкапов: <code>{{ manual_backup_dir }}</code></p>
                     <p><i class="fas fa-search"></i> Всего бэкапов: {{ backups|length }}</p>
                 </div>
                 
@@ -42,7 +41,6 @@ FITZONE - Управление бэкапами
                                             {% if backup.source == 'manual' %}
                                                 <i class="fas fa-desktop"></i> Ручной
                                             {% else %}
-                                                <i class="fas fa-globe"></i> Веб
                                             {% endif %}
                                         </span>
                                     </div>
