@@ -463,7 +463,22 @@ def profile_view(request):
     })
 
 
+def test_email_simple(request):
+    """Простой тест отправки email - добавь эту функцию в views.py"""
+    from django.core.mail import send_mail
+    try:
+        send_mail(
+            'Тест почты FITZONE',
+            'Если ты это видишь - почта работает! Время: ' + timezone.now().strftime('%H:%M:%S'),
+            'noreply@fitzone.com',
+            ['sesha_shk@mail.ru'],  # Замени на свою почту
+            fail_silently=False,
+        )
+        return JsonResponse({'status': 'SUCCESS: Email отправлен! Проверь почту.'})
+    except Exception as e:
+        return JsonResponse({'status': f'ERROR: {str(e)}'})
 
+# Вызов функции - добавь этот URL в urls.py
 
 
 def subscription_detail(request, subscription_id):
