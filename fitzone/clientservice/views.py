@@ -572,41 +572,20 @@ def process_payment(request, subscription_id):
                 'message': f'Ошибка: {str(e)}'
             }, status=400)
 
-def debug_email_test(request):
-    """Детальная диагностика почты"""
-    import smtplib
-    from django.conf import settings
-    
-    debug_info = {
-        'host': settings.EMAIL_HOST,
-        'port': settings.EMAIL_PORT,
-        'user': settings.EMAIL_HOST_USER,
-        'from_email': settings.DEFAULT_FROM_EMAIL,
-        'use_tls': settings.EMAIL_USE_TLS,
-    }
-    
+def test_resend_email(request):
+    """Тест Resend"""
+    from django.core.mail import send_mail
     try:
-        # Пробуем подключиться к SMTP серверу
-        server = smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT)
-        debug_info['smtp_connection'] = 'SUCCESS'
-        
-        # Пробуем начать TLS
-        if settings.EMAIL_USE_TLS:
-            server.starttls()
-            debug_info['tls_handshake'] = 'SUCCESS'
-        
-        # Пробуем залогиниться
-        server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
-        debug_info['login'] = 'SUCCESS'
-        
-        server.quit()
-        debug_info['overall'] = 'SMTP CONNECTION SUCCESS'
-        
+        send_mail(
+            'Тест Resend - FITZONE',
+            'Resend работает!',
+            'onboarding@resend.dev',
+            ['sesha_shk@mail.ru'],
+            fail_silently=False,
+        )
+        return JsonResponse({'status': 'SUCCESS: Resend работает!'})
     except Exception as e:
-        debug_info['error'] = str(e)
-        debug_info['overall'] = 'SMTP CONNECTION FAILED'
-    
-    return JsonResponse(debug_info)
+        return JsonResponse({'status': f'ERROR: {str(e)}'})
 
 from django.http import HttpResponse
 from reportlab.pdfgen import canvas
