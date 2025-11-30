@@ -581,13 +581,17 @@ def process_payment(request, subscription_id):
                 'message': f'Ошибка: {str(e)}'
             }, status=400)
         
+RESEND_API_KEY = 're_bPexkZPR_4UEZoPqSug9exFTcjfVdmLZ3'    
 
 def test_resend_email(request):
     """Тест Resend email"""
     try:
         # Проверяем наличие API ключа
-        if not resend.api_key:
-            return JsonResponse({'status': 'ERROR', 'message': 'RESEND_API_KEY не настроен'})
+        if not RESEND_API_KEY:
+            return JsonResponse({
+                'status': 'ERROR', 
+                'message': 'RESEND_API_KEY не настроен. Добавьте его в Variables Railway.'
+            })
         
         # Определяем email для теста
         if request.user.is_authenticated:
@@ -608,7 +612,7 @@ def test_resend_email(request):
         else:
             return JsonResponse({
                 'status': 'ERROR', 
-                'message': 'Resend не смог отправить email. Проверьте API ключ.'
+                'message': 'Resend не смог отправить email. Проверьте логи.'
             })
             
     except Exception as e:
