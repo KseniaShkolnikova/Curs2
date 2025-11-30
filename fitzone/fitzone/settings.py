@@ -86,38 +86,26 @@ import dj_database_url
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-import os
-import dj_database_url
-from pathlib import Path
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-# Database - ТОЛЬКО PostgreSQL
-DATABASE_URL = os.environ.get('DATABASE_URL')
-
-if not DATABASE_URL:
-    # Если нет DATABASE_URL - БД НЕТ, приложение не должно работать
-    print("❌ ОШИБКА: Нет DATABASE_URL! Приложение не может работать без БД.")
-    # Можно выйти с ошибкой или оставить пустую конфигурацию
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.dummy',
-        }
-    }
-else:
-    # Используем PostgreSQL из Railway
+if 'DATABASE_URL' in os.environ:
+    # Для Railway (они дают DATABASE_URL автоматически)
     DATABASES = {
         'default': dj_database_url.config(
-            default=DATABASE_URL,
-            conn_max_age=600,
-            ssl_require=True
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600
         )
     }
-
-print("=== DATABASE CONFIG ===")
-print("DATABASE_URL:", "ЕСТЬ" if DATABASE_URL else "НЕТ")
-if DATABASE_URL:
-    print("Используется PostgreSQL")
+else:
+    # Для локальной разработки
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DB_NAME', 'fitZone_DB'),
+            'USER': os.environ.get('DB_USER', 'postgres'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', '1'),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
+        }
+    }
 
 
 # Password validation
