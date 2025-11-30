@@ -26,8 +26,7 @@ path('subscription/agreement/<int:payment_id>/',
     path('deactivate-account/', views.deactivate_account, name='deactivate_account'),
 
              path('buy-personal-package/<int:trainer_id>/', views.buy_personal_package, name='buy_personal_package'),
-path('test-email/', views.test_email_view, name='test_email'),
-         # В urls.py
+path('check-email-settings/', views.check_email_settings, name='check_email_settings'),         # В urls.py
 path('generate-payment-document/<int:payment_id>/', views.generate_payment_document, name='generate_payment_document'),
     # Добавь эти два URL
     path('create-personal-training/<int:trainer_id>/', views.create_personal_training, name='create_personal_training'),

@@ -572,20 +572,17 @@ def process_payment(request, subscription_id):
                 'message': f'Ошибка: {str(e)}'
             }, status=400)
 
-def test_email_view(request):
-    """Тест отправки email"""
-    from django.core.mail import send_mail
-    try:
-        send_mail(
-            'Тест почты FITZONE',
-            'Это тестовое письмо с Railway.',
-            'sesha_shk@mail.ru',
-            ['sesha_shk@mail.ru'],  # Отправь самому себе
-            fail_silently=False,
-        )
-        return JsonResponse({'status': 'SUCCESS: Email отправлен!'})
-    except Exception as e:
-        return JsonResponse({'status': f'ERROR: {str(e)}'})
+def check_email_settings(request):
+    """Проверка настроек почты"""
+    from django.conf import settings
+    info = {
+        'EMAIL_HOST': settings.EMAIL_HOST,
+        'EMAIL_PORT': settings.EMAIL_PORT,
+        'EMAIL_HOST_USER': settings.EMAIL_HOST_USER,
+        'DEFAULT_FROM_EMAIL': settings.DEFAULT_FROM_EMAIL,
+        'EMAIL_USE_TLS': settings.EMAIL_USE_TLS,
+    }
+    return JsonResponse(info)
 
 from django.http import HttpResponse
 from reportlab.pdfgen import canvas
