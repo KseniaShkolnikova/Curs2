@@ -180,6 +180,137 @@ FITZONE - Личный кабинет тренера
     .statistics-with-margin {
     margin-bottom: 200px; /* или любое другое значение */
 }
+/* ДОБАВИТЬ ЭТИ СТИЛИ: */
+
+/* Стили для статусных бейджей тренировок */
+.status-badge.upcoming {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--neon-blue);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.status-badge.ongoing {
+    background: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.status-badge.completed {
+    background: rgba(100, 116, 139, 0.1);
+    color: #64748b;
+    border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+/* Стили для счетчиков клиентов */
+.clients-count {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--neon-blue);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Стили для времени тренировок */
+.time {
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--neon-purple);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Стили для имени клиента */
+.client-name {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Стили для бейджей типа тренировки */
+.type-badge {
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.type-badge.group {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--neon-blue);
+}
+
+.type-badge.personal {
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--neon-purple);
+}
+
+/* Темная тема для новых элементов */
+.dark-theme .clients-count {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+}
+
+.dark-theme .time {
+    background: rgba(139, 92, 246, 0.2);
+    color: #a78bfa;
+}
+
+.dark-theme .client-name {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+/* Анимации появления */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dashboard-card {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+/* Ховер-эффекты для action cards */
+.action-card:hover .action-icon {
+    transform: scale(1.1);
+    transition: transform 0.3s ease;
+}
+
+/* Улучшенные стили для статистики */
+.statistics {
+    margin-bottom: 200px;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 480px) {
+    .training-details span {
+        font-size: 0.75rem;
+    }
+    
+    .clients-count,
+    .time,
+    .client-name {
+        font-size: 0.7rem;
+        padding: 1px 6px;
+    }
+    
+    .status-badge {
+        font-size: 0.7rem;
+        padding: 3px 8px;
+    }
+}
  .trainer-dashboard {
     display: grid;
     grid-template-columns: 1.2fr 0.8fr;

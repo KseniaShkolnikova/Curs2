@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% load static %}
 {% load class_tags %}
 
 {% block title_name %}
@@ -7,7 +6,6 @@ FITZONE - Запись на тренировку
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/class_booking.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -250,155 +248,643 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <style>
-    /* Исправления для светлой темы в booking */
-.booking-hero .hero-description {
-    color: #6b7280 !important;
-}
+    /* Современные переменные */
+    :root {
+        --neon-purple: #8b5cf6;
+        --neon-pink: #ec4899;
+        --neon-blue: #06b6d4;
+        --glass-bg: rgba(255, 255, 255, 0.1);
+        --glass-border: rgba(255, 255, 255, 0.2);
+        --text-primary: #1f2937;
+        --text-secondary: #6b7280;
+        --light-card: #ffffff;
+        --light-bg: #f8fafc;
+        --light-border: #e5e7eb;
+        --accent-primary: #8b5cf6;
+        --accent-light: rgba(139, 92, 246, 0.1);
+    }
 
-.dark-theme .booking-hero .hero-description {
-    color: #9ca3af !important;
-}
+    .dark-theme {
+        --text-primary: #f9fafb;
+        --text-secondary: #9ca3af;
+        --light-card: #1e293b;
+        --light-bg: #0f172a;
+        --light-border: #374151;
+        --glass-bg: rgba(30, 41, 59, 0.6);
+        --glass-border: rgba(255, 255, 255, 0.1);
+    }
 
-/* Кнопка оплаты в светлой теме */
-.btn-primary {
-    background: linear-gradient(135deg, #8b5cf6, #6d28d9) !important;
-    color: white !important;
-    border: none !important;
-}
+    /* Базовые стили */
+    .booking-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        position: relative;
+        overflow: hidden;
+    }
 
-/* Чекбокс в модальном окне */
-.payment-modal .save-card-label {
-    color: #374151 !important;
-}
+    .dark-theme .booking-container {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    }
 
-.dark-theme .payment-modal .save-card-label {
-    color: #e5e7eb !important;
-}
+    .booking-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(236, 72, 153, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.05) 0%, transparent 50%);
+        animation: float 6s ease-in-out infinite;
+    }
 
-.payment-modal .checkbox-container input[type="checkbox"] {
-    accent-color: #8b5cf6;
-}
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(1deg); }
+    }
 
-/* Валидация формы оплаты */
-.payment-modal input::placeholder {
-    color: #9ca3af !important;
-}
+    /* Hero Section - Стеклянный морфизм */
+    .booking-hero {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--glass-border);
+        padding: 100px 0 80px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
 
-.dark-theme .payment-modal input::placeholder {
-    color: #6b7280 !important;
-}
-/* Стили для сохраненных карт */
-.saved-cards-section {
-    margin-bottom: 20px;
-}
+    .booking-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -50%;
+        width: 200%;
+        height: 100%;
+        background: linear-gradient(90deg, 
+            transparent, 
+            rgba(255, 255, 255, 0.1), 
+            transparent
+        );
+        animation: shimmer 3s ease-in-out infinite;
+    }
 
-.saved-cards-section h4 {
-    margin-bottom: 15px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text-primary);
-}
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
 
-.saved-cards-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 15px;
-}
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        padding: 16px 28px;
+        border-radius: 50px;
+        margin-bottom: 25px;
+        border: 1px solid var(--glass-border);
+        position: relative;
+        overflow: hidden;
+    }
 
-.saved-card {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 15px;
-    background: var(--light-bg);
-    border: 2px solid var(--light-border);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
+    .hero-badge::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+    }
 
-.dark-theme .saved-card {
-    background: var(--dark-bg);
-    border-color: var(--dark-border);
-}
+    .hero-badge:hover::before {
+        left: 100%;
+    }
 
-.saved-card:hover {
-    border-color: var(--accent-primary);
-    transform: translateY(-2px);
-}
+    .hero-badge i {
+        font-size: 1.3rem;
+        background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
 
-.saved-card.active {
-    border-color: var(--accent-primary);
-    background: var(--accent-light);
-}
+    .hero-badge span {
+        font-weight: 600;
+        color: white;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
 
-.dark-theme .saved-card.active {
-    background: rgba(139, 92, 246, 0.1);
-}
+    .hero-title {
+        font-size: 4rem;
+        font-weight: 900;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        position: relative;
+    }
 
-.card-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
+    .hero-description {
+        font-size: 1.4rem;
+        color: rgba(255, 255, 255, 0.9);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        font-weight: 500;
+    }
 
-.card-icon {
-    color: var(--accent-primary);
-    font-size: 1.2rem;
-}
+    /* Основной контент */
+    .booking-content {
+        display: grid;
+        grid-template-columns: 1fr 420px;
+        gap: 50px;
+        padding: 80px 0;
+        max-width: 1400px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 2;
+    }
 
-.card-details span {
-    display: block;
-}
+    /* Карточка тренировки - Неоморфизм */
+    .booking-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border-radius: 30px;
+        padding: 50px;
+        border: 1px solid var(--glass-border);
+        box-shadow: 
+            0 25px 50px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
 
-.card-number {
-    font-weight: 600;
-    color: var(--text-primary);
-    font-size: 0.9rem;
-}
+    .booking-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--neon-purple), var(--neon-pink), var(--neon-blue));
+        background-size: 200% 100%;
+        animation: gradientShift 3s ease infinite;
+    }
 
-.card-expiry {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-}
+    @keyframes gradientShift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
 
-.delete-card-btn {
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    cursor: pointer;
-    padding: 5px;
-    border-radius: 4px;
-}
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+        margin-bottom: 40px;
+    }
 
-.delete-card-btn:hover {
-    background: rgba(229, 62, 62, 0.1);
-    color: #e53e3e;
-}
+    .class-icon {
+        width: 90px;
+        height: 90px;
+        background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2.2rem;
+        box-shadow: 
+            0 15px 35px rgba(139, 92, 246, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
 
-.use-new-card-btn {
-    width: 100%;
-    padding: 12px;
-    background: transparent;
-    border: 2px dashed var(--light-border);
-    border-radius: 10px;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
+    .class-icon::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        transform: rotate(45deg);
+        animation: shine 3s ease-in-out infinite;
+    }
 
-.dark-theme .use-new-card-btn {
-    border-color: var(--dark-border);
-}
+    @keyframes shine {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
 
-.use-new-card-btn:hover {
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
-}
+    .class-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin: 0;
+        background: linear-gradient(135deg, var(--text-primary), var(--accent-primary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* Детали тренировки */
+    .class-details {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+        margin-bottom: 40px;
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 20px 25px;
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        border: 1px solid var(--glass-border);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .detail-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, var(--accent-light), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .detail-item:hover::before {
+        left: 100%;
+    }
+
+    .detail-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .detail-item.highlight {
+        background: linear-gradient(135deg, var(--accent-light), rgba(236, 72, 153, 0.1));
+        border: 1px solid rgba(139, 92, 246, 0.3);
+    }
+
+    .detail-icon {
+        width: 50px;
+        height: 50px;
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent-primary);
+        font-size: 1.3rem;
+        border: 1px solid var(--glass-border);
+        flex-shrink: 0;
+    }
+
+    .detail-content {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    .detail-label {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .detail-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .detail-value.price {
+        font-size: 1.8rem;
+        background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+    }
+
+    .spots-warning {
+        color: #f59e0b;
+        font-weight: 700;
+        margin-left: 10px;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+
+    /* Описание */
+    .class-description {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 30px;
+        border: 1px solid var(--glass-border);
+    }
+
+    .class-description h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .class-description h3::before {
+        content: '';
+        width: 4px;
+        height: 20px;
+        background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
+        border-radius: 2px;
+    }
+
+    .class-description p {
+        color: var(--text-secondary);
+        line-height: 1.7;
+        margin: 0;
+        font-size: 1.1rem;
+    }
+
+    /* Боковая панель */
+    .booking-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    /* Статус карточки */
+    .status-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border-radius: 25px;
+        padding: 40px 30px;
+        text-align: center;
+        border: 1px solid var(--glass-border);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .status-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+    }
+
+    .status-card.success::before {
+        background: linear-gradient(90deg, #10b981, #059669);
+    }
+
+    .status-card.warning::before {
+        background: linear-gradient(90deg, #f59e0b, #d97706);
+    }
+
+    .status-card.error::before {
+        background: linear-gradient(90deg, #ef4444, #dc2626);
+    }
+
+    .status-icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+    }
+
+    .status-card h3 {
+        font-size: 1.6rem;
+        font-weight: 800;
+        margin-bottom: 15px;
+        color: var(--text-primary);
+    }
+
+    .status-card p {
+        color: var(--text-secondary);
+        margin-bottom: 25px;
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+
+    /* Кнопки */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 18px 30px;
+        border-radius: 15px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: none;
+        cursor: pointer;
+        font-size: 1.1rem;
+        width: 100%;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .btn:hover::before {
+        left: 100%;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
+        color: white;
+        box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(139, 92, 246, 0.6);
+        color: white;
+    }
+
+    .btn-secondary {
+        background: var(--glass-bg);
+        color: var(--text-primary);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(10px);
+    }
+
+    .btn-secondary:hover {
+        background: var(--glass-border);
+        transform: translateY(-2px);
+        color: var(--text-primary);
+    }
+
+    .booking-note {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 20px;
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        justify-content: center;
+    }
+
+    .booking-note i {
+        color: var(--accent-primary);
+        font-size: 1.1rem;
+    }
+
+    /* Информационная карточка */
+    .info-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border-radius: 25px;
+        padding: 35px 30px;
+        border: 1px solid var(--glass-border);
+    }
+
+    .info-card h4 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .info-card h4::before {
+        content: '💡';
+        font-size: 1.2rem;
+    }
+
+    .info-card ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .info-card li {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px 0;
+        color: var(--text-secondary);
+        border-bottom: 1px solid var(--glass-border);
+        transition: all 0.3s ease;
+    }
+
+    .info-card li:last-child {
+        border-bottom: none;
+    }
+
+    .info-card li:hover {
+        transform: translateX(10px);
+        color: var(--text-primary);
+    }
+
+    .info-card li i {
+        color: var(--accent-primary);
+        width: 20px;
+        font-size: 1.1rem;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 1200px) {
+        .booking-content {
+            grid-template-columns: 1fr;
+            gap: 40px;
+            padding: 60px 20px;
+        }
+        
+        .booking-sidebar {
+            order: -1;
+        }
+        
+        .hero-title {
+            font-size: 3rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .booking-hero {
+            padding: 80px 0 60px;
+        }
+        
+        .hero-title {
+            font-size: 2.5rem;
+        }
+        
+        .hero-description {
+            font-size: 1.2rem;
+        }
+        
+        .booking-card {
+            padding: 30px 25px;
+        }
+        
+        .card-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 20px;
+        }
+        
+        .class-title {
+            font-size: 2rem;
+        }
+        
+        .class-icon {
+            width: 80px;
+            height: 80px;
+            font-size: 2rem;
+        }
+        
+        .detail-item {
+            padding: 15px 20px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+        
+        .booking-card {
+            padding: 25px 20px;
+        }
+        
+        .class-details {
+            gap: 15px;
+        }
+    }
 </style>
 {% endblock %}
