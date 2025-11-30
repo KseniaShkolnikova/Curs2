@@ -411,76 +411,50 @@ def backup_management(request):
     }
     return render(request, 'backup_management.html', context)
 
+# adminservice/views.py
 @admin_required
 @login_required
 def create_backup(request):
     """
-    SUMMARY: Создание резервной копии базы данных PostgreSQL
+    SUMMARY: Создание резервной копии базы данных с использованием Django
     """
     if request.method == 'POST':
         try:
-            # SUMMARY: Подготовка пути для сохранения бэкапа в папке проекта
-            project_root = settings.BASE_DIR
-            backup_dir = os.path.join(project_root, 'backups')
+            from django.core.management import call_command
+            from django.core.files.storage import default_storage
+            import io
+            import zipfile
+            from datetime import datetime
+            
+            # SUMMARY: Создаем временный файл для дампа
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            filename = f'fitzone_backup_{timestamp}.json'
+            
+            # SUMMARY: Создаем дамп данных через Django
+            output = io.StringIO()
+            call_command('dumpdata', '--natural-foreign', '--natural-primary', 
+                        '--exclude=contenttypes', '--exclude=auth.permission',
+                        '--indent=2', stdout=output)
+            output.seek(0)
+            backup_data = output.getvalue()
+            
+            # SUMMARY: Сохраняем в папку backups
+            backup_dir = os.path.join(settings.BASE_DIR, 'backups')
             os.makedirs(backup_dir, exist_ok=True)
             
-            print(f"Создаем папку для бэкапов: {backup_dir}")
+            backup_path = os.path.join(backup_dir, filename)
             
-            # Генерируем имя файла с timestamp
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            backup_file = os.path.join(backup_dir, f'fitzone_backup_{timestamp}.sql')
+            with open(backup_path, 'w', encoding='utf-8') as f:
+                f.write(backup_data)
             
-            print(f"Создаем бэкап: {backup_file}")
+            file_size = os.path.getsize(backup_path)
             
-            # Для Windows используем полный путь к pg_dump
-            pg_dump_path = r'C:\Program Files\PostgreSQL\16\bin\pg_dump.exe'
-            
-            # SUMMARY: Формирование команды создания бэкапа
-            cmd = [
-                pg_dump_path,
-                '-h', settings.DATABASES['default']['HOST'],
-                '-U', settings.DATABASES['default']['USER'],
-                '-d', settings.DATABASES['default']['NAME'],
-                '-f', backup_file
-            ]
-            
-            print(f"Выполняем команду: {' '.join(cmd)}")
-            
-            # SUMMARY: Выполнение команды с передачей пароля
-            env = os.environ.copy()
-            env['PGPASSWORD'] = settings.DATABASES['default']['PASSWORD']
-            result = subprocess.run(cmd, env=env, capture_output=True, text=True)
-            
-            print(f"Результат: код {result.returncode}")
-            if result.stdout:
-                print(f"STDOUT: {result.stdout}")
-            if result.stderr:
-                print(f"STDERR: {result.stderr}")
-            
-            # SUMMARY: Проверка успешности операции
-            file_exists = os.path.exists(backup_file)
-            file_size = os.path.getsize(backup_file) if file_exists else 0
-            
-            print(f"Файл создан: {file_exists}, Размер: {file_size} байт, Путь: {backup_file}")
-            
-            # Проверяем содержимое папки
-            if os.path.exists(backup_dir):
-                files_in_dir = os.listdir(backup_dir)
-                print(f"Файлы в папке бэкапов: {files_in_dir}")
-            
-            if result.returncode == 0 and file_exists:
-                return JsonResponse({
-                    'success': True,
-                    'message': f'Бэкап успешно создан: fitzone_backup_{timestamp}.sql ({file_size} bytes)',
-                    'filename': f'fitzone_backup_{timestamp}.sql',
-                    'filepath': backup_file
-                })
-            else:
-                error_msg = result.stderr if result.stderr else "Неизвестная ошибка"
-                return JsonResponse({
-                    'success': False,
-                    'message': f'Ошибка при создании бэкапа: {error_msg}'
-                })
+            return JsonResponse({
+                'success': True,
+                'message': f'Бэкап успешно создан: {filename} ({file_size} bytes)',
+                'filename': filename,
+                'filepath': backup_path
+            })
                 
         except Exception as e:
             import traceback
@@ -497,7 +471,7 @@ def create_backup(request):
 @login_required
 def restore_backup(request):
     """
-    SUMMARY: Восстановление базы данных из резервной копии
+    SUMMARY: Восстановление базы данных из JSON бэкапа
     """
     if request.method == 'POST':
         backup_file = request.POST.get('backup_file')
@@ -505,9 +479,10 @@ def restore_backup(request):
             return JsonResponse({'success': False, 'message': 'Файл бэкапа не указан'})
         
         try:
-            # SUMMARY: Используем путь в папке проекта
-            project_root = settings.BASE_DIR
-            backup_dir = os.path.join(project_root, 'backups')
+            from django.core.management import call_command
+            
+            # SUMMARY: Путь к файлу бэкапа
+            backup_dir = os.path.join(settings.BASE_DIR, 'backups')
             backup_path = os.path.join(backup_dir, backup_file)
             
             if not os.path.exists(backup_path):
@@ -515,89 +490,44 @@ def restore_backup(request):
             
             print(f"Восстанавливаем из: {backup_path}")
             
-            psql_path = r'C:\Program Files\PostgreSQL\16\bin\psql.exe'
+            # SUMMARY: Восстанавливаем данные
+            with open(backup_path, 'r', encoding='utf-8') as f:
+                call_command('loaddata', backup_path)
             
-            # ... остальной код восстановления без изменений ...
-            
-            # SUMMARY: Шаг 1 - Полная очистка базы данных
-            print("Очищаем базу данных...")
-            cleanup_cmd = [
-                psql_path,
-                '-h', settings.DATABASES['default']['HOST'],
-                '-U', settings.DATABASES['default']['USER'],
-                '-d', settings.DATABASES['default']['NAME'],
-                '-c', "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
-            ]
-            
-            env = os.environ.copy()
-            env['PGPASSWORD'] = settings.DATABASES['default']['PASSWORD']
-            
-            # Очищаем базу
-            cleanup_result = subprocess.run(
-                cleanup_cmd, 
-                env=env, 
-                timeout=30,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.PIPE,
-                text=True,
-                encoding='utf-8',
-                errors='ignore'
-            )
-            
-            if cleanup_result.returncode != 0:
-                return JsonResponse({
-                    'success': False,
-                    'message': f'Ошибка очистки базы: {cleanup_result.stderr[:500] if cleanup_result.stderr else "Неизвестная ошибка"}'
-                })
-            
-            # SUMMARY: Шаг 2 - Восстановление данных из бэкапа
-            print("Восстанавливаем данные...")
-            restore_cmd = [
-                psql_path,
-                '-h', settings.DATABASES['default']['HOST'],
-                '-U', settings.DATABASES['default']['USER'],
-                '-d', settings.DATABASES['default']['NAME'],
-                '-f', backup_path
-            ]
-            
-            restore_result = subprocess.run(
-                restore_cmd, 
-                env=env, 
-                timeout=60,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.PIPE,
-                text=True,
-                encoding='utf-8',
-                errors='ignore'
-            )
-            
-            print(f"Код возврата восстановления: {restore_result.returncode}")
-            
-            if restore_result.returncode == 0:
-                return JsonResponse({
-                    'success': True,
-                    'message': f'✅ База данных полностью восстановлена из {backup_file}! Все новые данные удалены.'
-                })
-            else:
-                error_msg = restore_result.stderr[:500] if restore_result.stderr else "Неизвестная ошибка"
-                return JsonResponse({
-                    'success': False,
-                    'message': f'❌ Ошибка восстановления: {error_msg}'
-                })
-                
-        except subprocess.TimeoutExpired:
             return JsonResponse({
-                'success': False,
-                'message': '⏰ Таймаут операции'
+                'success': True,
+                'message': f'✅ База данных успешно восстановлена из {backup_file}!'
             })
+                
         except Exception as e:
             return JsonResponse({
                 'success': False,
-                'message': f'❌ Ошибка: {str(e)}'
+                'message': f'❌ Ошибка восстановления: {str(e)}'
             })
     
     return JsonResponse({'success': False, 'message': 'Неверный метод запроса'})
 
+@admin_required
+@login_required
+def download_backup(request, filename):
+    """
+    SUMMARY: Скачивание файла бэкапа
+    """
+    try:
+        backup_dir = os.path.join(settings.BASE_DIR, 'backups')
+        file_path = os.path.join(backup_dir, filename)
+        
+        if os.path.exists(file_path):
+            with open(file_path, 'rb') as f:
+                response = HttpResponse(f.read(), content_type='application/json')
+                response['Content-Disposition'] = f'attachment; filename="{filename}"'
+                return response
+        else:
+            return JsonResponse({'success': False, 'message': 'Файл не найден'})
+            
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Ошибка: {str(e)}'})
+    
 @admin_required
 @login_required
 def export_payments(request):
