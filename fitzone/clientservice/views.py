@@ -548,7 +548,7 @@ def process_payment(request, subscription_id):
 def test_resend_email(request):
     """Тест Resend email"""
     try:
-        from utils.email_service import send_resend_email
+        from fitzone.utils import send_resend_email
         
         success = send_resend_email(
             subject='Тест Resend - FITZONE',

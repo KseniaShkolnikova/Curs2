@@ -7,6 +7,12 @@ FITZONE - Запись на занятия
 
 {% block extra_css %}
 <style>
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
 /* Hero Section */
 .classes-hero {
     padding: 120px 0 80px;
@@ -123,12 +129,13 @@ FITZONE - Запись на занятия
     box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
 }
 
-/* Classes Grid */
+/* Classes Grid - ФИКСИРОВАННЫЙ РАЗМЕР */
 .classes-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
     gap: 30px;
     margin-bottom: 80px;
+    justify-items: center;
 }
 
 .class-card {
@@ -137,6 +144,11 @@ FITZONE - Запись на занятия
     overflow: hidden;
     transition: var(--transition);
     box-shadow: var(--shadow-medium);
+    width: 100%;
+    max-width: 380px;
+    height: 500px;
+    display: flex;
+    flex-direction: column;
 }
 
 .dark-theme .class-card {
@@ -152,10 +164,14 @@ FITZONE - Запись на занятия
     width: 100%;
     height: 200px;
     object-fit: cover;
+    flex-shrink: 0;
 }
 
 .class-content {
     padding: 25px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .class-header {
@@ -163,6 +179,7 @@ FITZONE - Запись на занятия
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 15px;
+    flex-shrink: 0;
 }
 
 .class-title {
@@ -170,6 +187,7 @@ FITZONE - Запись на занятия
     font-weight: 700;
     color: var(--text-dark);
     margin-bottom: 5px;
+    line-height: 1.3;
 }
 
 .dark-theme .class-title {
@@ -182,6 +200,7 @@ FITZONE - Запись на занятия
     color: var(--neon-purple);
     white-space: nowrap;
     margin-left: 15px;
+    flex-shrink: 0;
 }
 
 .class-time {
@@ -190,12 +209,18 @@ FITZONE - Запись на занятия
     font-size: 0.9rem;
     margin-bottom: 10px;
     display: block;
+    flex-shrink: 0;
 }
 
 .class-description {
     color: var(--text-gray);
     margin-bottom: 20px;
     line-height: 1.5;
+    flex: 1;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
 }
 
 .dark-theme .class-description {
@@ -206,11 +231,14 @@ FITZONE - Запись на занятия
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
+    margin-top: auto;
 }
 
 .class-trainer {
     font-weight: 600;
     color: var(--text-dark);
+    font-size: 0.9rem;
 }
 
 .dark-theme .class-trainer {
@@ -230,6 +258,7 @@ FITZONE - Запись на занятия
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    flex-shrink: 0;
 }
 
 .class-button:hover {
@@ -253,6 +282,7 @@ FITZONE - Запись на занятия
     padding: 60px 20px;
     color: var(--text-gray);
     grid-column: 1 / -1;
+    width: 100%;
 }
 
 .dark-theme .no-results {
@@ -303,6 +333,16 @@ FITZONE - Запись на занятия
 }
 
 /* Адаптивность */
+@media (max-width: 1200px) {
+    .classes-grid {
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    }
+    
+    .class-card {
+        max-width: 350px;
+    }
+}
+
 @media (max-width: 1024px) {
     .filter-grid {
         grid-template-columns: 1fr 1fr;
@@ -311,6 +351,15 @@ FITZONE - Запись на занятия
     
     .classes-hero h1 {
         font-size: 3rem;
+    }
+    
+    .classes-grid {
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    }
+    
+    .class-card {
+        max-width: 320px;
+        height: 480px;
     }
 }
 
@@ -341,6 +390,12 @@ FITZONE - Запись на занятия
         gap: 20px;
     }
     
+    .class-card {
+        max-width: 100%;
+        height: auto;
+        min-height: 500px;
+    }
+    
     .class-header {
         flex-direction: column;
         align-items: flex-start;
@@ -353,6 +408,10 @@ FITZONE - Запись на занятия
 }
 
 @media (max-width: 480px) {
+    .container {
+        padding: 0 15px;
+    }
+    
     .classes-hero {
         padding: 60px 0 30px;
     }
@@ -367,10 +426,6 @@ FITZONE - Запись на занятия
     
     .filter-section {
         padding: 15px;
-    }
-    
-    .class-card {
-        min-width: 100%;
     }
     
     .class-content {
@@ -394,6 +449,14 @@ FITZONE - Запись на занятия
     .class-button {
         width: 100%;
         justify-content: center;
+    }
+    
+    .classes-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .class-card {
+        min-height: 450px;
     }
 }
 </style>
@@ -543,7 +606,7 @@ function filterClasses() {
         }
         
         if (shouldShow) {
-            card.style.display = 'block';
+            card.style.display = 'flex';
             visibleCards.push(card);
         } else {
             card.style.display = 'none';
