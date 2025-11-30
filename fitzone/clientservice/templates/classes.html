@@ -7,7 +7,7 @@ FITZONE - Запись на занятия
 
 {% block extra_css %}
 <style>
-/* Добавляем только недостающие стили для этой страницы */
+/* Hero Section */
 .classes-hero {
     padding: 120px 0 80px;
     text-align: center;
@@ -15,7 +15,6 @@ FITZONE - Запись на занятия
     backdrop-filter: blur(10px);
     clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
     margin-bottom: 60px;
-    margin-top: 80px;
     border-radius: 0 0 40px 40px;
 }
 
@@ -85,7 +84,7 @@ FITZONE - Запись на занятия
     border: 2px solid var(--light-border);
     border-radius: 12px;
     font-size: 1rem;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     background: white;
     color: var(--text-dark);
 }
@@ -112,8 +111,11 @@ FITZONE - Запись на занятия
     border-radius: 12px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .filter-button:hover {
@@ -133,7 +135,7 @@ FITZONE - Запись на занятия
     background: var(--light-card);
     border-radius: 20px;
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     box-shadow: var(--shadow-medium);
 }
 
@@ -223,7 +225,7 @@ FITZONE - Запись на занятия
     border-radius: 10px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     text-decoration: none;
     display: inline-flex;
     align-items: center;
@@ -274,16 +276,37 @@ FITZONE - Запись на занятия
     color: var(--dark-text);
 }
 
-/* Адаптивность для этой страницы */
+/* Section Title */
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 2rem;
+    text-align: center;
+    position: relative;
+}
+
+.dark-theme .section-title {
+    color: var(--dark-text);
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: var(--accent-gradient);
+    border-radius: 2px;
+}
+
+/* Адаптивность */
 @media (max-width: 1024px) {
     .filter-grid {
         grid-template-columns: 1fr 1fr;
         gap: 15px;
-    }
-    
-    .classes-hero {
-        margin-top: 70px;
-        padding: 100px 0 60px;
     }
     
     .classes-hero h1 {
@@ -294,7 +317,6 @@ FITZONE - Запись на занятия
 @media (max-width: 768px) {
     .classes-hero {
         padding: 80px 0 40px;
-        margin-top: 60px;
         clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
     }
     
@@ -333,7 +355,6 @@ FITZONE - Запись на занятия
 @media (max-width: 480px) {
     .classes-hero {
         padding: 60px 0 30px;
-        margin-top: 50px;
     }
     
     .classes-hero h1 {
