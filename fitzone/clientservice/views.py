@@ -572,17 +572,41 @@ def process_payment(request, subscription_id):
                 'message': f'Ошибка: {str(e)}'
             }, status=400)
 
-def check_email_settings(request):
-    """Проверка настроек почты"""
+def debug_email_test(request):
+    """Детальная диагностика почты"""
+    import smtplib
     from django.conf import settings
-    info = {
-        'EMAIL_HOST': settings.EMAIL_HOST,
-        'EMAIL_PORT': settings.EMAIL_PORT,
-        'EMAIL_HOST_USER': settings.EMAIL_HOST_USER,
-        'DEFAULT_FROM_EMAIL': settings.DEFAULT_FROM_EMAIL,
-        'EMAIL_USE_TLS': settings.EMAIL_USE_TLS,
+    
+    debug_info = {
+        'host': settings.EMAIL_HOST,
+        'port': settings.EMAIL_PORT,
+        'user': settings.EMAIL_HOST_USER,
+        'from_email': settings.DEFAULT_FROM_EMAIL,
+        'use_tls': settings.EMAIL_USE_TLS,
     }
-    return JsonResponse(info)
+    
+    try:
+        # Пробуем подключиться к SMTP серверу
+        server = smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT)
+        debug_info['smtp_connection'] = 'SUCCESS'
+        
+        # Пробуем начать TLS
+        if settings.EMAIL_USE_TLS:
+            server.starttls()
+            debug_info['tls_handshake'] = 'SUCCESS'
+        
+        # Пробуем залогиниться
+        server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+        debug_info['login'] = 'SUCCESS'
+        
+        server.quit()
+        debug_info['overall'] = 'SMTP CONNECTION SUCCESS'
+        
+    except Exception as e:
+        debug_info['error'] = str(e)
+        debug_info['overall'] = 'SMTP CONNECTION FAILED'
+    
+    return JsonResponse(debug_info)
 
 from django.http import HttpResponse
 from reportlab.pdfgen import canvas
