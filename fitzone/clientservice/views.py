@@ -499,83 +499,45 @@ def subscription_payment(request, subscription_id):
 def process_payment(request, subscription_id):
     if request.method == 'POST':
         try:
-            print(f"=== DEBUG: Starting payment process ===")
+            print(f"=== DEBUG 1: Starting payment ===")
             
+            # ТОЛЬКО парсим JSON
             data = json.loads(request.body)
+            print(f"=== DEBUG 2: JSON parsed ===")
             
-            # Сохраняем паспортные данные
-            request.session.update({
-                'passport_series': data.get('passport_series', ''),
-                'passport_number': data.get('passport_number', ''),
-                'passport_issued': data.get('passport_issued', ''),
-                'issue_date': data.get('issue_date', ''),
-                'division_code': data.get('division_code', ''),
-            })
-            
+            # ТОЛЬКО получаем абонемент
             subscription_type = get_object_or_404(SubscriptionTypes, id=subscription_id)
+            print(f"=== DEBUG 3: Subscription found ===")
             
+            # ТОЛЬКО создаем запись в БД
             with transaction.atomic():
-                # 1. Создаем записи в БД
-                start_date = timezone.now().date()
                 subscription = Subscriptions.objects.create(
                     user=request.user,
                     subscriptiontype=subscription_type,
-                    startdate=start_date,
+                    startdate=timezone.now().date(),
                     is_active=True
                 )
+                print(f"=== DEBUG 4: Subscription created ===")
                 
                 payment = Payments.objects.create(
                     subscription=subscription,
                     price=subscription_type.price,
                     paymentdate=timezone.now()
                 )
-                
-                UserActionsLog.objects.create(
-                    user=request.user,
-                    action=f'Оплата абонемента: {subscription_type.name}'
-                )
+                print(f"=== DEBUG 5: Payment created ===")
 
-                # 2. ПРОСТОЙ PDF (без сложной графики)
-                pdf_buffer = io.BytesIO()
-                p = canvas.Canvas(pdf_buffer, pagesize=A4)
-                
-                # Только самый необходимый текст
-                p.drawString(100, 800, f"ДОГОВОР №{payment.id}")
-                p.drawString(100, 780, f"Абонемент: {subscription_type.name}")
-                p.drawString(100, 760, f"Стоимость: {subscription_type.price} руб.")
-                p.drawString(100, 740, f"Срок: {subscription_type.durationdays} дней")
-                p.drawString(100, 720, f"Клиент: {request.user.get_full_name()}")
-                
-                p.showPage()
-                p.save()
-                pdf_content = pdf_buffer.getvalue()
-                pdf_buffer.close()
-
-                # 3. БЫСТРАЯ отправка email
-                try:
-                    from django.core.mail import EmailMessage
-                    email = EmailMessage(
-                        f'Договор {subscription_type.name}',
-                        'Ваш договор во вложении.',
-                        'noreply@fitzone.com',
-                        [request.user.email],
-                    )
-                    email.attach(f'dogovor_{payment.id}.pdf', pdf_content, 'application/pdf')
-                    email.send(fail_silently=True)
-                    print("Email отправлен")
-                except Exception as e:
-                    print(f"Email error: {e}")
-
-                return JsonResponse({
-                    'success': True,
-                    'message': 'Оплата успешна!',
-                    'order_number': f"#{payment.id:06d}",
-                    'payment_id': payment.id
-                })
+            return JsonResponse({
+                'success': True,
+                'message': 'Минимальная оплата успешна!',
+                'order_number': f"#{payment.id:06d}"
+            })
                 
         except Exception as e:
-            print(f"ERROR: {e}")
-            return JsonResponse({'success': False, 'message': str(e)})
+            print(f"=== DEBUG ERROR: {e} ===")
+            return JsonResponse({
+                'success': False,
+                'message': f'Ошибка: {str(e)}'
+            }, status=400)
 
 from django.http import HttpResponse
 from reportlab.pdfgen import canvas

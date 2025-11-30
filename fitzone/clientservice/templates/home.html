@@ -7,6 +7,1183 @@
 FITZONE - Premium Fitness
 {% endblock %}
 
+{% block extra_css %}
+<style>
+/* ===== БАЗОВЫЕ СТИЛИ И ПЕРЕМЕННЫЕ ===== */
+:root {
+    --neon-purple: #8b5cf6;
+    --neon-purple-dark: #7c3aed;
+    --neon-purple-light: #a78bfa;
+    --neon-blue: #3b82f6;
+    --neon-cyan: #06b6d4;
+    --light-bg: #f8fafc;
+    --light-card: #ffffff;
+    --light-border: #f1f5f9;
+    --text-dark: #0f172a;
+    --text-gray: #64748b;
+    --text-light: #94a3b8;
+    --accent-gradient: linear-gradient(135deg, var(--neon-purple), var(--neon-purple-dark));
+    --dark-bg: #0f172a;
+    --dark-card: #1e293b;
+    --dark-border: #334155;
+    --dark-text: #e2e8f0;
+    --dark-text-light: #94a3b8;
+    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.05);
+    --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.08);
+    --shadow-large: 0 20px 50px rgba(139, 92, 246, 0.15);
+    --border-radius: 16px;
+    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* ===== ОСНОВНЫЕ СТИЛИ ДЛЯ ГЛАВНОЙ СТРАНИЦЫ ===== */
+
+/* Hero Section */
+.hero-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding: 0 40px;
+    overflow: hidden;
+    margin: 80px 100px 40px;
+    box-shadow: 
+        0 40px 80px rgba(0, 0, 0, 0.1),
+        0 20px 40px rgba(0, 0, 0, 0.05);
+    clip-path: polygon(0 0, 100% 5%, 100% 95%, 0 100%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%);
+    backdrop-filter: blur(10px);
+}
+
+.dark-theme .hero-section {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
+}
+
+.hero-content {
+    max-width: 1200px;
+    margin: 0;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+    text-align: left;
+}
+
+.hero-title {
+    font-size: clamp(3.5rem, 8vw, 7.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    margin-bottom: 2rem;
+    background: linear-gradient(135deg, var(--text-dark) 0%, var(--neon-purple) 30%, var(--neon-purple-dark) 70%, var(--text-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% 200%;
+    animation: gradientFlow 4s ease infinite;
+    text-transform: uppercase;
+    letter-spacing: -3px;
+}
+
+.dark-theme .hero-title {
+    background: linear-gradient(135deg, var(--dark-text) 0%, var(--neon-purple) 30%, var(--neon-purple-light) 70%, var(--dark-text) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+@keyframes gradientFlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.hero-subtitle {
+    font-size: 1.5rem;
+    color: var(--text-gray);
+    margin-bottom: 3rem;
+    max-width: 600px;
+    line-height: 1.7;
+    font-weight: 400;
+    text-align: left;
+}
+
+.dark-theme .hero-subtitle {
+    color: var(--dark-text-light);
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-modern {
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-purple-dark));
+    color: white;
+    border: none;
+    padding: 18px 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 15px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 
+        0 10px 30px rgba(139, 92, 246, 0.3),
+        0 5px 15px rgba(139, 92, 246, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transform: translateY(0);
+}
+
+.btn-modern:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 
+        0 20px 40px rgba(139, 92, 246, 0.4),
+        0 10px 20px rgba(139, 92, 246, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, var(--neon-blue), #2563eb);
+    box-shadow: 
+        0 10px 30px rgba(59, 130, 246, 0.3),
+        0 5px 15px rgba(59, 130, 246, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.btn-secondary:hover {
+    box-shadow: 
+        0 20px 40px rgba(59, 130, 246, 0.4),
+        0 10px 20px rgba(59, 130, 246, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* Section Styling */
+.section {
+    padding: 150px 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+.section:nth-child(odd) {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    clip-path: polygon(0 0, 100% 5%, 100% 95%, 0 100%);
+}
+
+.section:nth-child(even) {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    clip-path: polygon(0 5%, 100% 0, 100% 100%, 0 95%);
+    margin: -50px 0;
+}
+
+.dark-theme .section:nth-child(odd) {
+    background: linear-gradient(135deg, var(--dark-card) 0%, var(--dark-bg) 100%);
+}
+
+.dark-theme .section:nth-child(even) {
+    background: linear-gradient(135deg, var(--dark-bg) 0%, #1e293b 100%);
+}
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 2rem;
+    color: var(--text-dark);
+    position: relative;
+    text-align: center;
+}
+
+.dark-theme .section-title {
+    color: var(--dark-text);
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: var(--accent-gradient);
+    border-radius: 2px;
+}
+
+/* Scroll Sections */
+.scroll-section {
+    overflow-x: auto;
+    padding: 60px 40px;
+    margin: 0 -40px;
+    position: relative;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--neon-purple) transparent;
+}
+
+.scroll-section::-webkit-scrollbar {
+    height: 4px;
+}
+
+.scroll-section::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 0 40px;
+}
+
+.scroll-section::-webkit-scrollbar-thumb {
+    background: var(--neon-purple);
+    border-radius: 2px;
+}
+
+.scroll-container {
+    display: flex;
+    gap: 40px;
+    padding: 0 20px 10px;
+    min-width: max-content;
+    position: relative;
+}
+
+/* Class Cards */
+.class-card {
+    flex: 0 0 400px;
+    background: var(--light-card);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-medium);
+    border: 1px solid var(--light-border);
+}
+
+.dark-theme .class-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.class-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(139, 92, 246, 0.15);
+}
+
+.class-image {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+}
+
+.class-content {
+    padding: 25px;
+}
+
+.class-time {
+    color: var(--neon-purple);
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.class-content h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+}
+
+.dark-theme .class-content h3 {
+    color: var(--dark-text);
+}
+
+.class-content p {
+    color: var(--text-gray);
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.dark-theme .class-content p {
+    color: var(--dark-text-light);
+}
+
+.class-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.class-trainer {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.dark-theme .class-trainer {
+    color: var(--dark-text);
+}
+
+.class-price {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--neon-purple);
+    white-space: nowrap;
+}
+
+.class-button {
+    background: var(--accent-gradient);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    width: 100%;
+    text-transform: uppercase;
+}
+
+.class-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+}
+
+/* Trainer Cards */
+.trainer-card {
+    flex: 0 0 350px;
+    background: var(--light-card);
+    border-radius: 20px;
+    box-shadow: var(--shadow-medium);
+    border: 1px solid var(--light-border);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 480px;
+}
+
+.dark-theme .trainer-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.trainer-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(139, 92, 246, 0.15);
+}
+
+.trainer-avatar {
+    width: 100%;
+    height: 250px;
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 15px 15px 0 0;
+    color: white;
+    font-size: 4rem;
+}
+
+.trainer-img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 15px 15px 0 0;
+}
+
+.trainer-info {
+    padding: 25px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.trainer-info h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 5px;
+}
+
+.dark-theme .trainer-info h3 {
+    color: var(--dark-text);
+}
+
+.trainer-specialty {
+    color: var(--neon-purple);
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.trainer-info p {
+    color: var(--text-gray);
+    margin-bottom: 20px;
+    line-height: 1.5;
+    flex: 1;
+}
+
+.dark-theme .trainer-info p {
+    color: var(--dark-text-light);
+}
+
+.trainer-book-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--accent-gradient);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    margin-top: auto;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.trainer-book-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+}
+
+/* CTA Section */
+.cta-section {
+    text-align: center;
+    padding: 180px 40px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, 
+        rgba(248, 250, 252, 0.95) 0%,
+        rgba(255, 255, 255, 0.9) 100%);
+    border-radius: 40px;
+    margin: 100px 40px;
+    box-shadow: 
+        0 40px 80px rgba(0, 0, 0, 0.1),
+        0 20px 40px rgba(0, 0, 0, 0.05);
+    clip-path: polygon(0 0, 100% 5%, 100% 95%, 0 100%);
+}
+
+.dark-theme .cta-section {
+    background: linear-gradient(135deg, 
+        rgba(30, 41, 59, 0.95) 0%,
+        rgba(15, 23, 42, 0.9) 100%);
+}
+
+.cta-title {
+    font-size: 4.5rem;
+    font-weight: 900;
+    margin-bottom: 3rem;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientFlow 3s ease infinite;
+    line-height: 1.1;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Pricing Section */
+.fitzone-pricing-section {
+    padding: 100px 0;
+    background: linear-gradient(135deg, var(--light-bg) 0%, #f8f9fa 100%);
+    position: relative;
+}
+
+.dark-theme .fitzone-pricing-section {
+    background: linear-gradient(135deg, var(--dark-bg) 0%, #1a1a1a 100%);
+}
+
+.fitzone-pricing-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.fitzone-pricing-subtitle {
+    text-align: center;
+    color: var(--text-gray);
+    font-size: 1.3rem;
+    margin-bottom: 60px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.dark-theme .fitzone-pricing-subtitle {
+    color: var(--dark-text-light);
+}
+
+.fitzone-pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    align-items: stretch;
+}
+
+.fitzone-pricing-card {
+    background: var(--light-card);
+    border-radius: 24px;
+    padding: 40px 35px;
+    box-shadow: var(--shadow-medium);
+    border: 1px solid var(--light-border);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 650px;
+}
+
+.dark-theme .fitzone-pricing-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.fitzone-pricing-card.featured {
+    border: 2px solid var(--neon-purple);
+    transform: scale(1.02);
+}
+
+.fitzone-pricing-header {
+    text-align: center;
+    margin-bottom: 30px;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.fitzone-pricing-badge {
+    position: absolute;
+    top: -45px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.fitzone-popular-badge {
+    background: var(--accent-gradient);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
+}
+
+.fitzone-pricing-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+    line-height: 1.2;
+}
+
+.dark-theme .fitzone-pricing-title {
+    color: var(--dark-text);
+}
+
+.fitzone-pricing-duration {
+    color: var(--neon-purple);
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.fitzone-pricing-price {
+    text-align: center;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+.fitzone-price-amount {
+    font-size: 3.5rem;
+    font-weight: 900;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+}
+
+.fitzone-price-currency {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--neon-purple);
+}
+
+.fitzone-price-note {
+    text-align: center;
+    color: var(--text-gray);
+    font-size: 1rem;
+    margin-bottom: 30px;
+    flex-shrink: 0;
+}
+
+.dark-theme .fitzone-price-note {
+    color: var(--dark-text-light);
+}
+
+.fitzone-pricing-features {
+    margin-bottom: 30px;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.fitzone-features-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.fitzone-feature-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.dark-theme .fitzone-feature-item {
+    border-bottom: 1px solid var(--dark-border);
+}
+
+.fitzone-feature-icon {
+    width: 22px;
+    height: 22px;
+    background: var(--accent-gradient);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.fitzone-feature-text {
+    color: var(--text-gray);
+    font-weight: 500;
+    font-size: 0.95rem;
+    line-height: 1.3;
+}
+
+.dark-theme .fitzone-feature-text {
+    color: var(--dark-text-light);
+}
+
+.fitzone-pricing-actions {
+    margin-top: auto;
+    flex-shrink: 0;
+}
+
+.fitzone-pricing-btn {
+    display: block;
+    width: 100%;
+    padding: 16px 30px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.fitzone-btn-primary {
+    background: var(--accent-gradient);
+    color: white;
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+}
+
+.fitzone-btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.4);
+}
+
+.fitzone-btn-secondary {
+    background: transparent;
+    color: var(--neon-purple);
+    border: 2px solid var(--neon-purple);
+}
+
+.fitzone-btn-secondary:hover {
+    background: var(--neon-purple);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+}
+
+/* Map Section */
+.fitzone-map-section {
+    padding: 80px 0;
+    background: linear-gradient(135deg, var(--light-bg) 0%, #f0f2f5 100%);
+    position: relative;
+}
+
+.dark-theme .fitzone-map-section {
+    background: linear-gradient(135deg, var(--dark-bg) 0%, #1a1a1a 100%);
+}
+
+.fitzone-map-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.fitzone-map-subtitle {
+    text-align: center;
+    color: var(--text-gray);
+    font-size: 1.2rem;
+    margin-bottom: 50px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.dark-theme .fitzone-map-subtitle {
+    color: var(--dark-text-light);
+}
+
+.fitzone-map-content {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 40px;
+    align-items: stretch;
+    min-height: 500px;
+}
+
+.fitzone-map-info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 100%;
+    justify-content: space-between;
+}
+
+.fitzone-info-card {
+    background: var(--light-card);
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: var(--shadow-medium);
+    border: 1px solid var(--light-border);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    flex: 1;
+    min-height: 100px;
+}
+
+.dark-theme .fitzone-info-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.fitzone-info-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--accent-gradient);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.fitzone-info-content h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.dark-theme .fitzone-info-content h3 {
+    color: var(--dark-text);
+}
+
+.fitzone-info-content p {
+    color: var(--text-gray);
+    margin-bottom: 4px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.dark-theme .fitzone-info-content p {
+    color: var(--dark-text-light);
+}
+
+.fitzone-map-wrapper {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow-large);
+    height: 500px;
+}
+
+/* ===== АДАПТИВНОСТЬ ===== */
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+    .hero-section {
+        margin: 80px 40px 40px;
+        padding: 0 30px;
+    }
+    
+    .hero-title {
+        font-size: clamp(2.5rem, 6vw, 5rem);
+    }
+    
+    .hero-subtitle {
+        font-size: 1.3rem;
+    }
+    
+    .section {
+        padding: 100px 30px;
+    }
+    
+    .scroll-section {
+        padding: 40px 30px;
+        margin: 0 -30px;
+    }
+    
+    .class-card,
+    .trainer-card {
+        flex: 0 0 350px;
+    }
+    
+    .cta-section {
+        padding: 120px 30px;
+        margin: 80px 30px;
+    }
+    
+    .cta-title {
+        font-size: 3.5rem;
+    }
+    
+    .fitzone-pricing-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+    }
+    
+    .fitzone-pricing-card.featured {
+        transform: none;
+    }
+    
+    .fitzone-map-content {
+        grid-template-columns: 1fr 1.5fr;
+        gap: 30px;
+    }
+    
+    .fitzone-map-wrapper {
+        height: 400px;
+    }
+}
+
+/* Mobile (768px and below) */
+@media (max-width: 768px) {
+    .hero-section {
+        margin: 70px 20px 30px;
+        padding: 0 20px;
+        text-align: center;
+    }
+    
+    .hero-content {
+        text-align: center;
+    }
+    
+    .hero-title {
+        font-size: clamp(2rem, 8vw, 3.5rem);
+        letter-spacing: -1px;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem;
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .btn-modern {
+        padding: 16px 40px;
+        font-size: 1rem;
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .section {
+        padding: 80px 20px;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    .scroll-section {
+        padding: 30px 20px;
+        margin: 0 -20px;
+    }
+    
+    .scroll-container {
+        gap: 20px;
+        padding: 0 10px;
+    }
+    
+    .class-card,
+    .trainer-card {
+        flex: 0 0 280px;
+    }
+    
+    .class-image,
+    .trainer-img,
+    .trainer-avatar {
+        height: 200px;
+    }
+    
+    .class-content,
+    .trainer-info {
+        padding: 20px;
+    }
+    
+    .cta-section {
+        padding: 80px 20px;
+        margin: 60px 20px;
+    }
+    
+    .cta-title {
+        font-size: 2.5rem;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .fitzone-pricing-section {
+        padding: 60px 0;
+    }
+    
+    .fitzone-pricing-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .fitzone-pricing-card {
+        padding: 30px 25px;
+        height: 600px;
+    }
+    
+    .fitzone-price-amount {
+        font-size: 3rem;
+    }
+    
+    .fitzone-pricing-title {
+        font-size: 1.6rem;
+    }
+    
+    .fitzone-map-section {
+        padding: 60px 0;
+    }
+    
+    .fitzone-map-content {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .fitzone-map-wrapper {
+        height: 300px;
+        order: -1;
+    }
+    
+    .fitzone-info-card {
+        padding: 20px;
+    }
+}
+
+/* Small Mobile (480px and below) */
+@media (max-width: 480px) {
+    .hero-section {
+        margin: 60px 15px 20px;
+        padding: 0 15px;
+    }
+    
+    .hero-title {
+        font-size: clamp(1.8rem, 8vw, 2.5rem);
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+    
+    .section {
+        padding: 60px 15px;
+    }
+    
+    .section-title {
+        font-size: 1.8rem;
+    }
+    
+    .scroll-section {
+        padding: 20px 15px;
+        margin: 0 -15px;
+    }
+    
+    .class-card,
+    .trainer-card {
+        flex: 0 0 260px;
+    }
+    
+    .class-content h3,
+    .trainer-info h3 {
+        font-size: 1.1rem;
+    }
+    
+    .cta-section {
+        padding: 60px 15px;
+        margin: 40px 15px;
+    }
+    
+    .cta-title {
+        font-size: 2rem;
+    }
+    
+    .fitzone-pricing-container {
+        padding: 0 15px;
+    }
+    
+    .fitzone-pricing-card {
+        padding: 25px 20px;
+        height: 550px;
+    }
+    
+    .fitzone-price-amount {
+        font-size: 2.5rem;
+    }
+    
+    .fitzone-pricing-title {
+        font-size: 1.4rem;
+    }
+    
+    .fitzone-feature-item {
+        padding: 8px 0;
+    }
+    
+    .fitzone-feature-text {
+        font-size: 0.9rem;
+    }
+    
+    .fitzone-map-container {
+        padding: 0 15px;
+    }
+    
+    .fitzone-map-wrapper {
+        height: 250px;
+    }
+    
+    .fitzone-info-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+        padding: 15px;
+    }
+    
+    .fitzone-info-icon {
+        align-self: center;
+    }
+}
+
+/* Landscape Mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .hero-section {
+        min-height: auto;
+        padding: 40px 20px;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-buttons {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .btn-modern {
+        width: auto;
+        min-width: 200px;
+    }
+}
+
+/* Hide scrollbar on mobile */
+@media (max-width: 768px) {
+    .scroll-section::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .scroll-section {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+}
+
+/* Touch optimization */
+@media (max-width: 768px) {
+    .btn-modern,
+    .class-button,
+    .trainer-book-btn,
+    .fitzone-pricing-btn {
+        min-height: 44px;
+    }
+    
+    .scroll-container {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Performance optimization for mobile */
+@media (max-width: 768px) {
+    .particles-container {
+        display: none;
+    }
+    
+    .class-card:hover,
+    .trainer-card:hover,
+    .fitzone-pricing-card:hover {
+        transform: none;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Отладочная информация -->
 <script>
@@ -45,11 +1222,13 @@ FITZONE - Premium Fitness
             {% if featured_classes %}
                 {% for class_item in featured_classes %}
                 <div class="class-card">
-                    {% if class_item.image %}
-                        <img src="{{ class_item.image.url }}" class="class-image" alt="{{ class_item.name }}">
-                    {% else %}
-                        <img src="{% random_fitness_image %}" class="class-image" alt="{{ class_item.name }}">
-                    {% endif %}
+    {% if class_item.image %}
+        <img src="{{ class_item.image.url }}" class="class-image" alt="{{ class_item.name }}">
+    {% else %}
+        {% random_fitness_image as random_image %}
+        <img src="{{ random_image }}" class="class-image" alt="{{ class_item.name }}"
+             onerror="this.src='{% static 'img/fitness1.jpg' %}'">
+    {% endif %}
                     <div class="class-content">
                         <span class="class-time">
                             {{ class_item.starttime|date:"l" }} • {{ class_item.starttime|time:"H:i" }}
@@ -253,7 +1432,7 @@ FITZONE - Premium Fitness
                 </div>
                 {% endfor %}
             {% else %}
-                <!-- Запасные карточки абонементов с обновленными классами -->
+                <!-- Запасные карточки абонементов -->
                 <div class="fitzone-pricing-card">
                     <div class="fitzone-pricing-header">
                         <h3 class="fitzone-pricing-title">СТАНДАРТ</h3>
@@ -400,6 +1579,7 @@ FITZONE - Premium Fitness
         </div>
     </div>
 </section>
+
 <section id="trainers" class="section">
     <h2 class="section-title">НАШИ ТРЕНЕРЫ</h2>
     <div class="scroll-section">
@@ -579,1185 +1759,6 @@ FITZONE - Premium Fitness
         </div>
     </div>
 </section>
-
-<style>
-/* Уникальные стили для секции абонементов - FITZONE_PRICING */
-.fitzone-pricing-section {
-    padding: 100px 0;
-    background: linear-gradient(135deg, var(--light-bg) 0%, #f8f9fa 100%);
-    position: relative;
-}
-
-.dark-theme .fitzone-pricing-section {
-    background: linear-gradient(135deg, var(--dark-bg) 0%, #1a1a1a 100%);
-}
-
-.fitzone-pricing-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
-
-.fitzone-pricing-subtitle {
-    text-align: center;
-    color: var(--text-gray);
-    font-size: 1.3rem;
-    margin-bottom: 60px;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.dark-theme .fitzone-pricing-subtitle {
-    color: var(--dark-text-light);
-}
-
-/* Сетка карточек с одинаковой высотой */
-.fitzone-pricing-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
-    align-items: stretch;
-}
-.trainer-avatar {
-    width: 100%;
-    height: 250px;
-    background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 15px 15px 0 0;
-    color: white;
-    font-size: 4rem;
-}
-
-.trainer-img {
-    width: 100%;
-    height: 250px;
-    object-fit: cover;
-    border-radius: 15px 15px 0 0;
-}
-
-/* Карточки с фиксированной одинаковой высотой */
-.fitzone-pricing-card {
-    background: var(--light-card);
-    border-radius: 24px;
-    padding: 40px 35px;
-    box-shadow: var(--shadow-medium);
-    border: 1px solid var(--light-border);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    height: 650px; /* Фиксированная высота */
-    min-height: 650px;
-}
-
-.dark-theme .fitzone-pricing-card {
-    background: var(--dark-card);
-    border-color: var(--dark-border);
-}
-
-.fitzone-pricing-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 6px;
-    background: var(--accent-gradient);
-    transform: scaleX(0);
-    transition: transform 0.4s ease;
-}
-
-.fitzone-pricing-card:hover::before {
-    transform: scaleX(1);
-}
-
-.fitzone-pricing-card:hover {
-    transform: translateY(-12px);
-    box-shadow: 0 25px 50px rgba(139, 92, 246, 0.15);
-}
-
-.fitzone-pricing-card.featured {
-    border: 2px solid var(--neon-purple);
-    transform: scale(1.02);
-}
-
-.fitzone-pricing-card.featured:hover {
-    transform: scale(1.02) translateY(-12px);
-}
-
-/* Заголовок карточки */
-.fitzone-pricing-header {
-    text-align: center;
-    margin-bottom: 30px;
-    position: relative;
-    flex-shrink: 0;
-}
-
-.fitzone-pricing-badge {
-    position: absolute;
-    top: -45px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.fitzone-popular-badge {
-    background: var(--accent-gradient);
-    color: white;
-    padding: 8px 20px;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
-}
-
-.fitzone-pricing-title {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: var(--text-dark);
-    margin-bottom: 10px;
-    line-height: 1.2;
-}
-
-.dark-theme .fitzone-pricing-title {
-    color: var(--dark-text);
-}
-
-.fitzone-pricing-duration {
-    color: var(--neon-purple);
-    font-weight: 600;
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-/* Цена */
-.fitzone-pricing-price {
-    text-align: center;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: baseline;
-    justify-content: center;
-    gap: 5px;
-    flex-shrink: 0;
-}
-
-.fitzone-price-amount {
-    font-size: 3.5rem;
-    font-weight: 900;
-    background: var(--accent-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    line-height: 1;
-}
-
-.fitzone-price-currency {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: var(--neon-purple);
-}
-
-.fitzone-price-note {
-    text-align: center;
-    color: var(--text-gray);
-    font-size: 1rem;
-    margin-bottom: 30px;
-    flex-shrink: 0;
-}
-
-.dark-theme .fitzone-price-note {
-    color: var(--dark-text-light);
-}
-
-/* Особенности с прокруткой */
-.fitzone-pricing-features {
-    margin-bottom: 30px;
-    flex: 1;
-    overflow: hidden;
-    min-height: 0;
-}
-
-.fitzone-features-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    height: 100%;
-    overflow-y: auto;
-    padding-right: 5px;
-}
-
-/* Стили для скроллбара */
-.fitzone-features-grid::-webkit-scrollbar {
-    width: 4px;
-}
-
-.fitzone-features-grid::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0.05);
-    border-radius: 10px;
-}
-
-.dark-theme .fitzone-features-grid::-webkit-scrollbar-track {
-    background: rgba(255,255,255,0.05);
-}
-
-.fitzone-features-grid::-webkit-scrollbar-thumb {
-    background: var(--neon-purple);
-    border-radius: 10px;
-}
-
-.fitzone-features-grid::-webkit-scrollbar-thumb:hover {
-    background: var(--neon-blue);
-}
-
-.fitzone-feature-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
-    flex-shrink: 0;
-}
-
-.dark-theme .fitzone-feature-item {
-    border-bottom: 1px solid var(--dark-border);
-}
-
-.fitzone-feature-item:hover {
-    transform: translateX(5px);
-}
-
-.fitzone-feature-item:last-child {
-    border-bottom: none;
-}
-
-.fitzone-feature-icon {
-    width: 22px;
-    height: 22px;
-    background: var(--accent-gradient);
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 0.8rem;
-    flex-shrink: 0;
-}
-
-.fitzone-feature-text {
-    color: var(--text-gray);
-    font-weight: 500;
-    font-size: 0.95rem;
-    line-height: 1.3;
-}
-
-.dark-theme .fitzone-feature-text {
-    color: var(--dark-text-light);
-}
-
-/* Кнопки */
-.fitzone-pricing-actions {
-    margin-top: auto;
-    flex-shrink: 0;
-}
-
-.fitzone-pricing-btn {
-    display: block;
-    width: 100%;
-    padding: 16px 30px;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 1rem;
-    text-align: center;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.fitzone-btn-primary {
-    background: var(--accent-gradient);
-    color: white;
-    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
-}
-
-.fitzone-btn-primary:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.4);
-    color: white;
-}
-
-.fitzone-btn-secondary {
-    background: transparent;
-    color: var(--neon-purple);
-    border: 2px solid var(--neon-purple);
-}
-
-.fitzone-btn-secondary:hover {
-    background: var(--neon-purple);
-    color: white;
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
-}
-
-/* Адаптивность */
-@media (max-width: 1200px) {
-    .fitzone-pricing-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 25px;
-    }
-    
-    .fitzone-pricing-card.featured {
-        transform: none;
-    }
-    
-    .fitzone-pricing-card.featured:hover {
-        transform: translateY(-12px);
-    }
-}
-
-@media (max-width: 768px) {
-    .fitzone-pricing-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-    
-    .fitzone-pricing-card {
-        padding: 30px 25px;
-        height: 600px;
-        min-height: 600px;
-    }
-    
-    .fitzone-price-amount {
-        font-size: 3rem;
-    }
-    
-    .fitzone-pricing-title {
-        font-size: 1.6rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .fitzone-pricing-section {
-        padding: 60px 0;
-    }
-    
-    .fitzone-pricing-container {
-        padding: 0 15px;
-    }
-    
-    .fitzone-pricing-card {
-        padding: 25px 20px;
-        height: 550px;
-        min-height: 550px;
-    }
-    
-    .fitzone-price-amount {
-        font-size: 2.5rem;
-    }
-    
-    .fitzone-pricing-title {
-        font-size: 1.4rem;
-    }
-    
-    .fitzone-feature-item {
-        padding: 8px 0;
-    }
-    
-    .fitzone-feature-text {
-        font-size: 0.9rem;
-    }
-}
-
-/* Анимации */
-@keyframes fitzoneFadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.fitzone-pricing-card {
-    animation: fitzoneFadeInUp 0.6s ease forwards;
-}
-
-.fitzone-pricing-card:nth-child(1) { animation-delay: 0.1s; }
-.fitzone-pricing-card:nth-child(2) { animation-delay: 0.2s; }
-.fitzone-pricing-card:nth-child(3) { animation-delay: 0.3s; }
-/* Стили для блока с картой */
-.fitzone-map-section {
-    padding: 80px 0;
-    background: linear-gradient(135deg, var(--light-bg) 0%, #f0f2f5 100%);
-    position: relative;
-}
-
-.dark-theme .fitzone-map-section {
-    background: linear-gradient(135deg, var(--dark-bg) 0%, #1a1a1a 100%);
-}
-
-.fitzone-map-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
-
-.fitzone-map-subtitle {
-    text-align: center;
-    color: var(--text-gray);
-    font-size: 1.2rem;
-    margin-bottom: 50px;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.dark-theme .fitzone-map-subtitle {
-    color: var(--dark-text-light);
-}
-.fitzone-map-content {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 40px;
-    align-items: stretch; /* Растягиваем по высоте */
-    min-height: 500px; /* Минимальная высота */
-}
-
-.fitzone-map-info {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    height: 100%; /* Занимает всю высоту */
-    justify-content: space-between; /* Равномерно распределяет карточки */
-}
-
-.fitzone-info-card {
-    background: var(--light-card);
-    border-radius: 16px;
-    padding: 25px;
-    box-shadow: var(--shadow-medium);
-    border: 1px solid var(--light-border);
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: flex-start;
-    gap: 20px;
-    flex: 1; /* Карточки занимают равное пространство */
-    min-height: 100px; /* Минимальная высота карточек */
-}
-
-.dark-theme .fitzone-info-card {
-    background: var(--dark-card);
-    border-color: var(--dark-border);
-}
-
-.fitzone-info-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(139, 92, 246, 0.1);
-}
-
-.fitzone-info-icon {
-    width: 50px;
-    height: 50px;
-    background: var(--accent-gradient);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.2rem;
-    flex-shrink: 0;
-}
-
-.fitzone-info-content h3 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--text-dark);
-    margin-bottom: 8px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.dark-theme .fitzone-info-content h3 {
-    color: var(--dark-text);
-}
-.trainer-card {
-    flex: 0 0 500px; /* Фиксированная ширина, не растягивается и не сжимается */
-    background: var(--light-card);
-    border-radius: 20px;
-    box-shadow: var(--shadow-medium);
-    border: 1px solid var(--light-border);
-    transition: all 0.3s ease;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    height: 480px; /* Фиксированная высота */
-}
-.class-image {
-    width: 100%;
-    height: 500px; 
-}
-.trainer-book-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background: var(--accent-gradient);
-    color: white;
-    padding: 12px 20px;
-    border-radius: 10px;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-    margin-top: auto; /* Фиксирует кнопку внизу */
-    flex-shrink: 0; /* Не сжимается */
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.fitzone-info-content p {
-    color: var(--text-gray);
-    margin-bottom: 4px;
-    font-size: 0.95rem;
-    line-height: 1.4;
-}
-
-.dark-theme .fitzone-info-content p {
-    color: var(--dark-text-light);
-}
-
-.fitzone-map-wrapper {
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: var(--shadow-large);
-    height: 700px; /* Увеличиваем высоту карты */
-}
-
-.fitzone-map-placeholder {
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-}
-
-.fitzone-map-image {
-    text-align: center;
-    color: white;
-    z-index: 2;
-}
-
-.fitzone-map-image i {
-    font-size: 3rem;
-    margin-bottom: 15px;
-    opacity: 0.9;
-}
-
-.fitzone-map-image h3 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-
-.fitzone-map-image p {
-    font-size: 1.1rem;
-    margin-bottom: 20px;
-    opacity: 0.9;
-}
-
-.fitzone-map-btn {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    padding: 12px 25px;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    backdrop-filter: blur(10px);
-}
-
-.fitzone-map-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.5);
-    transform: translateY(-2px);
-}
-
-/* Адаптивность */
-@media (max-width: 1024px) {
-    .fitzone-map-content {
-        grid-template-columns: 1fr 1.5fr;
-        gap: 30px;
-    }
-}
-
-@media (max-width: 768px) {
-    .fitzone-map-section {
-        padding: 60px 0;
-    }
-    
-    .fitzone-map-content {
-        grid-template-columns: 1fr;
-        gap: 30px;
-    }
-    
-    .fitzone-map-wrapper {
-        height: 300px;
-        order: -1;
-    }
-    
-    .fitzone-info-card {
-        padding: 20px;
-    }
-}
-
-@media (max-width: 480px) {
-    .fitzone-map-container {
-        padding: 0 15px;
-    }
-    
-    .fitzone-map-wrapper {
-        height: 250px;
-    }
-    
-    .fitzone-info-card {
-        flex-direction: column;
-        text-align: center;
-        gap: 15px;
-    }
-    
-    .fitzone-info-icon {
-        align-self: center;
-    }
-    
-    .fitzone-map-image i {
-        font-size: 2.5rem;
-    }
-    
-    .fitzone-map-image h3 {
-        font-size: 1.3rem;
-    }
-    
-    .fitzone-map-image p {
-        font-size: 1rem;
-    }
-}
-
-/* Анимации */
-@keyframes fitzoneMapFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.fitzone-info-card, .fitzone-map-wrapper {
-    animation: fitzoneMapFadeIn 0.6s ease forwards;
-}
-/* Tablet Styles (768px - 1024px) */
-@media (max-width: 1024px) and (min-width: 769px) {
-    .hero-section {
-        padding: 80px 40px;
-    }
-    
-    .hero-title {
-        font-size: 3rem;
-    }
-    
-    .hero-subtitle {
-        font-size: 1.2rem;
-        max-width: 600px;
-    }
-    
-    .hero-buttons {
-        flex-direction: row;
-        gap: 20px;
-    }
-    
-    .btn-modern {
-        padding: 16px 35px;
-        font-size: 1.1rem;
-    }
-    
-    /* Абонементы */
-    .fitzone-pricing-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 25px;
-    }
-    
-    .fitzone-pricing-card {
-        height: 620px;
-        min-height: 620px;
-        padding: 35px 25px;
-    }
-    
-    .fitzone-price-amount {
-        font-size: 3rem;
-    }
-    
-    /* Карта */
-    .fitzone-map-content {
-        grid-template-columns: 1fr 1.5fr;
-        gap: 30px;
-    }
-    
-    .fitzone-map-wrapper {
-        height: 500px;
-    }
-    
-    /* Групповые занятия и тренеры */
-    .scroll-container {
-        gap: 20px;
-        padding: 0 20px;
-    }
-    
-    .class-card, .trainer-card {
-        min-width: 300px;
-    }
-    
-    /* CTA секция */
-    .cta-buttons {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .cta-buttons .btn-modern {
-        margin: 5px 0;
-        font-size: 1.2rem;
-        padding: 18px 40px;
-    }
-}
-
-/* Mobile Styles (768px and below) */
-@media (max-width: 768px) {
-    .hero-section {
-        padding: 60px 20px;
-        text-align: center;
-    }
-    
-    .hero-title {
-        font-size: 2.2rem;
-        line-height: 1.2;
-    }
-    
-    .hero-subtitle {
-        font-size: 1.1rem;
-        max-width: 100%;
-        margin: 0 auto 30px;
-    }
-    
-    .hero-buttons {
-        flex-direction: column;
-        gap: 15px;
-        align-items: center;
-    }
-    
-    .btn-modern {
-        padding: 14px 30px;
-        font-size: 1rem;
-        width: 100%;
-        max-width: 300px;
-    }
-    
-    /* Секции */
-    .section {
-        padding: 50px 0;
-    }
-    
-    .section-title {
-        font-size: 1.8rem;
-        margin-bottom: 30px;
-    }
-    
-    /* Абонементы */
-    .fitzone-pricing-section {
-        padding: 60px 0;
-    }
-    
-    .fitzone-pricing-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-    
-    .fitzone-pricing-card {
-        height: auto;
-        min-height: auto;
-        padding: 30px 20px;
-    }
-    
-    .fitzone-price-amount {
-        font-size: 2.8rem;
-    }
-    
-    .fitzone-pricing-title {
-        font-size: 1.5rem;
-    }
-    
-    .fitzone-features-grid {
-        max-height: 300px;
-    }
-    
-    /* Карта */
-    .fitzone-map-section {
-        padding: 50px 0;
-    }
-    
-    .fitzone-map-content {
-        grid-template-columns: 1fr;
-        gap: 30px;
-    }
-    
-    .fitzone-map-wrapper {
-        height: 300px;
-        order: -1;
-    }
-    
-    .fitzone-info-card {
-        padding: 20px;
-        flex-direction: row;
-        text-align: left;
-    }
-    
-    /* Групповые занятия и тренеры */
-    .scroll-section {
-        margin: 0 -15px;
-        padding: 0 15px;
-    }
-    
-    .scroll-container {
-        gap: 15px;
-        padding: 0 5px;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-    }
-    
-    .class-card, .trainer-card {
-        min-width: 280px;
-        scroll-snap-align: start;
-    }
-    
-    .class-image, .trainer-img {
-        height: 200px;
-    }
-    
-    /* CTA секция */
-    .cta-section {
-        padding: 60px 20px;
-    }
-    
-    .cta-title {
-        font-size: 2rem;
-    }
-    
-    .cta-buttons {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .cta-buttons .btn-modern {
-        margin: 5px 0;
-        font-size: 1.1rem;
-        padding: 16px 30px;
-        width: 100%;
-        max-width: 280px;
-    }
-}
-
-/* Small Mobile Styles (480px and below) */
-@media (max-width: 480px) {
-    .hero-section {
-        padding: 50px 15px;
-    }
-    
-    .hero-title {
-        font-size: 1.8rem;
-    }
-    
-    .hero-subtitle {
-        font-size: 1rem;
-    }
-    
-    .btn-modern {
-        padding: 12px 25px;
-        font-size: 0.9rem;
-    }
-    
-    /* Секции */
-    .section {
-        padding: 40px 0;
-    }
-    
-    .section-title {
-        font-size: 1.6rem;
-        margin-bottom: 25px;
-    }
-    
-    /* Абонементы */
-    .fitzone-pricing-section {
-        padding: 40px 0;
-    }
-    
-    .fitzone-pricing-container {
-        padding: 0 15px;
-    }
-    
-    .fitzone-pricing-card {
-        padding: 25px 15px;
-    }
-    
-    .fitzone-price-amount {
-        font-size: 2.5rem;
-    }
-    
-    .fitzone-pricing-title {
-        font-size: 1.3rem;
-    }
-    
-    .fitzone-feature-item {
-        padding: 8px 0;
-    }
-    
-    .fitzone-feature-text {
-        font-size: 0.9rem;
-    }
-    
-    /* Карта */
-    .fitzone-map-section {
-        padding: 40px 0;
-    }
-    
-    .fitzone-map-container {
-        padding: 0 15px;
-    }
-    
-    .fitzone-map-wrapper {
-        height: 250px;
-    }
-    
-    .fitzone-info-card {
-        flex-direction: column;
-        text-align: center;
-        gap: 15px;
-        padding: 15px;
-    }
-    
-    .fitzone-info-icon {
-        align-self: center;
-    }
-    
-    /* Групповые занятия и тренеры */
-    .class-card, .trainer-card {
-        min-width: 260px;
-    }
-    
-    .class-content, .trainer-info {
-        padding: 15px;
-    }
-    
-    /* CTA секция */
-    .cta-section {
-        padding: 50px 15px;
-    }
-    
-    .cta-title {
-        font-size: 1.8rem;
-    }
-    
-    .cta-buttons .btn-modern {
-        font-size: 1rem;
-        padding: 14px 25px;
-    }
-}
-
-/* Landscape Mobile Styles */
-@media (max-width: 768px) and (orientation: landscape) {
-    .hero-section {
-        padding: 40px 20px;
-        min-height: auto;
-    }
-    
-    .hero-title {
-        font-size: 1.8rem;
-    }
-    
-    .hero-subtitle {
-        font-size: 1rem;
-        margin-bottom: 20px;
-    }
-    
-    .hero-buttons {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    
-    .btn-modern {
-        padding: 10px 20px;
-        font-size: 0.9rem;
-        width: auto;
-        min-width: 200px;
-    }
-    
-    .fitzone-pricing-card {
-        padding: 20px 15px;
-    }
-    
-    .fitzone-map-wrapper {
-        height: 200px;
-    }
-}
-
-/* Обеспечиваем хорошее отображение на очень маленьких экранах */
-@media (max-width: 360px) {
-    .hero-title {
-        font-size: 1.6rem;
-    }
-    
-    .section-title {
-        font-size: 1.4rem;
-    }
-    
-    .class-card, .trainer-card {
-        min-width: 240px;
-    }
-    
-    .fitzone-price-amount {
-        font-size: 2.2rem;
-    }
-}
-
-/* Улучшаем доступность для касаний на мобильных устройствах */
-@media (max-width: 768px) {
-    .btn-modern,
-    .class-button,
-    .trainer-book-btn,
-    .fitzone-pricing-btn {
-        min-height: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .scroll-container {
-        -webkit-overflow-scrolling: touch;
-    }
-    
-    /* Увеличиваем область клика для маленьких элементов */
-    .password-toggle,
-    .fitzone-feature-item {
-        min-height: 44px;
-    }
-}
-
-/* Оптимизация производительности для мобильных */
-@media (max-width: 768px) {
-    .particles-container {
-        display: none; /* Скрываем частицы на мобильных для производительности */
-    }
-    
-    .fitzone-pricing-card:hover {
-        transform: none; /* Отключаем трансформации при hover на мобильных */
-    }
-    
-    .class-card:hover,
-    .trainer-card:hover {
-        transform: none;
-    }
-}
-
-/* Специфические стили для горизонтального скролла на мобильных */
-@media (max-width: 768px) {
-    .scroll-container {
-        scrollbar-width: none; /* Firefox */
-        -ms-overflow-style: none; /* IE and Edge */
-    }
-    
-    .scroll-container::-webkit-scrollbar {
-        display: none; /* Chrome, Safari and Opera */
-    }
-    
-    /* Добавляем индикатор скролла */
-    .scroll-section {
-        position: relative;
-    }
-    
-    .scroll-section::after {
-        content: '';
-        position: absolute;
-        right: 0;
-        top: 0;
-        bottom: 0;
-        width: 30px;
-        background: linear-gradient(90deg, transparent, var(--light-bg));
-        pointer-events: none;
-    }
-    
-    .dark-theme .scroll-section::after {
-        background: linear-gradient(90deg, transparent, var(--dark-bg));
-    }
-}
-
-/* Адаптация типографики для мобильных */
-@media (max-width: 768px) {
-    .hero-title,
-    .section-title,
-    .cta-title {
-        line-height: 1.2;
-    }
-    
-    .hero-subtitle,
-    .fitzone-pricing-subtitle,
-    .fitzone-map-subtitle {
-        line-height: 1.4;
-    }
-    
-    .class-content h3,
-    .trainer-info h3,
-    .fitzone-pricing-title {
-        line-height: 1.3;
-    }
-}
-
-/* Оптимизация карты для мобильных */
-@media (max-width: 768px) {
-    .fitzone-map-wrapper iframe {
-        border-radius: 12px;
-    }
-}
-
-.fitzone-info-card:nth-child(1) { animation-delay: 0.1s; }
-.fitzone-info-card:nth-child(2) { animation-delay: 0.2s; }
-.fitzone-info-card:nth-child(3) { animation-delay: 0.3s; }
-.fitzone-info-card:nth-child(4) { animation-delay: 0.4s; }
-.fitzone-map-wrapper { animation-delay: 0.5s; }
-
-
-</style>
 {% endblock %}
 
 {% block skripts %}
@@ -1767,18 +1768,16 @@ function openMap() {
     window.open(url, '_blank');
 }
 
-// Инициализация карты (можно заменить на реальную карту)
+// Инициализация карты
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Map section loaded');
-    // Здесь можно добавить инициализацию Яндекс.Карт или Google Maps
-    // Например: initYandexMap();
-});
-    document.addEventListener('DOMContentLoaded', function() {
-        // Применяем тему при загрузке
-        applyTheme();
+    
+    // Применяем тему при загрузке
+    applyTheme();
 
-        // Create dynamic particles
-        const particlesContainer = document.getElementById('particles');
+    // Create dynamic particles
+    const particlesContainer = document.getElementById('particles');
+    if (particlesContainer && window.innerWidth > 768) {
         const particleCount = 15;
         
         for (let i = 0; i < particleCount; i++) {
@@ -1798,51 +1797,52 @@ document.addEventListener('DOMContentLoaded', function() {
             
             particlesContainer.appendChild(particle);
         }
+    }
 
-        // Scroll animations for cards
-        const cardObserverOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
+    // Scroll animations for cards
+    const cardObserverOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
 
-        const cardObserver = new IntersectionObserver(function(entries) {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animate');
-                }
-            });
-        }, cardObserverOptions);
-
-        document.querySelectorAll('.class-card, .pricing-card, .trainer-card, .cta-section').forEach(el => {
-            cardObserver.observe(el);
-        });
-    });
-
-    // Apply theme function
-    function applyTheme() {
-        {% if user.is_authenticated %}
-            try {
-                {% if user.userprofile.theme %}
-                    document.body.classList.add('dark-theme');
-                {% else %}
-                    document.body.classList.remove('dark-theme');
-                {% endif %}
-            } catch (error) {
-                const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                if (systemPrefersDark) {
-                    document.body.classList.add('dark-theme');
-                } else {
-                    document.body.classList.remove('dark-theme');
-                }
+    const cardObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate');
             }
-        {% else %}
+        });
+    }, cardObserverOptions);
+
+    document.querySelectorAll('.class-card, .trainer-card, .cta-section').forEach(el => {
+        cardObserver.observe(el);
+    });
+});
+
+// Apply theme function
+function applyTheme() {
+    {% if user.is_authenticated %}
+        try {
+            {% if user.userprofile.theme %}
+                document.body.classList.add('dark-theme');
+            {% else %}
+                document.body.classList.remove('dark-theme');
+            {% endif %}
+        } catch (error) {
             const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             if (systemPrefersDark) {
                 document.body.classList.add('dark-theme');
             } else {
                 document.body.classList.remove('dark-theme');
             }
-        {% endif %}
-    }
+        }
+    {% else %}
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (systemPrefersDark) {
+            document.body.classList.add('dark-theme');
+        } else {
+            document.body.classList.remove('dark-theme');
+        }
+    {% endif %}
+}
 </script>
 {% endblock %}
