@@ -23,7 +23,6 @@ urlpatterns = [
 path('subscription/agreement/<int:payment_id>/', 
          views.generate_subscription_agreement, 
          name='subscription_agreement'),
-     path('test-email/', views.test_email_simple, name='test_email'),
     path('deactivate-account/', views.deactivate_account, name='deactivate_account'),
 
              path('buy-personal-package/<int:trainer_id>/', views.buy_personal_package, name='buy_personal_package'),
