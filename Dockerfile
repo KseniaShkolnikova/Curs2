@@ -18,4 +18,4 @@ RUN cd /app/fitzone && python manage.py collectstatic --noinput
 EXPOSE 8000
 
 # ПРОСТОЙ CMD БЕЗ СЛОЖНЫХ КОМАНД
-CMD cd /app/fitzone && python manage.py migrate && python /app/create_superuser.py && gunicorn fitzone.wsgi:application --bind 0.0.0.0:8000 --workers 3
+CMD cd /app/fitzone && python manage.py migrate && python manage.py createsuperuser --noinput && gunicorn fitzone.wsgi:application --bind 0.0.0.0:8000 --workers 3
