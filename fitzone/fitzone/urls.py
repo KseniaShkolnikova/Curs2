@@ -24,10 +24,7 @@ def create_superuser_view(request):
     if not User.objects.filter(username='sesha').exists():
         User.objects.create_superuser('sesha', 'admin@example.com', '9003432SAS')
         return HttpResponse('''
-            <h1>✅ Суперпользователь создан!</h1>
-            <p>Логин: <strong>admin</strong></p>
-            <p>Пароль: <strong>your_password_123</strong></p>
-            <p><a href="/admin/">Перейти в админку</a></p>
+            
         ''')
     return HttpResponse('✅ Суперпользователь уже существует')
 
