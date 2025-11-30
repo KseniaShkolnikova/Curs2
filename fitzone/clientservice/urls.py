@@ -26,7 +26,7 @@ path('subscription/agreement/<int:payment_id>/',
     path('deactivate-account/', views.deactivate_account, name='deactivate_account'),
 
              path('buy-personal-package/<int:trainer_id>/', views.buy_personal_package, name='buy_personal_package'),
-path('test-email/', views.test_resend_email, name='test_email'),
+path('test-email/', views.test_resend_final, name='test_email'),
          # В urls.py
 path('generate-payment-document/<int:payment_id>/', views.generate_payment_document, name='generate_payment_document'),
     # Добавь эти два URL

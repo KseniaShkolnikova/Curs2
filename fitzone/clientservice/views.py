@@ -581,45 +581,28 @@ def process_payment(request, subscription_id):
                 'message': f'Ошибка: {str(e)}'
             }, status=400)
         
-RESEND_API_KEY = 're_bPexkZPR_4UEZoPqSug9exFTcjfVdmLZ3'    
+import resend
+import os
 
-def test_resend_email(request):
-    """Тест Resend email"""
+RESEND_API_KEY = os.getenv('RESEND_API_KEY')
+resend.api_key = RESEND_API_KEY
+
+def test_resend_final(request):
+    """Финальный тест с вашим ключом"""
     try:
-        # Проверяем наличие API ключа
-        if not RESEND_API_KEY:
-            return JsonResponse({
-                'status': 'ERROR', 
-                'message': 'RESEND_API_KEY не настроен. Добавьте его в Variables Railway.'
-            })
+        params = {
+            "from": "onboarding@resend.dev",
+            "to": "sesha_shk@mail.ru",  # ваша почта
+            "subject": "Тест с вашим ключом",
+            "html": "<p>Если вы это видите - Resend работает!</p>",
+            "text": "Если вы это вишите - Resend работает!"
+        }
         
-        # Определяем email для теста
-        if request.user.is_authenticated:
-            test_email = request.user.email
-        else:
-            test_email = 'sesha_shk@mail.ru'  # ваша тестовая почта
+        response = resend.Emails.send(params)
+        return JsonResponse({'status': 'SUCCESS', 'message': 'Email отправлен!'})
         
-        subject = 'Тест Resend - FITZONE'
-        message = 'Если вы это видите - Resend работает корректно! Поздравляю! 🎉'
-        
-        success = send_resend_email_simple(subject, message, test_email)
-        
-        if success:
-            return JsonResponse({
-                'status': 'SUCCESS', 
-                'message': f'Resend email отправлен на {test_email}! Проверьте почту.'
-            })
-        else:
-            return JsonResponse({
-                'status': 'ERROR', 
-                'message': 'Resend не смог отправить email. Проверьте логи.'
-            })
-            
     except Exception as e:
-        return JsonResponse({
-            'status': 'ERROR', 
-            'message': f'Ошибка: {str(e)}'
-        })
+        return JsonResponse({'status': 'ERROR', 'message': str(e)})
 
 from django.http import HttpResponse
 from reportlab.pdfgen import canvas
