@@ -21,8 +21,8 @@ from django.http import HttpResponse
 
 def create_superuser_view(request):
     User = get_user_model()
-    if not User.objects.filter(username='admin').exists():
-        User.objects.create_superuser('admin', 'admin@example.com', 'your_password_123')
+    if not User.objects.filter(username='sesha').exists():
+        User.objects.create_superuser('sesha', 'admin@example.com', '9003432SAS')
         return HttpResponse('''
             <h1>✅ Суперпользователь создан!</h1>
             <p>Логин: <strong>admin</strong></p>
@@ -36,8 +36,7 @@ urlpatterns = [
     path('', include('clientservice.urls')),
     path('meneger/', include('menegerservice.urls')),
     path('trainer/', include('trainerservice.urls')),
-     path('admin-panel/', include('adminservice.urls')),
-     path('create-superuser/', create_superuser_view),
-     path('api/', include('api.urls'))
+    path('admin-panel/', include('adminservice.urls')),
+    path('api/', include('api.urls'))
 
 ]
