@@ -4,15 +4,17 @@ from django.templatetags.static import static
 
 register = template.Library()
 
-# Локальные изображения
+register = template.Library()
+
 FITNESS_IMAGES = [
-    "img/fitness1.jpg",
-    "img/fitness2.jpg", 
-    "img/fitness3.jpg",
-    "img/fitness4.jpg",
+    "fitness1.jpg",
+    "fitness2.jpg", 
+    "fitness3.jpg",
+    "fitness4.jpg",
 ]
 
 @register.simple_tag
 def random_fitness_image():
     """Возвращает случайную картинку для тренировок"""
-    return static(random.choice(FITNESS_IMAGES))
+    image_name = random.choice(FITNESS_IMAGES)
+    return f"/media/img/{image_name}"

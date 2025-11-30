@@ -674,7 +674,12 @@ if (result.success) {
     
     // Устанавливаем ссылку для скачивания договора
     const downloadLink = document.getElementById('download-contract');
-    downloadLink.href = `/generate-payment-document/${result.payment_id}/`;
+    if (result.payment_id) {
+        downloadLink.href = `/generate-payment-document/${result.payment_id}/`;
+    } else {
+        console.error('payment_id не получен от сервера');
+        downloadLink.href = '#';
+    }
     
     // Показываем модальное окно успеха
     const successModal = document.getElementById('success-modal');

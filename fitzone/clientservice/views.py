@@ -526,10 +526,12 @@ def process_payment(request, subscription_id):
                 )
                 print(f"=== DEBUG 5: Payment created ===")
 
+            # ВОТ ИСПРАВЛЕНИЕ - возвращаем payment_id
             return JsonResponse({
                 'success': True,
                 'message': 'Минимальная оплата успешна!',
-                'order_number': f"#{payment.id:06d}"
+                'order_number': f"#{payment.id:06d}",
+                'payment_id': payment.id  # ДОБАВЬ ЭТУ СТРОКУ
             })
                 
         except Exception as e:
