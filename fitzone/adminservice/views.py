@@ -379,43 +379,31 @@ def action_logs(request):
     
     return render(request, 'action_logs.html', context)
 
+# adminservice/views.py
+# В функции backup_management и create_backup замените пути:
+
 @admin_required
 @login_required
 def backup_management(request):
     """
     SUMMARY: Страница управления резервным копированием базы данных
-    
-    ОСНОВНОЕ НАЗНАЧЕНИЕ:
-    - Создание резервных копий базы данных
-    - Восстановление из бэкапов
-    - Просмотр существующих бэкапов
-    - Экспорт данных в CSV
-    
-    ФУНКЦИОНАЛ:
-    - Автоматическое создание бэкапов с timestamp
-    - Восстановление с полной очисткой текущих данных
-    - Скачивание экспортированных данных
     """
     
-    # SUMMARY: Поиск существующих бэкапов в папке Загрузки
-    downloads_dir = os.path.join(os.path.expanduser('~'), 'Downloads')
-    backup_dir = os.path.join(downloads_dir, 'fitzone_backups')
+    # SUMMARY: Поиск существующих бэкапов в папке проекта
+    project_root = settings.BASE_DIR  # C:\Users\sesha\OneDrive\Desktop\FitZone\fitzone
+    backup_dir = os.path.join(project_root, 'backups')
     backups = []
     
-    print(f"Проверяем папку: {backup_dir}")  # Для отладки
-    print(f"Папка существует: {os.path.exists(backup_dir)}")  # Для отладки
+    print(f"Проверяем папку: {backup_dir}")
+    print(f"Папка существует: {os.path.exists(backup_dir)}")
     
     if os.path.exists(backup_dir):
         backup_files = [f for f in os.listdir(backup_dir) if f.endswith('.sql') and f.startswith('fitzone_backup_')]
-        print(f"Найдено файлов: {len(backup_files)}")  # Для отладки
-        for f in backup_files:
-            file_path = os.path.join(backup_dir, f)
-            file_size = os.path.getsize(file_path)
-            print(f"Файл: {f}, Размер: {file_size} байт")  # Для отладки
+        print(f"Найдено файлов: {len(backup_files)}")
         
         # Сортируем по дате изменения (новые сначала)
         backup_files.sort(key=lambda x: os.path.getmtime(os.path.join(backup_dir, x)), reverse=True)
-        backups = backup_files  # Последние 10 бэкапов
+        backups = backup_files
     
     context = {
         'backups': backups,
@@ -428,30 +416,21 @@ def backup_management(request):
 def create_backup(request):
     """
     SUMMARY: Создание резервной копии базы данных PostgreSQL
-    
-    ТЕХНИЧЕСКИЕ ДЕТАЛИ:
-    - Использует pg_dump для создания SQL-дампа
-    - Сохраняет бэкапы в папку ~/Downloads/fitzone_backups/
-    - Генерирует уникальные имена файлов с timestamp
-    - Обрабатывает ошибки выполнения команды
-    
-    ВОЗВРАЩАЕМЫЙ РЕЗУЛЬТАТ:
-    - JSON с статусом операции и информацией о созданном файле
     """
     if request.method == 'POST':
         try:
-            # SUMMARY: Подготовка пути для сохранения бэкапа
-            downloads_dir = os.path.join(os.path.expanduser('~'), 'Downloads')
-            backup_dir = os.path.join(downloads_dir, 'fitzone_backups')
+            # SUMMARY: Подготовка пути для сохранения бэкапа в папке проекта
+            project_root = settings.BASE_DIR
+            backup_dir = os.path.join(project_root, 'backups')
             os.makedirs(backup_dir, exist_ok=True)
             
-            print(f"Создаем папку для бэкапов: {backup_dir}")  # Для отладки
+            print(f"Создаем папку для бэкапов: {backup_dir}")
             
             # Генерируем имя файла с timestamp
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             backup_file = os.path.join(backup_dir, f'fitzone_backup_{timestamp}.sql')
             
-            print(f"Создаем бэкап: {backup_file}")  # Для отладки
+            print(f"Создаем бэкап: {backup_file}")
             
             # Для Windows используем полный путь к pg_dump
             pg_dump_path = r'C:\Program Files\PostgreSQL\16\bin\pg_dump.exe'
@@ -465,18 +444,18 @@ def create_backup(request):
                 '-f', backup_file
             ]
             
-            print(f"Выполняем команду: {' '.join(cmd)}")  # Для отладки
+            print(f"Выполняем команду: {' '.join(cmd)}")
             
             # SUMMARY: Выполнение команды с передачей пароля
             env = os.environ.copy()
             env['PGPASSWORD'] = settings.DATABASES['default']['PASSWORD']
             result = subprocess.run(cmd, env=env, capture_output=True, text=True)
             
-            print(f"Результат: код {result.returncode}")  # Для отладки
+            print(f"Результат: код {result.returncode}")
             if result.stdout:
-                print(f"STDOUT: {result.stdout}")  # Для отладки
+                print(f"STDOUT: {result.stdout}")
             if result.stderr:
-                print(f"STDERR: {result.stderr}")  # Для отладки
+                print(f"STDERR: {result.stderr}")
             
             # SUMMARY: Проверка успешности операции
             file_exists = os.path.exists(backup_file)
@@ -487,7 +466,7 @@ def create_backup(request):
             # Проверяем содержимое папки
             if os.path.exists(backup_dir):
                 files_in_dir = os.listdir(backup_dir)
-                print(f"Файлы в папке бэкапов: {files_in_dir}")  # Для отладки
+                print(f"Файлы в папке бэкапов: {files_in_dir}")
             
             if result.returncode == 0 and file_exists:
                 return JsonResponse({
@@ -506,7 +485,7 @@ def create_backup(request):
         except Exception as e:
             import traceback
             error_details = traceback.format_exc()
-            print(f"Исключение: {error_details}")  # Для отладки
+            print(f"Исключение: {error_details}")
             return JsonResponse({
                 'success': False,
                 'message': f'Ошибка: {str(e)}'
@@ -519,16 +498,6 @@ def create_backup(request):
 def restore_backup(request):
     """
     SUMMARY: Восстановление базы данных из резервной копии
-    
-    ВАЖНОЕ ПРЕДУПРЕЖДЕНИЕ:
-    - Операция ВОССТАНОВЛЕНИЯ УДАЛЯЕТ ВСЕ ТЕКУЩИЕ ДАННЫЕ
-    - Использует DROP SCHEMA public CASCADE для полной очистки
-    - Требует подтверждения действия
-    
-    ПРОЦЕСС ВОССТАНОВЛЕНИЯ:
-    1. Полная очистка текущей базы данных
-    2. Восстановление схемы и данных из бэкапа
-    3. Проверка успешности операции
     """
     if request.method == 'POST':
         backup_file = request.POST.get('backup_file')
@@ -536,8 +505,9 @@ def restore_backup(request):
             return JsonResponse({'success': False, 'message': 'Файл бэкапа не указан'})
         
         try:
-            downloads_dir = os.path.join(os.path.expanduser('~'), 'Downloads')
-            backup_dir = os.path.join(downloads_dir, 'fitzone_backups')
+            # SUMMARY: Используем путь в папке проекта
+            project_root = settings.BASE_DIR
+            backup_dir = os.path.join(project_root, 'backups')
             backup_path = os.path.join(backup_dir, backup_file)
             
             if not os.path.exists(backup_path):
@@ -546,6 +516,8 @@ def restore_backup(request):
             print(f"Восстанавливаем из: {backup_path}")
             
             psql_path = r'C:\Program Files\PostgreSQL\16\bin\psql.exe'
+            
+            # ... остальной код восстановления без изменений ...
             
             # SUMMARY: Шаг 1 - Полная очистка базы данных
             print("Очищаем базу данных...")

@@ -12,7 +12,7 @@ class CustomPermission(permissions.DjangoModelPermissions):
     perms_map = {
         'GET': ['%(app_label)s.view_%(model_name)s'],  # Права на просмотр информации
         'OPTIONS': ['%(app_label)s.view_%(model_name)s'],  # Права на получение информации о доступных методах
-        'HEAD': ['%(app_label)s.view_%(model_name)s'],  # Права на просмотр информации (упрощенный GET)
+        'HEAD': ['%(app_label)s.view_%(model_name)s'],  # Права на просмотр информации 
         'POST': ['%(app_label)s.add_%(model_name)s'],  # Права на создание новых записей
         'PUT': ['%(app_label)s.change_%(model_name)s'],  # Права на полное изменение данных
         'PATCH': ['%(app_label)s.change_%(model_name)s'],  # Права на частичное изменение данных
