@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% load static %}
 {% load subscription_tags %}
 
 {% block title_name %}
@@ -7,240 +6,482 @@ FITZONE - Запись на занятия
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/subscription.css' %}">
+<style>
+/* Добавляем только недостающие стили для этой страницы */
+.classes-hero {
+    padding: 120px 0 80px;
+    text-align: center;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%);
+    backdrop-filter: blur(10px);
+    clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+    margin-bottom: 60px;
+    margin-top: 80px;
+    border-radius: 0 0 40px 40px;
+}
+
+.dark-theme .classes-hero {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
+}
+
+.classes-hero h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.classes-hero p {
+    font-size: 1.3rem;
+    color: var(--text-gray);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.dark-theme .classes-hero p {
+    color: var(--dark-text-light);
+}
+
+/* Filter Section */
+.filter-section {
+    background: var(--light-card);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 40px;
+    box-shadow: var(--shadow-medium);
+}
+
+.dark-theme .filter-section {
+    background: var(--dark-card);
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 20px;
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+}
+
+.dark-theme .filter-label {
+    color: var(--dark-text);
+}
+
+.filter-input,
+.filter-select {
+    padding: 12px 16px;
+    border: 2px solid var(--light-border);
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+    color: var(--text-dark);
+}
+
+.dark-theme .filter-input,
+.dark-theme .filter-select {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+    color: var(--dark-text);
+}
+
+.filter-input:focus,
+.filter-select:focus {
+    outline: none;
+    border-color: var(--neon-purple);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.filter-button {
+    background: var(--accent-gradient);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.filter-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+}
+
+/* Classes Grid */
+.classes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 30px;
+    margin-bottom: 80px;
+}
+
+.class-card {
+    background: var(--light-card);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-medium);
+}
+
+.dark-theme .class-card {
+    background: var(--dark-card);
+}
+
+.class-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(139, 92, 246, 0.15);
+}
+
+.class-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.class-content {
+    padding: 25px;
+}
+
+.class-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.class-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 5px;
+}
+
+.dark-theme .class-title {
+    color: var(--dark-text);
+}
+
+.class-price {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--neon-purple);
+    white-space: nowrap;
+    margin-left: 15px;
+}
+
+.class-time {
+    color: var(--neon-purple);
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.class-description {
+    color: var(--text-gray);
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.dark-theme .class-description {
+    color: var(--dark-text-light);
+}
+
+.class-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.class-trainer {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.dark-theme .class-trainer {
+    color: var(--dark-text);
+}
+
+.class-button {
+    background: var(--accent-gradient);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.class-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.class-button:disabled {
+    background: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* No Results */
+.no-results {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-gray);
+    grid-column: 1 / -1;
+}
+
+.dark-theme .no-results {
+    color: var(--dark-text-light);
+}
+
+.no-results i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
+    color: var(--neon-purple);
+}
+
+.no-results h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: var(--text-dark);
+}
+
+.dark-theme .no-results h3 {
+    color: var(--dark-text);
+}
+
+/* Адаптивность для этой страницы */
+@media (max-width: 1024px) {
+    .filter-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+    
+    .classes-hero {
+        margin-top: 70px;
+        padding: 100px 0 60px;
+    }
+    
+    .classes-hero h1 {
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .classes-hero {
+        padding: 80px 0 40px;
+        margin-top: 60px;
+        clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+    }
+    
+    .classes-hero h1 {
+        font-size: 2.5rem;
+    }
+    
+    .classes-hero p {
+        font-size: 1.1rem;
+    }
+    
+    .filter-section {
+        padding: 20px;
+    }
+    
+    .filter-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .classes-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .class-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .class-price {
+        margin-left: 0;
+        margin-top: 5px;
+    }
+}
+
+@media (max-width: 480px) {
+    .classes-hero {
+        padding: 60px 0 30px;
+        margin-top: 50px;
+    }
+    
+    .classes-hero h1 {
+        font-size: 2rem;
+    }
+    
+    .classes-hero p {
+        font-size: 1rem;
+    }
+    
+    .filter-section {
+        padding: 15px;
+    }
+    
+    .class-card {
+        min-width: 100%;
+    }
+    
+    .class-content {
+        padding: 20px;
+    }
+    
+    .class-title {
+        font-size: 1.1rem;
+    }
+    
+    .class-price {
+        font-size: 1.3rem;
+    }
+    
+    .class-footer {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+    
+    .class-button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="container">
     <!-- Hero Section -->
-    <section class="modern-hero">
-        <div class="hero-container">
-            <div class="hero-content-wrapper">
-                <div class="modern-badge">
-                    <div class="badge-icon">
-                        <i class="fas fa-calendar-check"></i>
-                    </div>
-                    <span class="badge-text">Расписание занятий</span>
-                </div>
-                
-                <div class="hero-main-content">
-                    <h1 class="modern-hero-title">ЗАПИСЬ НА ЗАНЯТИЯ</h1>
-                    <p class="modern-hero-description">Выберите подходящее время и тренера для достижения ваших фитнес-целей</p>
-                </div>
-            </div>
-        </div>
+    <section class="classes-hero">
+        <h1>ЗАПИСЬ НА ЗАНЯТИЯ</h1>
+        <p>Выберите подходящее время и тренера для достижения ваших фитнес-целей</p>
     </section>
 
-    <!-- Beautiful Filters Section -->
-    <section class="beautiful-filters">
-        <div class="filters-glass">
-            <div class="filters-header">
-                <h3 class="filters-title">
-                    <i class="fas fa-sliders-h"></i>
-                    ФИЛЬТРЫ И ПОИСК
-                </h3>
-                <div class="filters-count">
-                    <span class="count-bubble" id="results-count">{{ classes|length }}</span>
-                </div>
+    <!-- Filter Section -->
+    <section class="filter-section">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <label class="filter-label">Поиск занятия</label>
+                <input type="text" id="search-input" class="filter-input" placeholder="Название занятия или тренер...">
             </div>
             
-            <div class="filters-content">
-                <div class="search-glass">
-                    <div class="search-icon">
-                        <i class="fas fa-search"></i>
-                    </div>
-                    <input type="text" id="search-input" placeholder="Найти занятие..." class="search-input">
-                    <div class="search-glow"></div>
-                </div>
-                
-                <div class="sort-glass">
-                    <div class="sort-icon">
-                        <i class="fas fa-sort-amount-down"></i>
-                    </div>
-                    <select id="sort-select" class="sort-select">
-                        <option value="date_asc">Ближайшие даты</option>
-                        <option value="date_desc">Поздние даты</option>
-                        <option value="price_asc">Сначала дешевые</option>
-                        <option value="price_desc">Сначала дорогие</option>
-                        <option value="name_asc">По названию (А-Я)</option>
-                        <option value="name_desc">По названию (Я-А)</option>
-                    </select>
-                    <div class="select-arrow">
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                </div>
+            <div class="filter-group">
+                <label class="filter-label">Сортировка</label>
+                <select id="sort-select" class="filter-select">
+                    <option value="date_asc">Ближайшие даты</option>
+                    <option value="date_desc">Поздние даты</option>
+                    <option value="price_asc">Сначала дешевые</option>
+                    <option value="price_desc">Сначала дорогие</option>
+                </select>
             </div>
             
-            <div class="filters-stats">
-                <div class="stat-item">
-                    <span class="stat-number" id="active-count">{{ classes|length }}</span>
-                    <span class="stat-label">доступно</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                    <span class="stat-number">{{ classes|length }}</span>
-                    <span class="stat-label">всего</span>
-                </div>
+            <div class="filter-group">
+                <label class="filter-label">Тренер</label>
+                <select id="trainer-select" class="filter-select">
+                    <option value="">Все тренеры</option>
+                    {% for class in classes %}
+                    <option value="{{ class.trainer_full_name|lower }}">{{ class.trainer_full_name }}</option>
+                    {% endfor %}
+                </select>
             </div>
+            
+            <button class="filter-button" onclick="filterClasses()">
+                <i class="fas fa-filter"></i>
+                Применить
+            </button>
         </div>
     </section>
 
     <!-- Classes Section -->
     <section>
         <h2 class="section-title">ДОСТУПНЫЕ ЗАНЯТИЯ</h2>
-    </section>
-</div>
-
-<!-- Full Width Slider Section -->
-<section class="fullwidth-slider-section">
-    <div class="fullwidth-slider-container">
-        <div class="slider-nav">
-            <button class="slider-btn prev-btn">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <button class="slider-btn next-btn">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
         
-        <div class="fullwidth-membership-slider" id="classes-slider">
+        <div class="classes-grid" id="classes-container">
             {% if classes %}
                 {% for class in classes %}
-                <div class="subscription-card" data-name="{{ class.name|lower }}" data-description="{{ class.description|lower }}" data-price="{{ class.price }}" data-date="{{ class.starttime|date:'U' }}" data-trainer="{{ class.trainer_full_name|lower }}"
->
-                    <!-- Card Header -->
-                    <div class="card-header">
-                        <div class="card-icon">
-                            {% if "йога" in class.name.lower %}
-                            <i class="fas fa-spa"></i>
-                            {% elif "силов" in class.name.lower %}
-                            <i class="fas fa-dumbbell"></i>
-                            {% elif "кардио" in class.name.lower %}
-                            <i class="fas fa-running"></i>
-                            {% elif "стретчинг" in class.name.lower %}
-                            <i class="fas fa-child"></i>
-                            {% elif "танц" in class.name.lower %}
-                            <i class="fas fa-music"></i>
-                            {% else %}
-                            <i class="fas fa-star"></i>
-                            {% endif %}
-                        </div>
-                        <h3 class="card-title">{{ class.name }}</h3>
+                <div class="class-card" data-name="{{ class.name|lower }}" 
+                     data-trainer="{{ class.trainer_full_name|lower }}"
+                     data-price="{{ class.price }}"
+                     data-date="{{ class.starttime|date:'U' }}">
+                    {% if class.image %}
+                    <img src="{{ class.image.url }}" alt="{{ class.name }}" class="class-image">
+                    {% else %}
+                    <div class="class-image" style="background: var(--accent-gradient); display: flex; align-items: center; justify-content: center; color: white;">
+                        <i class="fas fa-dumbbell" style="font-size: 3rem;"></i>
                     </div>
+                    {% endif %}
                     
-                    <!-- Trainer Info -->
-                    <div class="card-duration">
-    <i class="fas fa-user-tie"></i>
-    <span>{{ class.trainer_full_name }}</span>
-</div>
-
-                    <!-- Date & Time -->
-                    <div class="card-price">
-                        <div class="price-main">
-                            <span class="price">{{ class.starttime|date:"d.m" }}</span>
+                    <div class="class-content">
+                        <div class="class-header">
+                            <div>
+                                <h3 class="class-title">{{ class.name }}</h3>
+                                <span class="class-time">
+                                    <i class="fas fa-clock"></i>
+                                    {{ class.starttime|date:"d.m.Y H:i" }} - {{ class.endtime|date:"H:i" }}
+                                </span>
+                            </div>
+                            <div class="class-price">{{ class.price|floatformat:0 }} ₽</div>
                         </div>
-                        <div class="price-note">{{ class.starttime|date:"H:i" }} - {{ class.endtime|date:"H:i" }}</div>
-                    </div>
-
-                    
-
-                    <!-- Description -->
-                    <div class="card-services">
-                        <div class="services-title">Описание:</div>
-                        <div class="services-list">
-                            <div class="service-item">
-                                <i class="fas fa-info-circle"></i>
-                                <span>{{ class.description|truncatewords:15 }}</span>
+                        
+                        <p class="class-description">{{ class.description|truncatewords:20 }}</p>
+                        
+                        <div class="class-footer">
+                            <div class="class-trainer">
+                                <i class="fas fa-user-tie"></i>
+                                {{ class.trainer_full_name }}
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Class Info -->
-                    <div class="card-services">
-                        <div class="services-title">Информация:</div>
-                        <div class="services-list">
-                            <div class="service-item">
-                                <i class="fas fa-users"></i>
-                                <span>Мест: {{ class.maxclient }}</span>
-                            </div>
-                            <div class="service-item">
-                                <i class="fas fa-wallet"></i>
-                                <span>{{ class.price|floatformat:0 }} ₽</span>
-                            </div>
+                            
                             {% if class.is_active %}
-                            <div class="service-item highlight">
-                                <i class="fas fa-check-circle"></i>
-                                <span>Доступно для записи</span>
-                            </div>
+                            <a href="{% url 'class_booking' class.id %}" class="class-button">
+                                Записаться
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
                             {% else %}
-                            <div class="service-item">
-                                <i class="fas fa-times-circle"></i>
-                                <span>Недоступно</span>
-                            </div>
+                            <button class="class-button" disabled>
+                                Недоступно
+                                <i class="fas fa-lock"></i>
+                            </button>
                             {% endif %}
                         </div>
                     </div>
-
-                    <!-- CTA Button -->
-                    <!-- Замените старую кнопку записи на эту: -->
-<!-- CTA Button -->
-{% if class.is_active %}
-<a href="{% url 'class_booking' class.id %}" class="card-button">
-    <span>Записаться</span>
-    <i class="fas fa-arrow-right"></i>
-</a>
-{% else %}
-<button class="card-button" disabled style="background: #cccccc;">
-    <span>Недоступно</span>
-    <i class="fas fa-lock"></i>
-</button>
-{% endif %}
                 </div>
                 {% endfor %}
             {% else %}
                 <div class="no-results">
                     <i class="fas fa-search"></i>
                     <h3>Занятия не найдены</h3>
-                    <p>Попробуйте изменить параметры поиска</p>
+                    <p>Попробуйте изменить параметры фильтрации</p>
                 </div>
             {% endif %}
-        </div>
-        
-        <div class="slider-dots" id="slider-dots">
-            {% for class in classes %}
-            <button class="dot {% if forloop.first %}active{% endif %}" data-slide="{{ forloop.counter0 }}"></button>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-
-<!-- Additional Info Section -->
-<div class="container">
-    <section class="info-section">
-        <div class="info-grid">
-            <div class="info-card">
-                <div class="info-icon">
-                    <i class="fas fa-question-circle"></i>
-                </div>
-                <h3>Как записаться?</h3>
-                <p>Выберите подходящее занятие, нажмите "Записаться" и следуйте инструкциям. Вы получите подтверждение на email.</p>
-            </div>
-            
-            <div class="info-card">
-                <div class="info-icon">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <h3>Отмена записи</h3>
-                <p>Вы можете отменить запись за 2 часа до начала занятия в личном кабинете или связавшись с нами.</p>
-            </div>
-            
-            <div class="info-card">
-                <div class="info-icon">
-                    <i class="fas fa-user-tie"></i>
-                </div>
-                <h3>Профессиональные тренеры</h3>
-                <p>Все наши тренеры имеют сертификаты и многолетний опыт работы в фитнес-индустрии.</p>
-            </div>
         </div>
     </section>
 </div>
@@ -248,364 +489,94 @@ FITZONE - Запись на занятия
 
 {% block skripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // DOM Elements
-        const slider = document.querySelector('.fullwidth-membership-slider');
-        const cards = document.querySelectorAll('.subscription-card');
-        const dotsContainer = document.getElementById('slider-dots');
-        const prevBtn = document.querySelector('.prev-btn');
-        const nextBtn = document.querySelector('.next-btn');
-        const searchInput = document.getElementById('search-input');
-        const sortSelect = document.getElementById('sort-select');
-        const resultsCount = document.getElementById('results-count');
-        const activeCount = document.getElementById('active-count');
-        
-        let currentSlide = 0;
-        let cardsPerView = calculateCardsPerView();
-        let filteredCards = Array.from(cards);
-
-        // Filter and Sort Functions
-        function filterCards() {
-    const searchTerm = searchInput.value.toLowerCase().trim();
-    const now = new Date().getTime() / 1000; // текущее время в секундах
+function filterClasses() {
+    const searchTerm = document.getElementById('search-input').value.toLowerCase();
+    const sortValue = document.getElementById('sort-select').value;
+    const trainerValue = document.getElementById('trainer-select').value.toLowerCase();
+    const now = new Date().getTime() / 1000;
     
-    filteredCards = Array.from(cards).filter(card => {
-        // Фильтрация по дате - показываем только будущие тренировки
+    const classCards = document.querySelectorAll('.class-card');
+    let visibleCards = [];
+    
+    classCards.forEach(card => {
+        const className = card.dataset.name;
+        const classTrainer = card.dataset.trainer;
         const classDate = parseInt(card.dataset.date);
+        
+        // Показываем только будущие тренировки
         if (classDate <= now) {
-            return false;
+            card.style.display = 'none';
+            return;
         }
+        
+        let shouldShow = true;
         
         // Фильтрация по поиску
-        if (searchTerm) {
-            const name = card.dataset.name;
-            const description = card.dataset.description;
-            const trainer = card.dataset.trainer;
-            
-            if (!name.includes(searchTerm) && 
-                !description.includes(searchTerm) && 
-                !trainer.includes(searchTerm)) {
-                return false;
-            }
+        if (searchTerm && !className.includes(searchTerm) && !classTrainer.includes(searchTerm)) {
+            shouldShow = false;
         }
         
-        return true;
+        // Фильтрация по тренеру
+        if (trainerValue && !classTrainer.includes(trainerValue)) {
+            shouldShow = false;
+        }
+        
+        if (shouldShow) {
+            card.style.display = 'block';
+            visibleCards.push(card);
+        } else {
+            card.style.display = 'none';
+        }
     });
     
-    updateResultsCount();
-    sortCards();
-    updateSlider();
-}
-
-        function sortCards() {
-            const sortValue = sortSelect.value;
-            
-            filteredCards.sort((a, b) => {
-                switch(sortValue) {
-                    case 'date_asc':
-                        return parseInt(a.dataset.date) - parseInt(b.dataset.date);
-                    case 'date_desc':
-                        return parseInt(b.dataset.date) - parseInt(a.dataset.date);
-                    case 'price_asc':
-                        return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
-                    case 'price_desc':
-                        return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
-                    case 'name_asc':
-                        return a.dataset.name.localeCompare(b.dataset.name);
-                    case 'name_desc':
-                        return b.dataset.name.localeCompare(a.dataset.name);
-                    default:
-                        return 0;
-                }
-            });
-            
-            updateDisplay();
+    // Сортировка
+    visibleCards.sort((a, b) => {
+        switch(sortValue) {
+            case 'date_asc':
+                return parseInt(a.dataset.date) - parseInt(b.dataset.date);
+            case 'date_desc':
+                return parseInt(b.dataset.date) - parseInt(a.dataset.date);
+            case 'price_asc':
+                return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+            case 'price_desc':
+                return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+            default:
+                return 0;
         }
-
-        function updateDisplay() {
-            cards.forEach(card => {
-                card.style.display = 'none';
-            });
-            
-            filteredCards.forEach((card, index) => {
-                card.style.display = 'flex';
-                card.style.order = index;
-            });
-            
-            updateResultsCount();
-            updateSlider();
-        }
-
-        function updateResultsCount() {
-            const count = filteredCards.length;
-            resultsCount.textContent = count;
-            activeCount.textContent = count;
-        }
-
-        // Slider Functions
-        function calculateCardsPerView() {
-            const width = window.innerWidth;
-            if (width >= 1400) return 4;
-            if (width >= 1024) return 3;
-            if (width >= 768) return 2;
-            return 1;
-        }
-        
-        function updateSlider() {
-            const visibleCards = filteredCards.filter(card => card.style.display !== 'none');
-            if (visibleCards.length === 0) return;
-            
-            const cardWidth = visibleCards[0].offsetWidth + 30;
-            const translateX = currentSlide * cardWidth * cardsPerView;
-            slider.style.transform = `translateX(-${translateX}px)`;
-            
-            updateDots();
-            
-            const maxSlides = Math.ceil(visibleCards.length / cardsPerView) - 1;
-            prevBtn.style.opacity = currentSlide === 0 ? '0.5' : '1';
-            nextBtn.style.opacity = currentSlide >= maxSlides ? '0.5' : '1';
-        }
-        
-        function updateDots() {
-            const visibleCards = filteredCards.filter(card => card.style.display !== 'none');
-            const dotCount = Math.ceil(visibleCards.length / cardsPerView);
-            
-            dotsContainer.innerHTML = '';
-            
-            for (let i = 0; i < dotCount; i++) {
-                const dot = document.createElement('button');
-                dot.className = `dot ${i === currentSlide ? 'active' : ''}`;
-                dot.dataset.slide = i;
-                dot.addEventListener('click', () => {
-                    currentSlide = i;
-                    updateSlider();
-                });
-                dotsContainer.appendChild(dot);
-            }
-        }
-        
-        // Event Listeners
-        nextBtn.addEventListener('click', () => {
-            const visibleCards = filteredCards.filter(card => card.style.display !== 'none');
-            const maxSlides = Math.ceil(visibleCards.length / cardsPerView) - 1;
-            if (currentSlide < maxSlides) {
-                currentSlide++;
-                updateSlider();
-            }
-        });
-        
-        prevBtn.addEventListener('click', () => {
-            if (currentSlide > 0) {
-                currentSlide--;
-                updateSlider();
-            }
-        });
-        
-        searchInput.addEventListener('input', () => {
-            currentSlide = 0;
-            filterCards();
-        });
-        
-        sortSelect.addEventListener('change', () => {
-            currentSlide = 0;
-            sortCards();
-        });
-
-        // Auto slide
-        let autoSlide = setInterval(() => {
-            const visibleCards = filteredCards.filter(card => card.style.display !== 'none');
-            const maxSlides = Math.ceil(visibleCards.length / cardsPerView) - 1;
-            if (currentSlide < maxSlides) {
-                currentSlide++;
-            } else {
-                currentSlide = 0;
-            }
-            updateSlider();
-        }, 5000);
-        
-        slider.addEventListener('mouseenter', () => clearInterval(autoSlide));
-        slider.addEventListener('mouseleave', () => {
-            autoSlide = setInterval(() => {
-                const visibleCards = filteredCards.filter(card => card.style.display !== 'none');
-                const maxSlides = Math.ceil(visibleCards.length / cardsPerView) - 1;
-                if (currentSlide < maxSlides) {
-                    currentSlide++;
-                } else {
-                    currentSlide = 0;
-                }
-                updateSlider();
-            }, 5000);
-        });
-        
-        window.addEventListener('resize', () => {
-            cardsPerView = calculateCardsPerView();
-            currentSlide = 0;
-            updateSlider();
-        });
-        
-        // Initialize
-        updateResultsCount();
-        updateSlider();
-        
-        // Add info section styles
-        const style = document.createElement('style');
-        style.textContent = `
-            .info-section {
-                margin: 60px 0;
-            }
-            
-            .info-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 30px;
-                margin-top: 40px;
-            }
-            
-            .info-card {
-                background: var(--light-card);
-                border-radius: 20px;
-                padding: 30px;
-                border: 1px solid var(--light-border);
-                box-shadow: var(--shadow-sm);
-                text-align: center;
-                transition: all 0.3s ease;
-            }
-            
-            .dark-theme .info-card {
-                background: var(--dark-card);
-                border-color: var(--dark-border);
-            }
-            
-            .info-card:hover {
-                transform: translateY(-5px);
-                box-shadow: var(--shadow-lg);
-            }
-            
-            .info-icon {
-                width: 60px;
-                height: 60px;
-                background: var(--accent-gradient);
-                border-radius: 15px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                margin: 0 auto 20px;
-            }
-            
-            .info-icon i {
-                color: white;
-                font-size: 1.5rem;
-            }
-            
-            .info-card h3 {
-                font-size: 1.3rem;
-                font-weight: 800;
-                color: #000000 !important;
-                margin: 0 0 15px 0;
-            }
-            
-            .dark-theme .info-card h3 {
-                color: #ffffff !important;
-            }
-            
-            .info-card p {
-                color: #000000 !important;
-                font-size: 1rem;
-                line-height: 1.6;
-                margin: 0;
-                font-weight: 500;
-            }
-            
-            .dark-theme .info-card p {
-                color: #ffffff !important;
-            }
-        `;
-        document.head.appendChild(style);
     });
+    
+    // Обновление порядка отображения
+    const container = document.getElementById('classes-container');
+    visibleCards.forEach(card => {
+        container.appendChild(card);
+    });
+    
+    // Показ сообщения если нет результатов
+    const noResults = document.querySelector('.no-results');
+    if (visibleCards.length === 0) {
+        if (!noResults) {
+            const noResultsHTML = `
+                <div class="no-results">
+                    <i class="fas fa-search"></i>
+                    <h3>Занятия не найдены</h3>
+                    <p>Попробуйте изменить параметры фильтрации</p>
+                </div>
+            `;
+            container.innerHTML = noResultsHTML;
+        }
+    } else if (noResults) {
+        noResults.remove();
+    }
+}
+
+// Автоматическая фильтрация при изменении полей
+document.getElementById('search-input').addEventListener('input', filterClasses);
+document.getElementById('sort-select').addEventListener('change', filterClasses);
+document.getElementById('trainer-select').addEventListener('change', filterClasses);
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    filterClasses(); // Скрываем прошедшие тренировки
+});
 </script>
-<style>
-    /* Исправления для выпадающего списка */
-.sort-glass .sort-select {
-    background: rgba(255, 255, 255, 0.95) !important;
-    border: 1px solid #e5e7eb !important;
-    color: #374151 !important;
-}
-
-.dark-theme .sort-glass .sort-select {
-    background: rgba(55, 65, 81, 0.95) !important;
-    border: 1px solid #4b5563 !important;
-    color: #ffffff !important;
-}
-
-/* Опции внутри выпадающего списка */
-.sort-glass .sort-select option {
-    background: white !important;
-    color: #374151 !important;
-}
-
-.dark-theme .sort-glass .sort-select option {
-    background: #374151 !important;
-    color: #ffffff !important;
-}
-
-/* Иконка календаря */
-.modern-badge .badge-icon i {
-    color: white !important;
-}
-
-/* Текст фильтров */
-.beautiful-filters .filters-title {
-    color: #2d3748 !important;
-}
-
-.dark-theme .beautiful-filters .filters-title {
-    color: #ffffff !important;
-}
-
-/* Иконки */
-.beautiful-filters .search-icon i,
-.beautiful-filters .sort-icon i,
-.beautiful-filters .select-arrow i {
-    color: #6b7280 !important;
-}
-
-.dark-theme .beautiful-filters .search-icon i,
-.dark-theme .beautiful-filters .sort-icon i,
-.dark-theme .beautiful-filters .select-arrow i {
-    color: #9ca3af !important;
-}
-/* Исправления для кнопки "Записаться" в светлой теме */
-.subscription-card .card-button {
-    background: linear-gradient(135deg, #8b5cf6, #6d28d9) !important;
-    color: white !important;
-    text-decoration: none !important;
-    border: none !important;
-}
-
-.subscription-card .card-button:hover {
-    color: white !important;
-    text-decoration: none !important;
-    transform: translateY(-2px);
-}
-
-.subscription-card .card-button:disabled {
-    background: #cccccc !important;
-    color: #666666 !important;
-    text-decoration: none !important;
-    cursor: not-allowed;
-}
-
-/* Убедимся, что цвет текста не переопределяется другими стилями */
-.subscription-card .card-button,
-.subscription-card .card-button span,
-.subscription-card .card-button i {
-    color: white !important;
-}
-
-.subscription-card .card-button:hover,
-.subscription-card .card-button:hover span,
-.subscription-card .card-button:hover i {
-    color: white !important;
-}
-</style>
 {% endblock %}

@@ -499,17 +499,9 @@ def subscription_payment(request, subscription_id):
 def process_payment(request, subscription_id):
     if request.method == 'POST':
         try:
-            print(f"=== DEBUG 1: Starting payment ===")
-            
-            # ТОЛЬКО парсим JSON
             data = json.loads(request.body)
-            print(f"=== DEBUG 2: JSON parsed ===")
-            
-            # ТОЛЬКО получаем абонемент
             subscription_type = get_object_or_404(SubscriptionTypes, id=subscription_id)
-            print(f"=== DEBUG 3: Subscription found ===")
             
-            # ТОЛЬКО создаем запись в БД
             with transaction.atomic():
                 subscription = Subscriptions.objects.create(
                     user=request.user,
@@ -517,75 +509,61 @@ def process_payment(request, subscription_id):
                     startdate=timezone.now().date(),
                     is_active=True
                 )
-                print(f"=== DEBUG 4: Subscription created ===")
                 
                 payment = Payments.objects.create(
                     subscription=subscription,
                     price=subscription_type.price,
                     paymentdate=timezone.now()
                 )
-                print(f"=== DEBUG 5: Payment created ===")
-           # После создания payment добавь этот код:
-            try:
-                from django.core.mail import EmailMessage
                 
-                # Простой тест email БЕЗ PDF
-                email = EmailMessage(
-                    'Абонемент FITZONE - Оплата успешна!',
-                    f'''
-                    Уважаемый клиент!
+                # ОТПРАВКА ЧЕРЕЗ RESEND
+                try:
+                    from utils.email_service import send_subscription_email
                     
-                    Ваш абонемент "{subscription_type.name}" успешно оплачен.
+                    send_subscription_email(
+                        user_email=request.user.email,
+                        subscription_name=subscription_type.name,
+                        price=subscription_type.price,
+                        order_number=f"#{payment.id:06d}"
+                    )
+                    print(f"Resend email отправлен на {request.user.email}")
                     
-                    Детали заказа:
-                    - Абонемент: {subscription_type.name}
-                    - Стоимость: {subscription_type.price} руб.
-                    - Номер заказа: #{payment.id:06d}
-                    - Дата: {timezone.now().strftime('%d.%m.%Y')}
-                    
-                    Договор можно скачать в вашем профиле на сайте.
-                    
-                    Спасибо за выбор FITZONE!
-                    ''',
-                    'sesha_shk@mail.ru',
-                    [request.user.email],
-                )
+                except Exception as e:
+                    print(f"Ошибка отправки Resend email: {e}")
+                    # НЕ прерываем выполнение из-за ошибки email
                 
-                # Отправляем БЕЗ PDF вложения
-                email.send(fail_silently=True)
-                print(f"=== DEBUG: Email отправлен на {request.user.email} ===")
-                
-            except Exception as e:
-                print(f"=== DEBUG: Ошибка email: {e} ===")
-            # ВОТ ИСПРАВЛЕНИЕ - возвращаем payment_id
-            return JsonResponse({
-                'success': True,
-                'message': 'Минимальная оплата успешна!',
-                'order_number': f"#{payment.id:06d}",
-                'payment_id': payment.id  # ДОБАВЬ ЭТУ СТРОКУ
-            })
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Оплата успешна!',
+                    'order_number': f"#{payment.id:06d}",
+                    'payment_id': payment.id
+                })
                 
         except Exception as e:
-            print(f"=== DEBUG ERROR: {e} ===")
             return JsonResponse({
                 'success': False,
                 'message': f'Ошибка: {str(e)}'
             }, status=400)
 
 def test_resend_email(request):
-    """Тест Resend"""
-    from django.core.mail import send_mail
+    """Тест Resend email"""
     try:
-        send_mail(
-            'Тест Resend - FITZONE',
-            'Resend работает!',
-            'onboarding@resend.dev',
-            ['sesha_shk@mail.ru'],
-            fail_silently=False,
+        from utils.email_service import send_resend_email
+        
+        success = send_resend_email(
+            subject='Тест Resend - FITZONE',
+            html_content='<h1>Resend работает!</h1><p>Если вы это видите - email отправляется корректно.</p>',
+            to_email=request.user.email if request.user.is_authenticated else 'sesha_shk@mail.ru',
+            text_content='Resend работает! Если вы это видите - email отправляется корректно.'
         )
-        return JsonResponse({'status': 'SUCCESS: Resend работает!'})
+        
+        if success:
+            return JsonResponse({'status': 'SUCCESS', 'message': 'Resend email отправлен!'})
+        else:
+            return JsonResponse({'status': 'ERROR', 'message': 'Resend не отправил email'})
+            
     except Exception as e:
-        return JsonResponse({'status': f'ERROR: {str(e)}'})
+        return JsonResponse({'status': 'ERROR', 'message': str(e)})
 
 from django.http import HttpResponse
 from reportlab.pdfgen import canvas
